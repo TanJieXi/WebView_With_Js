@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <title>Carson</title>
+   <script>
+         function callAndroid(){    //test是webview的一个标识，后面的方法是给js调用的方法
+            test.textHello("这是调用的方法是，js里面的");
+         }
+
+         function sum(a,b){
+            return a+b;
+         }
+      </script>
+</head>
+<body>
+//点击按钮则调用callAndroid函数
+<button type="button" id="button1" onclick="callAndroid()">按钮太小了</button>
+</body>
+</html>
