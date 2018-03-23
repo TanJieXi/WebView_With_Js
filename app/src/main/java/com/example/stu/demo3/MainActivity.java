@@ -35,8 +35,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient());
 
 
-        //注意：通过 WebView的addJavascriptInterface（）进行对象映射，前一个类方法必须加上javascriptInterface注解，后面为标志
-        webView.addJavascriptInterface(new MainJs(), "test");
+
         // 注意，android调用js代码，无结果用loadUrl,有结果用evaluteJavascript
         // 特别注意，android调用js代码必须在OnPageFinished里面，否则无效
         webView.setWebViewClient(new WebViewClient() {
@@ -53,7 +52,8 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
-
+        //注意：通过 WebView的addJavascriptInterface（）进行对象映射，前一个类方法必须加上javascriptInterface注解，后面为标志
+        webView.addJavascriptInterface(new MainJs(), "test");
         webView.loadUrl("file:///android_asset/index.html");
 
     }
