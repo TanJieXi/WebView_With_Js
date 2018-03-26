@@ -116,6 +116,7 @@ public class RActivity extends AppCompatActivity {
                             return (weatherBean.getResultcode().equals(NetWorkException.REQUEST_OK + ""));
                         }
                     })
+                    .subscribeOn(Schedulers.io())
                     .flatMap(new Func1<String, Observable<String>>() {
                         @Override
                         public Observable<String> call(String s) {
