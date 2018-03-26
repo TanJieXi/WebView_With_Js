@@ -40,14 +40,14 @@ public class RActivity extends AppCompatActivity {
         mApi = new Retrofit.Builder()
                 .addConverterFactory(StringConverterFactory.create())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .baseUrl("http://v.juhe.cn")
+                .baseUrl("http://v.juhe.cn/")
                 .build()
                 .create(Api.class);
 
         mApi2 = new Retrofit.Builder()
                 .addConverterFactory(StringConverterFactory.create())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .baseUrl("https://api.github.com")
+                .baseUrl("https://api.github.com/")
                 .build()
                 .create(Api.class);
     }
