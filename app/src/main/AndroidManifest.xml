@@ -14,7 +14,6 @@
         <activity android:name=".MainActivity">
         </activity>
         <activity android:name=".RetrofitActivity">
-
         </activity>
         <activity android:name=".rxjavaretrofit2.RActivity">
             <intent-filter>
@@ -22,6 +21,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity android:name=".anima.AnimActivity">
         </activity>
     </application>
 

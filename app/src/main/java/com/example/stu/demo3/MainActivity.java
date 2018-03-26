@@ -26,6 +26,10 @@ public class MainActivity extends AppCompatActivity {
 
         webView = (WebView) findViewById(R.id.my_web);
         initWebView();
+
+
+
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)

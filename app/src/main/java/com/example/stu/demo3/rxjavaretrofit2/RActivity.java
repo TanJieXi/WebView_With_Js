@@ -1,7 +1,11 @@
 package com.example.stu.demo3.rxjavaretrofit2;
 
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.Fade;
+import android.transition.Slide;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -11,6 +15,7 @@ import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.example.stu.demo3.R;
 import com.example.stu.demo3.StringConverterFactory;
+import com.example.stu.demo3.anima.AnimActivity;
 import com.google.gson.Gson;
 
 import java.io.UnsupportedEncodingException;
@@ -29,7 +34,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
-
+@android.support.annotation.RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class RActivity extends AppCompatActivity{
 
     private Api mApi;
@@ -41,8 +46,13 @@ public class RActivity extends AppCompatActivity{
     TextView tv_text;
 
 
+
+    @OnClick(R.id.tv_text) void openIntent(){
+        startActivity(new Intent(this, AnimActivity.class));
+    }
+
     @OnClick(R.id.btn_three) void clickThree(){
-        YoYo.with(Techniques.Landing)
+        YoYo.with(Techniques.Shake)
                 .duration(1500)
                 .repeat(5)
                 .playOn(findViewById(R.id.tv_text));
@@ -57,6 +67,19 @@ public class RActivity extends AppCompatActivity{
         ButterKnife.bind(this);
 
         initRe();
+
+        setupWindowAnimations();
+    }
+
+
+    private void setupWindowAnimations() {
+        Fade fade = new Fade();
+        fade.setDuration(6000);
+        getWindow().setEnterTransition(fade);
+
+        Slide slide = new Slide();
+        slide.setDuration(6000);
+        getWindow().setReturnTransition(slide);
     }
 
     private void initRe() {

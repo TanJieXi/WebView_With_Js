@@ -3,9 +3,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="#c41a1a"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1063d9"
     tools:context="com.example.stu.demo3.rxjavaretrofit2.RActivity">
     <Button
         android:id="@+id/btn_one"
@@ -42,7 +42,7 @@
         />
 
     <TextView
-        android:id="@+id/tv_text"
+        android:id="@+id/tv_new"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:text="Hello Android"
