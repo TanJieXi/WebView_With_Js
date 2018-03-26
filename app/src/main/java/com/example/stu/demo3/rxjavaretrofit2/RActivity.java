@@ -99,7 +99,7 @@ public class RActivity extends AppCompatActivity {
                         @Override
                         public Observable<String> call(String s) {
                             //相当于这里是获取到用户的token，然后根据token在执行第二步操作getOthers方法
-                            //这个返回的是一个Observable对象，相当于可以向下面继续数据，适用于嵌套使用
+                            //faltMap这个返回的是一个Observable对象，相当于可以向下面继续数据，适用于嵌套使用
                             Log.i("sdasfasd","----》这里的数据---》"  + s);
                             return mApi2.getOthers("Guolei1130");
                         }
