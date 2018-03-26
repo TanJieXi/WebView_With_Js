@@ -57,6 +57,18 @@ public class RActivity extends AppCompatActivity {
             String names = URLDecoder.decode("成都","utf-8");
             mApi.getWeather(names,"json","1","dcc498b952b3f9abdd0c8dcd4e68b8d9")
                     .subscribeOn(Schedulers.io())
+                    .map(new Func1<String, String>() {
+                        @Override
+                        public String call(String s) {
+                            //这里来判断一下网络返回的错误代码
+                            Gson gson = new Gson();
+                            WeatherBean weatherBean = gson.fromJson(s, WeatherBean.class);
+                            if(weatherBean.getResultcode().equals(NetWorkException.REQUEST_OK + "")){
+                                return s;
+                            }
+                            return null;
+                        }
+                    })
                     .map(new Func1<String, WeatherBean>() {
                         @Override
                         public WeatherBean call(String s) {
@@ -73,7 +85,7 @@ public class RActivity extends AppCompatActivity {
 
                 @Override
                 public void onError(Throwable e) {
-                    Log.i("sdasfasd","-->onError---》");
+                    Log.i("sdasfasd","-->onError---》" + e.getMessage());
                 }
 
                 @Override
@@ -95,6 +107,15 @@ public class RActivity extends AppCompatActivity {
             params.put("format","1");
             params.put("key","dcc498b952b3f9abdd0c8dcd4e68b8d9");
             mApi.getWeather(params)
+                    .filter(new Func1<String, Boolean>() {
+                        @Override
+                        public Boolean call(String s) {
+                            //这里来判断一下网络返回的错误代码
+                            Gson gson = new Gson();
+                            WeatherBean weatherBean = gson.fromJson(s, WeatherBean.class);
+                            return (weatherBean.getResultcode().equals(NetWorkException.REQUEST_OK + ""));
+                        }
+                    })
                     .flatMap(new Func1<String, Observable<String>>() {
                         @Override
                         public Observable<String> call(String s) {
