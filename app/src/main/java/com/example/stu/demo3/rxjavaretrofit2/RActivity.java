@@ -4,7 +4,11 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
 import com.example.stu.demo3.R;
 import com.example.stu.demo3.StringConverterFactory;
 import com.google.gson.Gson;
@@ -14,6 +18,9 @@ import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import rx.Observable;
@@ -23,15 +30,31 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-public class RActivity extends AppCompatActivity {
+public class RActivity extends AppCompatActivity{
 
     private Api mApi;
     private Api mApi2;
+
+    @BindView(R.id.btn_three)
+    Button btn_three;
+    @BindView(R.id.tv_text)
+    TextView tv_text;
+
+
+    @OnClick(R.id.btn_three) void clickThree(){
+        YoYo.with(Techniques.Landing)
+                .duration(1500)
+                .repeat(5)
+                .playOn(findViewById(R.id.tv_text));
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_r);
+
+        ButterKnife.bind(this);
 
         initRe();
     }
@@ -159,4 +182,8 @@ public class RActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+
+
+
 }
