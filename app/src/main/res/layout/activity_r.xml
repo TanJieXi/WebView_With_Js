@@ -7,9 +7,18 @@
     android:layout_height="match_parent"
     tools:context="com.example.stu.demo3.rxjavaretrofit2.RActivity">
     <Button
+        android:id="@+id/btn_one"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="点击"
         android:onClick="btnclick"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="点击2"
+        android:onClick="btnClicktwo"
+        app:layout_constraintTop_toBottomOf="@+id/btn_one"
         />
 </android.support.constraint.ConstraintLayout>

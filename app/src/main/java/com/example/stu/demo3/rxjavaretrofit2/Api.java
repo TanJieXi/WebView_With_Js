@@ -1,6 +1,7 @@
 package com.example.stu.demo3.rxjavaretrofit2;
 
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 import rx.Observable;
 
@@ -15,4 +16,7 @@ public interface Api {
                                   @Query("dtype") String dtype,
                                   @Query("format") String format,
                                   @Query("key") String key);
+
+    @GET("users/{user}")
+    Observable<String> getOthers(@Path("user") String user);
 }
