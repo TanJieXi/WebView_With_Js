@@ -1,8 +1,12 @@
 package com.example.newblue.utils;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 
 import com.example.newblue.interfaces.DealDataListener;
+
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 /**
  * Created by TanJieXi on 2018/3/30.
@@ -60,4 +64,52 @@ public class DealDataUtils {
             }
         }
     }
+
+
+    /**
+     * 处理体温计的数据
+     * 备注：这个体温计的数据是由设备发送了两段数据过来配对的，所以会有一个追加操作
+     * @param data
+     */
+    private StringBuilder sb = new StringBuilder();
+    public void dealTemData(String data, DealDataListener listener) {
+        this.mDealDataListener = listener;
+        Log.i("sjkljklsjadkll", "数据---》" + data);
+        // 11-26 18:54:47.796: D/test(8170): data=AF6A725A0E440088
+        sb = sb.append(data);
+        if (data != null && !data.equals("")) {
+            char[] chars = data.toCharArray();
+            String hexStr = new String();
+            // 体温
+            //家康体温枪
+            String str = new String(sb);
+            if (str.length() > 15 && str.trim().contains("AF6A")) {
+                str = str.trim().substring(str.indexOf("AF6A"));
+                if (str.length() > 15) {
+
+                    chars = str.toCharArray();
+
+                    hexStr = "" + chars[8] + chars[9] + chars[10] + chars[11];
+
+                    Log.d("test", "parseInt=" + Integer.parseInt(hexStr, 16));
+
+                    float myweight = Integer.parseInt(hexStr, 16);
+
+                    DecimalFormat formater = new DecimalFormat("#0.#");
+                    formater.setRoundingMode(RoundingMode.FLOOR);
+                    if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
+                        String result = formater.format(myweight / 100);
+                        mDealDataListener.onFetch(200, "体温：" + result);
+                    } else {
+                        mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
+                    }
+                    sb.delete(0,sb.length());
+                }
+            }
+        }
+
+    }
+
+
+
 }

@@ -72,14 +72,20 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
 
     public void disConnectBlueTooth() {
-        if (BluetoothScan.IsStart) {
-            BluetoothScan.Stop();
+        if (BluetoothScan.getInstance().getIsStartStatus()) {
+            BluetoothScan.getInstance().Stop();
         }
-        mSubscribe.dispose();
-        mBleWrapper.stopMonitoringRssiValue();
-        mBleWrapper.diconnect();
-        mBleWrapper.close();
-        mConnectBlueToothListener.onInterceptConnect("连接断开");
+        if(mSubscribe != null) {
+            mSubscribe.dispose();
+        }
+        if(mBleWrapper != null) {
+            mBleWrapper.stopMonitoringRssiValue();
+            mBleWrapper.diconnect();
+            mBleWrapper.close();
+        }
+        if(mConnectBlueToothListener != null) {
+            mConnectBlueToothListener.onInterceptConnect("连接断开");
+        }
 
     }
 
@@ -90,14 +96,14 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         mConnectBlueToothListener.onConnectSuccess("连接中，请稍后");
         mCharacteristics = new ArrayList<>();
         //BluetoothScan.IsAutoJump = false;
-        BluetoothScan.Start();
+        BluetoothScan.getInstance().Start();
         Log.i("bleWrapper","---CommenBlueUtisl--BluetoothScanStart->");
         if (mBleWrapper == null) {
             mBleWrapper = new BleWrapper(context, this);
         }
         Log.i("bleWrapper","---CommenBlueUtisl--BleWrapper->");
         if (!mBleWrapper.initialize()) {
-            BluetoothScan.Stop();
+            BluetoothScan.getInstance().Stop();
         }
 
 
@@ -170,7 +176,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                     public void accept(Object o) throws Exception {
                         mConnectBlueToothListener.onConnectSuccess("设备在线");
                         Log.i("sjkljklsjadkll", "连接到设备成功--user_heathe");
-                        BluetoothScan.Stop();
+                        BluetoothScan.getInstance().Stop();
                     }
                 });
     }
@@ -195,7 +201,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                     public void accept(Object o) throws Exception {
                         mConnectBlueToothListener.onInterceptConnect("连接断开");
                         Log.e("test", "设备断开");
-                        BluetoothScan.Start();
+                        BluetoothScan.getInstance().Start();
                         mDeviceAddress = "";
                     }
                 });
@@ -329,6 +335,15 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                         break;
                     case "tem":
                         setTemUUid(service, uuid);
+                        Observable.timer(1,TimeUnit.MILLISECONDS)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Consumer<Long>() {
+                                    @Override
+                                    public void accept(Long aLong) throws Exception {
+                                        mConnectBlueToothListener.onConnectSuccess("体温测量中，请稍后。。。");
+                                    }
+                                });
+
                         break;
                 }
 
