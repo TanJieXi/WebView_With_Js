@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <Button
+        android:id="@+id/btn_open"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="打开蓝牙"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/btn_startSao"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintVertical_weight="1"
+        />
+    <Button
+        android:id="@+id/btn_startSao"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="开始扫描"
+        app:layout_constraintLeft_toRightOf="@id/btn_open"
+        app:layout_constraintRight_toLeftOf="@+id/btn_disconnet"
+        app:layout_constraintHorizontal_weight="1"
+        />
+    <Button
+        android:id="@+id/btn_disconnet"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="断开连接"
+        app:layout_constraintLeft_toRightOf="@+id/btn_startSao"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_weight="1"
+        />
+    <TextView
+        android:id="@+id/tv_text"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_open"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="数据"
+        android:gravity="center"
+        android:textSize="60dp"
+
+        />
+</android.support.constraint.ConstraintLayout>
