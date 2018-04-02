@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.example.newblue.App;
 import com.example.newblue.interfaces.BleWrapperUiCallbacks;
+import com.example.newblue.scan.BluetoothScan;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -125,11 +126,10 @@ public class BleWrapper {
             }
         }
 
-        if (mBluetoothAdapter == null) mBluetoothAdapter = mBluetoothManager.getAdapter();
         if (mBluetoothAdapter == null) {
-            return false;
+            mBluetoothAdapter = mBluetoothManager.getAdapter();
         }
-        return true;
+        return mBluetoothAdapter != null;
     }
 
     /**
@@ -146,6 +146,10 @@ public class BleWrapper {
             return false;
         }
         mDeviceAddress = deviceAddress;
+
+
+        //停止扫描，连接前，必须停止扫描，不然，失败率很高
+        BluetoothScan.getInstance().scanLeDevice(false);
 
         // 检查我们是否需要从头开始连接或只是重新连接到以前的设备
         if (mBluetoothGatt != null && mBluetoothGatt.getDevice().getAddress().equals(deviceAddress)) {
@@ -229,7 +233,7 @@ public class BleWrapper {
             mBluetoothGattServices.clear();
         // keep reference to all services in local array:
         if (mBluetoothGatt != null) mBluetoothGattServices = mBluetoothGatt.getServices();
-        Log.i("dfdsafgsdf","--数量--" + mBluetoothGatt.getServices().size());
+        Log.i("dfdsafgsdf", "--数量--" + mBluetoothGatt.getServices().size());
         mUiCallback.uiAvailableServices(mBluetoothGatt, mBluetoothDevice, mBluetoothGattServices);
     }
 
@@ -267,58 +271,6 @@ public class BleWrapper {
         int intValue = 0;
 
         // lets read and do real parsing of some characteristic to get meaningful value from it 
-        UUID uuid = ch.getUuid();
-
-//        if(uuid.equals(BleDefinedUUIDs.Characteristic.HEART_RATE_MEASUREMENT)) { // heart rate
-//        	// follow https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.heart_rate_measurement.xml
-//        	// first check format used by the device - it is specified in bit 0 and tells us if we should ask for index 1 (and uint8) or index 2 (and uint16)
-//        	int index = ((rawValue[0] & 0x01) == 1) ? 2 : 1;
-//        	// also we need to define format
-//        	int format = (index == 1) ? BluetoothGattCharacteristic.FORMAT_UINT8 : BluetoothGattCharacteristic.FORMAT_UINT16;
-//        	// now we have everything, get the value
-//        	intValue = ch.getIntValue(format, index);
-//        	strValue = intValue + " bpm"; // it is always in bpm units
-//        }
-//        else if (uuid.equals(BleDefinedUUIDs.Characteristic.HEART_RATE_MEASUREMENT) || // manufacturer name string
-//        		 uuid.equals(BleDefinedUUIDs.Characteristic.MODEL_NUMBER_STRING) || // model number string)
-//        		 uuid.equals(BleDefinedUUIDs.Characteristic.FIRMWARE_REVISION_STRING)) // firmware revision string
-//        {
-//        	// follow https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.manufacturer_name_string.xml etc.
-//        	// string value are usually simple utf8s string at index 0
-//        	strValue = ch.getStringValue(0);
-//        }
-//        else if(uuid.equals(BleDefinedUUIDs.Characteristic.APPEARANCE)) { // appearance
-//        	// follow: https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.gap.appearance.xml
-//        	intValue  = ((int)rawValue[1]) << 8;
-//        	intValue += rawValue[0];
-//        	strValue = BleNamesResolver.resolveAppearance(intValue);
-//        }
-//        else if(uuid.equals(BleDefinedUUIDs.Characteristic.BODY_SENSOR_LOCATION)) { // body sensor location
-//        	// follow: https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.body_sensor_location.xml
-//        	intValue = rawValue[0];
-//        	strValue = BleNamesResolver.resolveHeartRateSensorLocation(intValue);
-//        }
-//        else if(uuid.equals(BleDefinedUUIDs.Characteristic.BATTERY_LEVEL)) { // battery level
-//        	// follow: https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.battery_level.xml
-//        	intValue = rawValue[0];
-//        	strValue = "" + intValue + "% battery level";
-//        }        
-//        else {
-//        	// not known type of characteristic, so we need to handle this in "general" way
-//        	// get first four bytes and transform it to integer
-//   		
-//        	intValue = 0;
-//        	if(rawValue.length > 0) intValue = (int)rawValue[0];
-//        	if(rawValue.length > 1) intValue = intValue + ((int)rawValue[1] << 8); 
-//        	if(rawValue.length > 2) intValue = intValue + ((int)rawValue[2] << 8); 
-//        	if(rawValue.length > 3) intValue = intValue + ((int)rawValue[3] << 8); 
-//        	
-//            if (rawValue.length > 0) {
-//                strValue = bytes2HexString(rawValue);
-//            }
-//        }
-//        
-
 
         if (rawValue != null && rawValue.length > 0) {
             strValue = bytes2HexString(rawValue);
@@ -516,6 +468,10 @@ public class BleWrapper {
             }
         }
 
+        /**
+         * 当我们执行了gatt.setCharacteristicNotification或写入特征的时候，结果会回调在此
+         * 当我们决定用通知的方式获取外设特征值的时候，每当特征值发生变化，程序就会回调到此处。
+         */
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {

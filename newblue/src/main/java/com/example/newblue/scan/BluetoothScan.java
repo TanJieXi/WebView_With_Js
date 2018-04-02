@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
-import android.os.Handler;
 import android.util.Log;
 
 import com.example.newblue.App;
@@ -25,15 +24,14 @@ import io.reactivex.functions.Consumer;
  */
 @SuppressLint("NewApi")
 public class BluetoothScan {
-    private  int ScanSecond = 2000;
-    private  int FOUR_SCAN_SECOND = 4000;
-    private  boolean IsStart = false;
-    private  boolean isInit = false;
+    private int ScanSecond = 2000;
+    private int FOUR_SCAN_SECOND = 4000;
+    private boolean IsStart = false;
+    private boolean isInit = false;
     private volatile static BluetoothScan instance;
-    // TODO 扫描设备1
-    private  BluetoothAdapter mBluetoothAdapter;
-    private  Disposable sMScanRx,sMScanCoRx,sMStopScan;
-    private  Handler mHandler = new Handler();
+    private boolean isScan = false;
+    private BluetoothAdapter mBluetoothAdapter;
+    private Disposable sMScanRx, sMScanCoRx, sMStopScan;
 
     public static BluetoothScan getInstance() {
         if (instance == null) {
@@ -46,20 +44,14 @@ public class BluetoothScan {
         return instance;
     }
 
-    public void setIsStart(boolean isStart){
-        this.IsStart = isStart;
-    }
-
-    public boolean getIsStartStatus(){
-        return IsStart;
-    }
-
-    public void init(Context con) {
-        Log.i("bleWrapper", "---bletoothScan--init--->");
+    /**
+     * 初始化，主要是获取到蓝牙的适配器，才能进行接下来的操作
+     */
+    public void init() {
         if (!isInit) {
-            final BluetoothManager bluetoothManager = (BluetoothManager) con
+            final BluetoothManager bluetoothManager = (BluetoothManager) App.getContext()
                     .getSystemService(Context.BLUETOOTH_SERVICE);
-            if(bluetoothManager == null){
+            if (bluetoothManager == null) {
                 return;
             }
             mBluetoothAdapter = bluetoothManager.getAdapter();
@@ -67,7 +59,10 @@ public class BluetoothScan {
         }
     }
 
-    public  void Stop() {
+    public void Stop() {
+        if(!IsStart){  //判断一下是否初始化了蓝牙
+            return;
+        }
         IsStart = false;
         scanLeDevice(false);
 
@@ -82,8 +77,14 @@ public class BluetoothScan {
     }
 
 
-    public  void Start() {
+    public void Start() {
         IsStart = true;
+        if(sMScanRx != null && !sMScanRx.isDisposed()){
+            sMScanRx.dispose();
+        }
+        if(isScan){
+            scanLeDevice(false);
+        }
         sMScanRx = Observable.interval(FOUR_SCAN_SECOND, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Long>() {
@@ -102,16 +103,20 @@ public class BluetoothScan {
         Log.e("Blue", "扫描 IsStart" + String.valueOf(IsStart));
         if (mBluetoothAdapter != null) {
             if (enable) {
+                if (isScan) {
+                    return;
+                }
                 if (!mBluetoothAdapter.isEnabled()) {
                     mBluetoothAdapter.enable();
                 }
                 if (!mBluetoothAdapter.isDiscovering()) {
-                    sMStopScan = Observable.timer(ScanSecond,TimeUnit.MILLISECONDS)
+                    isScan = true;
+                    sMStopScan = Observable.timer(ScanSecond + ScanSecond, TimeUnit.MILLISECONDS)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(new Consumer<Long>() {
                                 @Override
                                 public void accept(Long aLong) throws Exception {
-                                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                                    scanLeDevice(false);
                                 }
                             });
                     //蓝牙扫描比较消耗，所以不能一直开启，所以必须设置一段时间后关闭蓝牙，所以这里选择在2s后关闭
@@ -120,6 +125,8 @@ public class BluetoothScan {
                 }
             } else {
                 mBluetoothAdapter.stopLeScan(mLeScanCallback);  //停止蓝牙扫描
+                sMStopScan.dispose();
+                isScan = false;
             }
         }
     }
@@ -131,10 +138,10 @@ public class BluetoothScan {
      * 发现设备返回，由scanLeDevice启动和停止.
      * 这里注意，stopLeScan传入的参数必须和startLeScan一样，否则无法停止
      */
-    public  BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
+    private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         /**
          * @param device  代表蓝牙设备的类，可以通过这个类建立蓝牙连接获取设备一系列的东西
-         * @param rssi  蓝牙的信号强弱指标
+         * @param rssi  蓝牙的信号强弱指标,0代表没有设备
          * @param scanRecord  蓝牙广播出来的广告数据
          */
         @Override
@@ -142,8 +149,7 @@ public class BluetoothScan {
                              final byte[] scanRecord) {
             //Log.i("bleWrapper","---扫描成功--onLeScan- 设备信息存入Cover.LeDevices-->");
 
-
-            sMScanCoRx = Observable.timer(1,TimeUnit.MILLISECONDS)
+            sMScanCoRx = Observable.timer(1, TimeUnit.MILLISECONDS)
                     .subscribeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Consumer<Long>() {
                         @Override
@@ -153,16 +159,14 @@ public class BluetoothScan {
                             newDevice.setUuidHeadWords(Utils
                                     .bytes2HexString(scanRecord));
 
-//                    Log.e("搜索蓝牙名称==", Conver.convertHexToString(Conver
-//                            .bytes2HexString(scanRecord)
-//                    ));
                             Log.e("搜索蓝牙名称==", device.getName() + "");
                             Log.e("搜索蓝牙地址==", device.getAddress() + "");
                             if (newDevice.Type.length() > 0) {
 
                                 boolean havdevice = false;
 
-                                for (int i = 0 ,len = App.LeDevices.size(); i < len; i++) {
+                                //判断App.LeDevices里面是否已存在该设备
+                                for (int i = 0, len = App.LeDevices.size(); i < len; i++) {
                                     deviceBox d = App.LeDevices.get(i);
                                     if (newDevice.getUuidHeadWords().contains(
                                             d.getUuidHeadWords())) {
@@ -176,27 +180,6 @@ public class BluetoothScan {
                                     App.LeDevices.add(newDevice);
                                 }
 
-//						// 首次进入自动进入检测
-//						Log.e("BluetoothScan","首次进入自动进入检测"+IsStart+IsAutoJump+myContext.getClass().getName());
-//						if (IsStart
-//								&& IsAutoJump
-//								&& myContext.getClass().getName()
-//										.contains("Index")
-//								|| myContext.getClass().getName()
-//										.contains("Equipment")) {
-//							Log.e("BluetoothScan","for");
-//							for (int i = 0; i < Conver.LeDevices.size(); i++) {
-//								Log.e("BluetoothScan","infor"+i);
-//								if (Conver.LeDevices.get(i).isUsed == 0
-//										&& Conver.LeDevices.get(i).isOnline()) {
-//									Log.e("BluetoothScan","if");
-//									if (deviceBox.Begin_Jc(myContext, i)) {
-//
-//										scanLeDevice(false);
-//									}
-//								}
-//							}
-//						}
 
                             }
                         }

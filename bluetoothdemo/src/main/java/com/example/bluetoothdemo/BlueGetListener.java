@@ -70,27 +70,16 @@ public class BlueGetListener extends BluetoothGattCallback {
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
         super.onConnectionStateChange(gatt, status, newState);
-
+        Log.i("dfdsafgsdf", "连接成功-sssssss--》");
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             //  发现该设备的RSSI，RSSI：信号强度
             Log.i("dfdsafgsdf", "连接成功---》");
             // 成功连接后调用discoverService方法，直到onServicesDiscovered被回调，才算真正连接上了
 
-            try {
-
-
-                mBluetoothGatt.readRemoteRssi();
-                Thread.sleep(600);
-                mBluetoothGatt.discoverServices();
-
-                // 定期更新RSSI值
-                startMonitoringRssiValue();
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            mBluetoothGatt.readRemoteRssi();
+            mBluetoothGatt.discoverServices();
+            // 定期更新RSSI值
+            startMonitoringRssiValue();
 
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             Log.i("dfdsafgsdf", "连接失败---》");
@@ -157,8 +146,8 @@ public class BlueGetListener extends BluetoothGattCallback {
             for (BluetoothGattService s : services) {
                 mUuid = s.getUuid().toString();
                 Log.i("dfdsafgsdf", "连接成功-uuid--》" + mUuid);
-                setOxiUUid(s, mUuid);
-                //setTemUUid(s,mUuid);
+                //setOxiUUid(s, mUuid);
+                setTemUUid(s,mUuid);
 
                 /*if (mBTServices == null || !mBTServices.equals(s)) {
                     mUuid = s.getUuid().toString();

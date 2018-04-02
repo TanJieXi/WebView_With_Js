@@ -6,9 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.os.Build;
-import android.os.Handler;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import com.example.newblue.App;
@@ -41,7 +38,6 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     private BleWrapper mBleWrapper;
     private String mDeviceAddress = "";
     private String mDeviceName = "";
-    private Handler mHandler = new Handler();
     private ConnectBlueToothListener mConnectBlueToothListener;
     private ArrayList<BluetoothGattCharacteristic> mCharacteristics;
     private String mLastUpdateTime = "";
@@ -72,9 +68,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
 
     public void disConnectBlueTooth() {
-        if (BluetoothScan.getInstance().getIsStartStatus()) {
-            BluetoothScan.getInstance().Stop();
-        }
+        BluetoothScan.getInstance().Stop();
         if(mSubscribe != null) {
             mSubscribe.dispose();
         }
@@ -130,13 +124,9 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         if (mDeviceAddress.length() < 2) {
             //Log.i("bleWrapper", "--NewBlue-循环中，未扫描到设备" + Conver.LeDevices.size());
             for (int i = 0; i < App.LeDevices.size(); i++) {
-
                 deviceBox deviceBox = App.LeDevices.get(i);
-
                 //Log.i("bleWrapper", "--NewBlue-循环中，扫描到设备");
-                if (deviceBox.Type.equals(name.trim())
-                        && deviceBox.isOnline()
-                        && deviceBox.device != null) {
+                if (deviceBox.Type.equals(name.trim()) && deviceBox.isOnline() && deviceBox.device != null) {
                     //String bule_address = SPUtils.getInstance(SPUtilsName.BULE_ALL_ADDRESS).getString(SPUtilsName.BULE_TEM_ADDRESS);
                     String bule_address = "";
 
@@ -144,7 +134,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                             App.LeDevices.get(i).device.getAddress() : bule_address;
 
                     mDeviceName = App.LeDevices.get(i).device.getName();
-                    Log.i("bleWrapper","---CommenBlueUtisl--NewBlue--connect->");
+                    Log.i("mDeviceName","---mDeviceName->"+mDeviceName);
                     mBleWrapper.connect(mDeviceAddress);
                     break;
                 }
@@ -218,16 +208,16 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         if (service != null && uuid.contains("ba11f08c-5f14-0b0d-1080")) {
             mBTServices = service;
             mBleWrapper
-                    .getCharacteristicsForService(mBTServices);
-            setDevUUID("0000cd01-0000-1000-8000-00805f9b34fb",
+                    .getCharacteristicsForService(service);
+            setDevUUID(service,"0000cd01-0000-1000-8000-00805f9b34fb",
                     16);
-            setDevUUID("0000cd02-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service,"0000cd02-0000-1000-8000-00805f9b34fb",
                     16);
-            setDevUUID("0000cd03-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service,"0000cd03-0000-1000-8000-00805f9b34fb",
                     16);
-            setDevUUID("0000cd04-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service,"0000cd04-0000-1000-8000-00805f9b34fb",
                     16);
-            setDevUUID("0000cd20-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service,"0000cd20-0000-1000-8000-00805f9b34fb",
                     8);
             bluetoothPass = "AA5504B10000B5";
             SetNotfi();
@@ -238,27 +228,29 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     /**
      * 设置体温计的UUid
      *
-     * @param service
-     * @param uuid
+     * @param service 服务，循环的
+     * @param uuid   该服务的uuid，要找到可以进行通讯的UUID
      */
     public void setTemUUid(BluetoothGattService service, String uuid) {
+        Log.i("piepoidjs","-setTemUUid-->-uuid-->" + uuid);
         // 在这里设置服务和特征
         if (service != null && uuid.contains("e7810a71-73ae-499d-8c15-faa9aef0c3f2")) {
             mBTServices = service;
             mBleWrapper
-                    .getCharacteristicsForService(mBTServices);
-            setDevUUID("bef8d6c9-9c21-4c9e-b632-bd58c1009f9f",
+                    .getCharacteristicsForService(service);
+            setDevUUID(service,"bef8d6c9-9c21-4c9e-b632-bd58c1009f9f",
                     16);
-            setDevUUID("bef8d6c9-9c21-4c9e-b632-bd58c1009f9f",
+            setDevUUID(service,"bef8d6c9-9c21-4c9e-b632-bd58c1009f9f",
                     8);
             bluetoothPass = "11";
             SetNotfi();
             // 福达康体温枪
         } else if (service != null && uuid.contains("00005970-6d75-4753-5053-676e6f6c7553")) {
             mBTServices = service;
+            Log.i("piepoidjs","--->-uuid-tem-uiAvailableServices->");
             mBleWrapper
-                    .getCharacteristicsForService(mBTServices);
-            setDevUUID("02005970-6d75-4753-5053-676e6f6c7553",
+                    .getCharacteristicsForService(service);
+            setDevUUID(service,"02005970-6d75-4753-5053-676e6f6c7553",
                     16);
             // setDevUUID("02005970-6d75-4753-5053-676e6f6c7553",
             // 8);
@@ -267,8 +259,8 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         } else if (service != null && uuid.contains("45531234-6565-7370-6f54-676e6f6c7553")) {
             mBTServices = service;
             mBleWrapper
-                    .getCharacteristicsForService(mBTServices);
-            setDevUUID("45531236-6565-7370-6f54-676e6f6c7553",
+                    .getCharacteristicsForService(service);
+            setDevUUID(service,"45531236-6565-7370-6f54-676e6f6c7553",
                     16);
             // setDevUUID("02005970-6d75-4753-5053-676e6f6c7553",
             // 8);
@@ -277,39 +269,37 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         } else if (service != null && uuid.contains("ba11f08c-5f14-0b0d-10d0-ff434d4d4544")) {
             mBTServices = service;
             mBleWrapper
-                    .getCharacteristicsForService(mBTServices);
-            setDevUUID("0000cd01-0000-1000-8000-00805f9b34fb",
+                    .getCharacteristicsForService(service);
+            setDevUUID(service,"0000cd01-0000-1000-8000-00805f9b34fb",
                     16);
-            setDevUUID("0000cd02-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service,"0000cd02-0000-1000-8000-00805f9b34fb",
                     16);
-            setDevUUID("0000cd03-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service,"0000cd03-0000-1000-8000-00805f9b34fb",
                     16);
-            setDevUUID("0000cd04-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service,"0000cd04-0000-1000-8000-00805f9b34fb",
                     16);
-            setDevUUID("0000cd20-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service,"0000cd20-0000-1000-8000-00805f9b34fb",
                     8);
             bluetoothPass = "";
             SetNotfi();
         } else if (service != null && uuid.contains("0000fff0-0000-1000-8000-00805f9b34fb") && mDeviceName.contains("Bluetooth BP")) {
             mBTServices = service;
             mBleWrapper
-                    .getCharacteristicsForService(mBTServices);
-            setDevUUID("0000fff1-0000-1000-8000-00805f9b34fb",
+                    .getCharacteristicsForService(service);
+            setDevUUID(service,"0000fff1-0000-1000-8000-00805f9b34fb",
                     16);
-            setDevUUID("0000fff3-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service,"0000fff3-0000-1000-8000-00805f9b34fb",
                     16);
             bluetoothPass = "";
             SetNotfi();
+            //家康体温计
         } else if (service != null && uuid.contains("0000fff0-0000-1000-8000-00805f9b34fb")) {
             mBTServices = service;
-            mBleWrapper
-                    .getCharacteristicsForService(mBTServices);
-            setDevUUID("0000fff2-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service,"0000fff2-0000-1000-8000-00805f9b34fb",
                     16);
-            // setDevUUID("0000fff2-0000-1000-8000-00805f9b34fb",
-            // 8);
             bluetoothPass = "";
             SetNotfi();
+
         }
 
     }
@@ -325,15 +315,20 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     public void uiAvailableServices(BluetoothGatt gatt, BluetoothDevice device, List<BluetoothGattService> services) {
         nownotfi = 0;
         mCharacteristics.clear();
-        for (BluetoothGattService service : mBleWrapper.getCachedServices()) {
+        for (BluetoothGattService service : services) {
             if (mBTServices == null || !mBTServices.equals(service)) {
                 String uuid = service.getUuid().toString();
-                Log.i("asdkljklfasd","--->-uuid-->" + uuid);
+                Log.i("nihao","--->-uuid-->" + uuid);
+                //检查一下可以进行
+                //如果我们无法得知这两个所需的UUID时，
+                // 我们也可以通过上下一步的方法来获取（打印所有特征UUID，取出自己想要的特征）
+                checkUUID(service);
                 switch (type.trim()) {
                     case "oxi":
                         setOxiUUid(service, uuid);
                         break;
                     case "tem":
+                        Log.i("piepoidjs","--->-uuid-tem-uiAvailableServices->");
                         setTemUUid(service, uuid);
                         Observable.timer(1,TimeUnit.MILLISECONDS)
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -346,10 +341,32 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
                         break;
                 }
-
-
-                System.out.println("uuid:" + uuid);
             }
+        }
+    }
+
+    /**
+     *  检查一下可以进行通讯的UUID,如果我们无法得知这两个所需的UUID时，
+     *  我们也可以通过上下一步的方法来获取（打印所有特征UUID，取出自己想要的特征）
+     * @param service
+     */
+    private void checkUUID(BluetoothGattService service) {
+        List<BluetoothGattCharacteristic> gattCharacteristics =service.getCharacteristics();
+        for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+            int charaProp = gattCharacteristic.getProperties();
+            if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
+                 Log.i("nihao","gattCharacteristic的UUID为:"+gattCharacteristic.getUuid());
+                 Log.i("nihao","gattCharacteristic的属性为:  可读");
+            }
+            if ((charaProp | BluetoothGattCharacteristic.PROPERTY_WRITE) > 0) {
+                 Log.i("nihao","gattCharacteristic的UUID为:"+gattCharacteristic.getUuid());
+                 Log.i("nihao","gattCharacteristic的属性为:  可写");
+            }
+            if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+                 Log.i("nihao","gattCharacteristic的UUID为:"+gattCharacteristic.getUuid()+gattCharacteristic);
+                 Log.i("nihao","gattCharacteristic的属性为:  具备通知属性");
+            }
+
         }
     }
 
@@ -357,22 +374,30 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
      * 读取数据
      * @param string
      * @param chartype
+     *
+     * Characteristic是手机与BLE终端交换数据的关键，
+     * Characteristic有较多的跟权限相关的字段，例如PERMISSION和PROPERTY，而其中最常用的是PROPERTY，
+     * 本文所用的BLE蓝牙模块竟然没有标准的Characteristic的PERMISSION。Characteristic的PROPERTY可以通过位运算符组合来设置读写属性，
+     * 例如READ|WRITE、READ|WRITE_NO_RESPONSE|NOTIFY，因此读取PROPERTY后要分解成所用的组合
+     *
+     *
      */
-    private void setDevUUID(String string, int chartype) {
+    private void setDevUUID(BluetoothGattService service,String string, int chartype) {
         BluetoothGattCharacteristic temch = null;
         int props;
         if (chartype != 8) {
-            temch = mBTServices.getCharacteristic(UUID
+            //获取此服务结点下的某个Characteristic对象
+            temch = service.getCharacteristic(UUID
                     .fromString(string));
             props = temch.getProperties();
-            if ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
+            if ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {//设备具有可通知的功能，也可以判断可读可写 PROPERTY_READ和PROPERTY_WRITE
                 mCharacteristics.add(temch);
             }
         } else {
             temch = mBTServices.getCharacteristic(UUID
                     .fromString(string));
             props = temch.getProperties();
-            if ((props & (BluetoothGattCharacteristic.PROPERTY_WRITE | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) != 0) {
+            if ((props & (BluetoothGattCharacteristic.PROPERTY_WRITE | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) > 0) {
 
                 mCharacteristicWrite = temch;
 
@@ -385,46 +410,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
      */
     @Override
     public void uiCharacteristicForService(BluetoothGatt gatt, BluetoothDevice device, BluetoothGattService service, final List<BluetoothGattCharacteristic> chars) {
-        mHandler.post(new Runnable() {
-            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-            @Override
-            public void run() {
-                String uiCharacteristicForServicetem = "";
-                for (BluetoothGattCharacteristic ch : chars) {
-                    if (!mCharacteristics.contains(ch)) {
 
-                        if ((ch.getProperties() & BluetoothGattCharacteristic.PROPERTY_BROADCAST) != 0) {
-                            uiCharacteristicForServicetem += "[PROPERTY_BROADCAST]";
-                        }
-                        if ((ch.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) != 0) {
-                            uiCharacteristicForServicetem += "[PROPERTY_READ]";
-                        }
-                        if ((ch.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0) {
-                            uiCharacteristicForServicetem += "[PROPERTY_WRITE_NO_RESPONSE]";
-                        }
-                        if ((ch.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0) {
-                            uiCharacteristicForServicetem += "[PROPERTY_WRITE]";
-                        }
-                        if ((ch.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
-                            uiCharacteristicForServicetem += "[PROPERTY_NOTIFY]";
-                        }
-                        if ((ch.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) {
-                            uiCharacteristicForServicetem += "[PROPERTY_INDICATE]";
-                        }
-                        if ((ch.getProperties() & BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE) != 0) {
-                            uiCharacteristicForServicetem += "[PROPERTY_SIGNED_WRITE]";
-                        }
-                        if ((ch.getProperties() & BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS) != 0) {
-                            uiCharacteristicForServicetem += "[PROPERTY_EXTENDED_PROPS]";
-                        }
-
-                        Log.e("ch.getUuid():", ch.getUuid().toString() + ":"
-                                + uiCharacteristicForServicetem);
-
-                    }
-                }
-            }
-        });
     }
 
     @Override
@@ -464,7 +450,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     public void newValueForCharacteristic(final BluetoothGattCharacteristic ch,
                                           final String strVal, final int intVal, final byte[] rawValue,
                                           final String timestamp) {
-        if (mCharacteristics.contains(ch) == false) {
+        if (!mCharacteristics.contains(ch)) {
             return;
         }
 
@@ -498,8 +484,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
     public void setNotificationEnabledForService(
             final BluetoothGattCharacteristic ch) {
-        if (mCharacteristics.contains(ch) == false
-                || (mNotificationEnabled == true))
+        if (!mCharacteristics.contains(ch) || mNotificationEnabled)
             return;
         mNotificationEnabled = true;
     }
@@ -537,7 +522,12 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     }
 
 
+    /**
+     *  接收到返回数据的前提是我们设置了该特征具有Notification功能，
+     *  setNotificationForCharacteritic设置当指定characteristic值变化时，发出通知
+     */
     public void SetNotfi() {
+        //mCharacteristics里面保存的就是可通信设备的Characteristic对象，已经配对好了的对应的UUID的service
         if (mCharacteristics.size() > 0 && nownotfi <= mCharacteristics.size()) {
             nownotfi = nownotfi + 1;
             if (nownotfi - 1 < mCharacteristics.size()) {

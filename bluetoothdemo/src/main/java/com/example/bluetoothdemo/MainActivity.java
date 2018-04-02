@@ -16,7 +16,6 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.bluetoothdemo.anothers.BluetoothScan;
-import com.example.bluetoothdemo.anothers.CommenBlueUtils;
 import com.example.bluetoothdemo.anothers.Conver;
 import com.example.bluetoothdemo.anothers.deviceBox;
 
@@ -30,6 +29,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 
 @SuppressLint("NewApi")
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, ConnectBlueToothListener {
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 judgeIsOpen();
                 break;
             case R.id.btn_startSao:
-               /* if(mMSubscribe != null){
+                if(mMSubscribe != null){
                     mMSubscribe.dispose();
                     mMSubscribe = null;
                 }
@@ -103,8 +103,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             public void accept(Long aLong) throws Exception {
                                 startSao(true);
                             }
-                        });*/
-                CommenBlueUtils.getInstance().connectBlueTooth(this,"oxi",this);
+                        });
+                //CommenBlueUtils.getInstance().connectBlueTooth(this,"tem",this);
                 break;
             case R.id.btn_connect:
 
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             if (!mBlueAdapter.isDiscovering()) {
 
-               mTime1 =  Observable.timer(2000,TimeUnit.MILLISECONDS)
+               mTime1 =  Observable.timer(1000,TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(new Consumer<Long>() {
                             @Override
@@ -201,8 +201,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         return mAddress == null || mAddress.length() < 2;
                     }
                 })
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(Schedulers.newThread())
                 .subscribe(new Consumer<Long>() {
                     @Override
                     public void accept(Long aLong) throws Exception {

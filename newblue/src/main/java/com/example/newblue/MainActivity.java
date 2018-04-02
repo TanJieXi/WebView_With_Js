@@ -8,7 +8,6 @@ import android.widget.TextView;
 
 import com.example.newblue.interfaces.ConnectBlueToothListener;
 import com.example.newblue.interfaces.DealDataListener;
-import com.example.newblue.scan.BluetoothScan;
 import com.example.newblue.utils.CommenBlueUtils;
 import com.example.newblue.utils.DealDataUtils;
 
@@ -34,7 +33,6 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        BluetoothScan.getInstance().init(this);
         ButterKnife.bind(this);
     }
 

@@ -3,6 +3,8 @@ package com.example.newblue;
 import android.app.Application;
 import android.content.Context;
 
+import com.example.newblue.scan.BluetoothScan;
+
 import java.util.ArrayList;
 
 /**
@@ -23,6 +25,7 @@ public class App extends Application {
         super.onCreate();
         mainInstance = this;
         mContext = getApplicationContext();
+        BluetoothScan.getInstance().init();
     }
 
     /**
