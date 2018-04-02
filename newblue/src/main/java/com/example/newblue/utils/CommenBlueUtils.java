@@ -135,6 +135,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
                     mDeviceName = App.LeDevices.get(i).device.getName();
                     Log.i("mDeviceName","---mDeviceName->"+mDeviceName);
+                    Log.i("mDeviceName","---mDeviceAddress->"+mDeviceAddress);
                     mBleWrapper.connect(mDeviceAddress);
                     break;
                 }
@@ -394,7 +395,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                 mCharacteristics.add(temch);
             }
         } else {
-            temch = mBTServices.getCharacteristic(UUID
+            temch = service.getCharacteristic(UUID
                     .fromString(string));
             props = temch.getProperties();
             if ((props & (BluetoothGattCharacteristic.PROPERTY_WRITE | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) > 0) {
