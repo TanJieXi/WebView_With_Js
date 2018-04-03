@@ -19,7 +19,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DealDataListener{
 
     @BindView(R.id.btn_startSao)
     Button btn_startSao;
@@ -33,9 +33,12 @@ public class MainActivity extends AppCompatActivity {
     Button btn_two;
     private String type = "tem";
     private BleManager mBleManager;
-    private String service_uuid = "0000fff0-0000-1000-8000-00805f9b34fb";
-    private String c_uuid = "0000fff2-0000-1000-8000-00805f9b34fb";
-    private String device_name = "JK_FR";
+    private String service_uuid = "";
+    private String[] c_uuid;
+    private String device_name = "";
+    private String write_uuid = "";
+    private String write_key = "";
+    private boolean isWrite = false;
 
     private List<BleDevice> datas = new ArrayList<>();
 
@@ -57,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
                         device_name,
                         service_uuid,
                         c_uuid,
+                        isWrite,
+                        write_uuid,
+                        write_key
+                        ,
                         new ConnectBlueListener() {
                             @Override
                             public void onConnectSuccess(String message) {
@@ -76,20 +83,46 @@ public class MainActivity extends AppCompatActivity {
                 );
                 break;
             case R.id.btn_disconnet:
-
+                BlueUtils.getInstance().stopBlue();
                 break;
             case R.id.btn_open: //体温
-                service_uuid = "0000fff0-0000-1000-8000-00805f9b34fb";
-                c_uuid = "0000fff2-0000-1000-8000-00805f9b34fb";
-                device_name = "JK_FR";
+                setSixData("JK_FR",
+                        "0000fff0-0000-1000-8000-00805f9b34fb",
+                        new String[]{"0000fff2-0000-1000-8000-00805f9b34fb"},
+                        false,
+                        "",
+                        "");
                 break;
             case R.id.btn_two: //血氧
-                service_uuid = "ba11f08c-5f14-0b0d-1080-007cbe238280";
-                c_uuid = "0000cd01-0000-1000-8000-00805f9b34fb";
-                device_name = "iChoice";
+                setSixData("iChoice",
+                        "ba11f08c-5f14-0b0d-1080-007cbe238280",
+                        new String[]{
+                                "0000cd01-0000-1000-8000-00805f9b34fb",
+                                "0000cd02-0000-1000-8000-00805f9b34fb",
+                                "0000cd03-0000-1000-8000-00805f9b34fb",
+                                "0000cd04-0000-1000-8000-00805f9b34fb",
+                        },
+                        true,
+                        "0000cd20-0000-1000-8000-00805f9b34fb",
+                        "AA5504B10000B5");
+
                 break;
         }
     }
 
 
+    public void setSixData(String device_name,String service_uuid,String[] c_uuid,boolean isWrite,String write_uuid,String write_key){
+        this.device_name = device_name;
+        this.service_uuid = service_uuid;
+        this.c_uuid = c_uuid;
+        this.isWrite = isWrite;
+        this.write_uuid = write_uuid;
+        this.write_key = write_key;
+    }
+
+
+    @Override
+    public void onFetch(int code, String message) {
+        Log.i("dsfdasfgdsf", "-----onFetch------->" +message);
+    }
 }

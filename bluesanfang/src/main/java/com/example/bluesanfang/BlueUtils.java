@@ -1,7 +1,6 @@
 package com.example.bluesanfang;
 
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattService;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
@@ -11,6 +10,7 @@ import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleGattCallback;
 import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.callback.BleScanCallback;
+import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
 
@@ -32,10 +32,13 @@ public class BlueUtils {
     private static List<BleDevice> mBleDevices;
     public volatile static BlueUtils sBlueUtils;
     private String service_uuid;
-    private String c_uuid;
+    private String[] c_uuid;   //可能需要对多个uuid进行通知监听
+    private String write_command;  // 命令
+    private String write_c_uuid;
     private ConnectBlueListener mConnectBlueListener;
     private String name = "";
     private boolean isRepet = false;
+    private boolean isWrite = false;
     private BlueUtils() {
 
     }
@@ -66,15 +69,28 @@ public class BlueUtils {
     protected void stopBlue(){
         mBleManager.cancelScan();
         mBleManager.disconnectAllDevice();
-        mBleManager.disableBluetooth();
+       // mBleManager.disableBluetooth();
         mBleManager.destroy();
         isInit = false;
     }
 
-    protected void startScan(String name, String service_uuid, String c_uuid, ConnectBlueListener connectBlueListener){
+    protected void startScan(String name, String service_uuid, String[] c_uuid,ConnectBlueListener connectBlueListener){
+        startScan(name,service_uuid,c_uuid,false,null,null,connectBlueListener);
+    }
+
+
+    protected void startScan(String name, String service_uuid, String[] c_uuid,boolean isWrite,String write_c_uuid,String write_command ,ConnectBlueListener connectBlueListener){
+        if(!isInit){
+            init();
+        }
+        this.isWrite = isWrite;
         this.name = name;
         this.c_uuid = c_uuid;
         this.service_uuid = service_uuid;
+        if(isWrite) {
+            this.write_command = write_command;
+            this.write_c_uuid = write_c_uuid;
+        }
         this.mConnectBlueListener = connectBlueListener;
         mBleManager.scan(new BleScanCallback() {
             @Override
@@ -112,7 +128,6 @@ public class BlueUtils {
 
         for(BleDevice s : mBleDevices){
             if(name.equals(s.getName())){
-                // datas.add(result);
                 connect(s);
             }
         }
@@ -135,23 +150,27 @@ public class BlueUtils {
 
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
             @Override
-            public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
-
-                List<BluetoothGattService> services = gatt.getServices();
-                for(BluetoothGattService s : services){
-                    Log.i("dsfdsfgd",s.getUuid().toString() + "");
-                }
-
-
+            public void onConnectSuccess(final BleDevice bleDevice, BluetoothGatt gatt, int status) {
+               /*  List<BluetoothGattService> services = gatt.getServices();
+               for (BluetoothGattService s : services) {
+                    Log.i("dsfdsfgd", s.getUuid().toString() + "");
+                }*/
                 mConnectBlueListener.onChangeText("连接设备成功");
                 isRepet = false;
-                setNo(bleDevice);
+                for (int i = 0, len = c_uuid.length; i < len; i++) {
+                    try {
+                        Thread.sleep(400);
+                        setNo(bleDevice, i);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             @Override
             public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
                 mConnectBlueListener.onChangeText("断开连接");
-                Log.i("dsfdsfgd",isActiveDisConnected + "");
+                Log.i("dsfdasfgdsf",isActiveDisConnected + "");
                 if(!isActiveDisConnected){
                     Observable.timer(5000, TimeUnit.MILLISECONDS)
                             .observeOn(AndroidSchedulers.mainThread())
@@ -159,7 +178,7 @@ public class BlueUtils {
                                 @Override
                                 public void accept(Long aLong) throws Exception {
                                     isRepet = true;
-                                    startScan(name,service_uuid,c_uuid,mConnectBlueListener);
+                                    startScan(name,service_uuid,c_uuid,isWrite,write_c_uuid,write_command,mConnectBlueListener);
                                 }
                             });
                 }
@@ -167,21 +186,41 @@ public class BlueUtils {
         });
     }
 
-    private void setNo(BleDevice bleDevice) {
+
+
+    private void write(BleDevice bleDevice) {
+        mBleManager.write(bleDevice, service_uuid, write_c_uuid, DealDataUtils.getInstance().getHexBytes(write_command), new BleWriteCallback() {
+            @Override
+            public void onWriteSuccess(int current, int total, byte[] justWrite) {
+                Log.i("dsfdasfgdsf", "-----onWriteSuccess-------->");
+            }
+
+            @Override
+            public void onWriteFailure(BleException exception) {
+                Log.i("dsfdasfgdsf", "-----onWriteFailure-------->"+exception.toString());
+            }
+        });
+    }
+
+
+    private void setNo(final BleDevice bleDevice, final int i) {
         isRepet = false;
         mBleManager.notify(bleDevice,
                 service_uuid,
-                c_uuid,
+                c_uuid[i],
                 new BleNotifyCallback() {
                     @Override
                     public void onNotifySuccess() {
-                        Log.i("dsfdsafgdsf", "onNotifySuccess--->");
+                        if(isWrite && !StringUtil.isEmpty(write_command) && i == (c_uuid.length - 1)) {
+                            write(bleDevice);
+                        }
+                        Log.i("dsfdasfgdsf", "-----onNotifySuccess-------->" + i);
 
                     }
 
                     @Override
                     public void onNotifyFailure(BleException exception) {
-                        Log.i("dsfdsafgdsf", "onNotifyFailure--->");
+                        Log.i("dsfdasfgdsf", "-----onNotifyFailure-------->"+exception.toString());
                     }
 
                     @Override
@@ -189,7 +228,7 @@ public class BlueUtils {
                         switch (name){
                             case "JK_FR":
                                 DealDataUtils.getInstance().dealTemData(
-                                        bytes2HexString(data)
+                                        DealDataUtils.getInstance().bytes2HexString(data)
                                         , new DealDataListener() {
                                             @Override
                                             public void onFetch(int code, String message) {
@@ -198,24 +237,20 @@ public class BlueUtils {
                                         });
                                 break;
                             case "iChoice":
-                                    Log.i("dsfdasgasdf","--->message-" + bytes2HexString(data));
+                                    Log.i("dsfdasfgdsf","--->message-" +DealDataUtils.getInstance().bytes2HexString(data));
+                                DealDataUtils.getInstance().dealOxiData(
+                                        DealDataUtils.getInstance().bytes2HexString(data)
+                                        , new DealDataListener() {
+                                            @Override
+                                            public void onFetch(int code, String message) {
+                                                mConnectBlueListener.onChangeText(message);
+                                            }
+                                        });
                                     break;
                         }
                     }
                 });
 
-    }
-    // byte转十六进制字符串
-    private String bytes2HexString(byte[] bytes) {
-        String ret = "";
-        for (int i = 0; i < bytes.length; i++) {
-            String hex = Integer.toHexString(bytes[i] & 0xFF);
-            if (hex.length() == 1) {
-                hex = '0' + hex;
-            }
-            ret += hex.toUpperCase();
-        }
-        return ret;
     }
 
 }
