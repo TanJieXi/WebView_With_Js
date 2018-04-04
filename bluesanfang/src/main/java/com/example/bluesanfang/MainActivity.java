@@ -8,12 +8,6 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.clj.fastble.BleManager;
-import com.clj.fastble.data.BleDevice;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -31,8 +25,6 @@ public class MainActivity extends AppCompatActivity implements DealDataListener{
     Button btn_open;
     @BindView(R.id.btn_two)
     Button btn_two;
-    private String type = "tem";
-    private BleManager mBleManager;
     private String service_uuid = "";
     private String[] c_uuid;
     private String device_name = "";
@@ -40,17 +32,12 @@ public class MainActivity extends AppCompatActivity implements DealDataListener{
     private String write_key = "";
     private boolean isWrite = false;
 
-    private List<BleDevice> datas = new ArrayList<>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-
-        //你好啊
-        mBleManager = BleManager.getInstance();
     }
 
 
