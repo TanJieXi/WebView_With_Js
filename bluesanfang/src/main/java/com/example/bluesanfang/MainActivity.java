@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements DealDataListener{
         ButterKnife.bind(this);
 
 
+        //你好啊
         mBleManager = BleManager.getInstance();
     }
 
