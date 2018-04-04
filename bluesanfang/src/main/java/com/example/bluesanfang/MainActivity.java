@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements DealDataListener{
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-
+        //nihao a
         mBleManager = BleManager.getInstance();
     }
 
