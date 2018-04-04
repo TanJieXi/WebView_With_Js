@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements DealDataListener{
 
 
         //你好啊
+        // 2324
         mBleManager = BleManager.getInstance();
     }
 
