@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mFile = FileUtils.getFileByPath(filezip + File.separator + "textuser.txt");
+        mFile = FileUtils.getFileByPath(filezip + File.separator + "textlogin.txt");
     }
 
     public void opens(View view) {
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
             scan = new Scanner(new ByteArrayInputStream(dst)).useDelimiter(" ");
             while (scan.hasNext()) {
                 String s = scan.next().trim();
-                sb.append(s);
+               // sb.append(s);
                 Log.i("dsfdssdflakd", s + "");
             }
             Log.i("dsfdssdflakd", "结束");
