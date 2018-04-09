@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mFile = FileUtils.getFileByPath(filezip + File.separator + "textlogin.txt");
+        mFile = FileUtils.getFileByPath(filezip + File.separator + "usertext.txt");
     }
 
     public void opens(View view) {
@@ -119,6 +119,8 @@ public class MainActivity extends AppCompatActivity {
             Gson gson = new Gson();
             Reader reader = new InputStreamReader(bis,"UTF-8");
             Bean bean = gson.fromJson(reader, Bean.class);
+            boolean isSuccess =  (bean == null);
+            Log.i("dsfdsafgds",isSuccess+"");
             List<Bean.UserBean> user = bean.getUser();
             List<Bean.UserinfoBean> userinfo = bean.getUserinfo();
             Log.i("dfdsafgdsf",user.size() + "");
