@@ -24,6 +24,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
@@ -51,6 +52,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     private BluetoothGattService mBTServices;
     private String type = "";  //这个标记用于区分是哪个仪器
     private Disposable mSubscribe;
+    private CompositeDisposable dispoList;   //这是一个集合，可以拿来把disposable装进去，统一注销
 
     private CommenBlueUtils() {
 
@@ -73,6 +75,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         if (mSubscribe != null) {
             mSubscribe.dispose();
         }
+
         if (mBleWrapper != null) {
             mBleWrapper.stopMonitoringRssiValue();
             mBleWrapper.diconnect();
