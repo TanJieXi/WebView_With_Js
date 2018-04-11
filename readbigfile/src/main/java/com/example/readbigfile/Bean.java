@@ -1,5 +1,9 @@
 package com.example.readbigfile;
 
+import com.google.gson.Gson;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -11,6 +15,13 @@ public class Bean {
 
     private List<UserBean> user;
     private List<UserinfoBean> userinfo;
+
+    @Override
+    public String toString() {
+        return "Bean{" +
+                "userinfo=" + userinfo +
+                '}';
+    }
 
     public List<UserBean> getUser() {
         return user;
@@ -71,30 +82,30 @@ public class Bean {
         private String address;
         private String birthControl;
         private String birthday;
-        private int children;
+        private String children;
         private String createdate;
-        private int five_insured;
-        private int general;
-        private int heigth;
+        private String five_insured;
+        private String general;
+        private String heigth;
         private String hiv;
         private String holergasia;
-        private int hypertension;
-        private int id;
+        private String hypertension;
+        private String id;
         private String identityid;
         private String identityidheadimg;
-        private int low_insured;
+        private String low_insured;
         private String mastercardid;
         private String name;
         private String nation;
         private String nickname;
-        private int oldMan;
+        private String oldMan;
         private String physical;
         private String pregnant;
         private String sex;
-        private int sugarDiabetes;
+        private String sugarDiabetes;
         private String tel;
-        private int tuberculosis;
-        private int waist;
+        private String tuberculosis;
+        private String waist;
         private String wealth;
         private String img;
         private String nowaddr;
@@ -104,6 +115,7 @@ public class Bean {
         private String jwhname;
         private String region_code;
         private String villagesName;
+
 
         public String getAddress() {
             return address;
@@ -129,11 +141,11 @@ public class Bean {
             this.birthday = birthday;
         }
 
-        public int getChildren() {
+        public String getChildren() {
             return children;
         }
 
-        public void setChildren(int children) {
+        public void setChildren(String children) {
             this.children = children;
         }
 
@@ -145,27 +157,27 @@ public class Bean {
             this.createdate = createdate;
         }
 
-        public int getFive_insured() {
+        public String getFive_insured() {
             return five_insured;
         }
 
-        public void setFive_insured(int five_insured) {
+        public void setFive_insured(String five_insured) {
             this.five_insured = five_insured;
         }
 
-        public int getGeneral() {
+        public String getGeneral() {
             return general;
         }
 
-        public void setGeneral(int general) {
+        public void setGeneral(String general) {
             this.general = general;
         }
 
-        public int getHeigth() {
+        public String getHeigth() {
             return heigth;
         }
 
-        public void setHeigth(int heigth) {
+        public void setHeigth(String heigth) {
             this.heigth = heigth;
         }
 
@@ -185,19 +197,19 @@ public class Bean {
             this.holergasia = holergasia;
         }
 
-        public int getHypertension() {
+        public String getHypertension() {
             return hypertension;
         }
 
-        public void setHypertension(int hypertension) {
+        public void setHypertension(String hypertension) {
             this.hypertension = hypertension;
         }
 
-        public int getId() {
+        public String getId() {
             return id;
         }
 
-        public void setId(int id) {
+        public void setId(String id) {
             this.id = id;
         }
 
@@ -217,11 +229,11 @@ public class Bean {
             this.identityidheadimg = identityidheadimg;
         }
 
-        public int getLow_insured() {
+        public String getLow_insured() {
             return low_insured;
         }
 
-        public void setLow_insured(int low_insured) {
+        public void setLow_insured(String low_insured) {
             this.low_insured = low_insured;
         }
 
@@ -257,11 +269,11 @@ public class Bean {
             this.nickname = nickname;
         }
 
-        public int getOldMan() {
+        public String getOldMan() {
             return oldMan;
         }
 
-        public void setOldMan(int oldMan) {
+        public void setOldMan(String oldMan) {
             this.oldMan = oldMan;
         }
 
@@ -289,11 +301,11 @@ public class Bean {
             this.sex = sex;
         }
 
-        public int getSugarDiabetes() {
+        public String getSugarDiabetes() {
             return sugarDiabetes;
         }
 
-        public void setSugarDiabetes(int sugarDiabetes) {
+        public void setSugarDiabetes(String sugarDiabetes) {
             this.sugarDiabetes = sugarDiabetes;
         }
 
@@ -305,19 +317,19 @@ public class Bean {
             this.tel = tel;
         }
 
-        public int getTuberculosis() {
+        public String getTuberculosis() {
             return tuberculosis;
         }
 
-        public void setTuberculosis(int tuberculosis) {
+        public void setTuberculosis(String tuberculosis) {
             this.tuberculosis = tuberculosis;
         }
 
-        public int getWaist() {
+        public String getWaist() {
             return waist;
         }
 
-        public void setWaist(int waist) {
+        public void setWaist(String waist) {
             this.waist = waist;
         }
 
@@ -394,7 +406,7 @@ public class Bean {
         }
     }
 
-    public static class UserinfoBean {
+    public static class UserinfoBean<T> {
         /**
          * applicationdate : 2018-01-12
          * archiving_time : 2017-09-18 13:04:14.0
@@ -418,7 +430,7 @@ public class Bean {
          * exposurehistory :
          * fueltype : 0
          * gendercode : 1
-         * hfx : {"father":"","fatheremark":"","mother":"","motheremark":"","brother":"","brotheremark":"","children":"","childrenremark":""}
+         * hfx : {}
          * hid : 255
          * hjaddr : 上海市宝山区共和新路4719弄91号601室
          * householderrelationship : 27
@@ -465,11 +477,10 @@ public class Bean {
          * syntrophusother :
          * townname : 督院街街道办事处
          */
-
         private String applicationdate;
         private String archiving_time;
         private String birthday;
-        private int bloodtype;
+        private String bloodtype;
         private String buildemployeeid;
         private String buildemployeename;
         private String buildorgid;
@@ -481,32 +492,33 @@ public class Bean {
         private String createdate;
         private String credentials;
         private String disability;
-        private int drinkingwater;
+        private String drinkingwater;
         private String drugallergyhistory;
         private String edittime;
-        private int educationcode;
+        private String educationcode;
         private String exposurehistory;
-        private int fueltype;
+        private String fueltype;
         private String gendercode;
-        private int hid;
+        private T hfx;
+        private String hid;
         private String hjaddr;
-        private int householderrelationship;
-        private int hrstatus;
-        private int hukouflag;
-        private int id;
-        private int isflowing;
-        private int ispoor;
-        private int jobcode;
-        private int kitchenexhaust;
-        private int livestockcolumn;
-        private int marrystatuscode;
+        private String householderrelationship;
+        private String hrstatus;
+        private String hukouflag;
+        private String id;
+        private String isflowing;
+        private String ispoor;
+        private String jobcode;
+        private String kitchenexhaust;
+        private String livestockcolumn;
+        private String marrystatuscode;
         private String mastercardid;
         private String name;
         private String namepinyin;
         private String nationcode;
         private String nationother;
         private String nowaddr;
-        private int nowhid;
+        private String nowhid;
         private String nums;
         private String oldhid;
         private String otherdrugallergyhistory;
@@ -517,11 +529,11 @@ public class Bean {
         private String population_class;
         private String regionCode;
         private String regionID;
-        private int restype;
-        private int rhblood;
+        private String restype;
+        private String rhblood;
         private String state;
-        private int syntrophus;
-        private int toilet;
+        private String syntrophus;
+        private String toilet;
         private String userid;
         private String uuid;
         private String workorgname;
@@ -533,6 +545,42 @@ public class Bean {
         private String disabilityother;
         private String syntrophusother;
         private String townname;
+
+        @Override
+        public String toString() {
+            return "UserinfoBean{" +
+                    "hfx=" + hfx +
+                    '}';
+        }
+
+        public static HfxBean fromJson(String json, Class clazz) {
+            Gson gson = new Gson();
+            Type objectType = type(UserinfoBean.class, clazz);
+            return gson.fromJson(json, objectType);
+        }
+
+        public String toJson(Class<String> clazz) {
+            Gson gson = new Gson();
+            Type objectType = type(UserinfoBean.class, clazz);
+            return gson.toJson(this, objectType);
+        }
+
+        static ParameterizedType type(final Class raw, final Type... args) {
+            return new ParameterizedType() {
+                public Type getRawType() {
+                    return raw;
+                }
+
+                public Type[] getActualTypeArguments() {
+                    return args;
+                }
+
+                public Type getOwnerType() {
+                    return null;
+                }
+            };
+        }
+
 
         public String getApplicationdate() {
             return applicationdate;
@@ -558,11 +606,11 @@ public class Bean {
             this.birthday = birthday;
         }
 
-        public int getBloodtype() {
+        public String getBloodtype() {
             return bloodtype;
         }
 
-        public void setBloodtype(int bloodtype) {
+        public void setBloodtype(String bloodtype) {
             this.bloodtype = bloodtype;
         }
 
@@ -654,11 +702,11 @@ public class Bean {
             this.disability = disability;
         }
 
-        public int getDrinkingwater() {
+        public String getDrinkingwater() {
             return drinkingwater;
         }
 
-        public void setDrinkingwater(int drinkingwater) {
+        public void setDrinkingwater(String drinkingwater) {
             this.drinkingwater = drinkingwater;
         }
 
@@ -678,11 +726,11 @@ public class Bean {
             this.edittime = edittime;
         }
 
-        public int getEducationcode() {
+        public String getEducationcode() {
             return educationcode;
         }
 
-        public void setEducationcode(int educationcode) {
+        public void setEducationcode(String educationcode) {
             this.educationcode = educationcode;
         }
 
@@ -694,11 +742,11 @@ public class Bean {
             this.exposurehistory = exposurehistory;
         }
 
-        public int getFueltype() {
+        public String getFueltype() {
             return fueltype;
         }
 
-        public void setFueltype(int fueltype) {
+        public void setFueltype(String fueltype) {
             this.fueltype = fueltype;
         }
 
@@ -710,12 +758,19 @@ public class Bean {
             this.gendercode = gendercode;
         }
 
+        public T getHfx() {
+            return hfx;
+        }
 
-        public int getHid() {
+        public void setHfx(T hfx) {
+            this.hfx = hfx;
+        }
+
+        public String getHid() {
             return hid;
         }
 
-        public void setHid(int hid) {
+        public void setHid(String hid) {
             this.hid = hid;
         }
 
@@ -727,83 +782,83 @@ public class Bean {
             this.hjaddr = hjaddr;
         }
 
-        public int getHouseholderrelationship() {
+        public String getHouseholderrelationship() {
             return householderrelationship;
         }
 
-        public void setHouseholderrelationship(int householderrelationship) {
+        public void setHouseholderrelationship(String householderrelationship) {
             this.householderrelationship = householderrelationship;
         }
 
-        public int getHrstatus() {
+        public String getHrstatus() {
             return hrstatus;
         }
 
-        public void setHrstatus(int hrstatus) {
+        public void setHrstatus(String hrstatus) {
             this.hrstatus = hrstatus;
         }
 
-        public int getHukouflag() {
+        public String getHukouflag() {
             return hukouflag;
         }
 
-        public void setHukouflag(int hukouflag) {
+        public void setHukouflag(String hukouflag) {
             this.hukouflag = hukouflag;
         }
 
-        public int getId() {
+        public String getId() {
             return id;
         }
 
-        public void setId(int id) {
+        public void setId(String id) {
             this.id = id;
         }
 
-        public int getIsflowing() {
+        public String getIsflowing() {
             return isflowing;
         }
 
-        public void setIsflowing(int isflowing) {
+        public void setIsflowing(String isflowing) {
             this.isflowing = isflowing;
         }
 
-        public int getIspoor() {
+        public String getIspoor() {
             return ispoor;
         }
 
-        public void setIspoor(int ispoor) {
+        public void setIspoor(String ispoor) {
             this.ispoor = ispoor;
         }
 
-        public int getJobcode() {
+        public String getJobcode() {
             return jobcode;
         }
 
-        public void setJobcode(int jobcode) {
+        public void setJobcode(String jobcode) {
             this.jobcode = jobcode;
         }
 
-        public int getKitchenexhaust() {
+        public String getKitchenexhaust() {
             return kitchenexhaust;
         }
 
-        public void setKitchenexhaust(int kitchenexhaust) {
+        public void setKitchenexhaust(String kitchenexhaust) {
             this.kitchenexhaust = kitchenexhaust;
         }
 
-        public int getLivestockcolumn() {
+        public String getLivestockcolumn() {
             return livestockcolumn;
         }
 
-        public void setLivestockcolumn(int livestockcolumn) {
+        public void setLivestockcolumn(String livestockcolumn) {
             this.livestockcolumn = livestockcolumn;
         }
 
-        public int getMarrystatuscode() {
+        public String getMarrystatuscode() {
             return marrystatuscode;
         }
 
-        public void setMarrystatuscode(int marrystatuscode) {
+        public void setMarrystatuscode(String marrystatuscode) {
             this.marrystatuscode = marrystatuscode;
         }
 
@@ -855,11 +910,11 @@ public class Bean {
             this.nowaddr = nowaddr;
         }
 
-        public int getNowhid() {
+        public String getNowhid() {
             return nowhid;
         }
 
-        public void setNowhid(int nowhid) {
+        public void setNowhid(String nowhid) {
             this.nowhid = nowhid;
         }
 
@@ -943,19 +998,19 @@ public class Bean {
             this.regionID = regionID;
         }
 
-        public int getRestype() {
+        public String getRestype() {
             return restype;
         }
 
-        public void setRestype(int restype) {
+        public void setRestype(String restype) {
             this.restype = restype;
         }
 
-        public int getRhblood() {
+        public String getRhblood() {
             return rhblood;
         }
 
-        public void setRhblood(int rhblood) {
+        public void setRhblood(String rhblood) {
             this.rhblood = rhblood;
         }
 
@@ -967,19 +1022,19 @@ public class Bean {
             this.state = state;
         }
 
-        public int getSyntrophus() {
+        public String getSyntrophus() {
             return syntrophus;
         }
 
-        public void setSyntrophus(int syntrophus) {
+        public void setSyntrophus(String syntrophus) {
             this.syntrophus = syntrophus;
         }
 
-        public int getToilet() {
+        public String getToilet() {
             return toilet;
         }
 
-        public void setToilet(int toilet) {
+        public void setToilet(String toilet) {
             this.toilet = toilet;
         }
 
@@ -1072,17 +1127,6 @@ public class Bean {
         }
 
         public static class HfxBean {
-            /**
-             * father :
-             * fatheremark :
-             * mother :
-             * motheremark :
-             * brother :
-             * brotheremark :
-             * children :
-             * childrenremark :
-             */
-
             private String father;
             private String fatheremark;
             private String mother;
@@ -1091,6 +1135,20 @@ public class Bean {
             private String brotheremark;
             private String children;
             private String childrenremark;
+
+            @Override
+            public String toString() {
+                return "{" +
+                        "father='" + father + '\'' +
+                        ", fatheremark='" + fatheremark + '\'' +
+                        ", mother='" + mother + '\'' +
+                        ", motheremark='" + motheremark + '\'' +
+                        ", brother='" + brother + '\'' +
+                        ", brotheremark='" + brotheremark + '\'' +
+                        ", children='" + children + '\'' +
+                        ", childrenremark='" + childrenremark + '\'' +
+                        '}';
+            }
 
             public String getFather() {
                 return father;

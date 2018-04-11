@@ -1,12 +1,16 @@
 package com.example.readbigfile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
+
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -20,6 +24,9 @@ import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * 注意这个第二个按钮里面的方法，如果类型不确定，注意使用泛型
+ */
 public class MainActivity extends AppCompatActivity {
     private File mFile;
     private String filezip = Environment.getExternalStorageDirectory().getAbsoluteFile()
@@ -32,7 +39,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mFile = FileUtils.getFileByPath(filezip + File.separator + "usertext.txt");
+        mFile = FileUtils.getFileByPath(filezip + File.separator + "222111.txt");
+
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+
     }
 
     public void opens(View view) {
@@ -46,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
                 if (mBuilder == null || mBuilder.length() < 10) {
                     return;
                 }
-                //LogUtil.i("dsfdsafdsaf", mBuilder.toString());
                 LogUtil.i("dsfdsafdsaf", "真正的结束");
                 try {
                     //JSONObject json = new JSONObject(s);
@@ -107,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 用流下载
+     * 用流下载，使用Gson把流转换成对象
      * @param view
      */
     public void opensstream(View view) {
@@ -115,22 +131,43 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         try {
+            long startTime = System.currentTimeMillis();
+            Log.i("dfdsafgdsf","开始：" +  startTime);
             BufferedInputStream bis = new BufferedInputStream(new FileInputStream(mFile));
             Gson gson = new Gson();
             Reader reader = new InputStreamReader(bis,"UTF-8");
-            Bean bean = gson.fromJson(reader, Bean.class);
-            boolean isSuccess =  (bean == null);
-            Log.i("dsfdsafgds",isSuccess+"");
+            Bean bean = gson.fromJson(reader,Bean.class);
+            Log.i("dfdsafgdsf",bean.toString());
+            long endTime = System.currentTimeMillis();
             List<Bean.UserBean> user = bean.getUser();
             List<Bean.UserinfoBean> userinfo = bean.getUserinfo();
+            Log.i("dfdsafgdsf","结束：" +  endTime);
             Log.i("dfdsafgdsf",user.size() + "");
             Log.i("dfdsafgdsf",userinfo.size() + "");
+            Log.i("dfdsafgdsf","耗时：" + (endTime - startTime));
 
+
+            for(Bean.UserinfoBean b : userinfo){
+                String o = JSON.toJSONString(b);
+                org.json.JSONObject json = new org.json.JSONObject(o);
+                JSONObject hfx = json.optJSONObject("hfx");
+                if(hfx == null){
+                    String ss = json.optString("hfx");
+                    Log.i("dsfdsfdsgdsf","json对象: null");
+                }else{
+                    Log.i("dsfdsfdsgdsf","json对象:" + hfx.toString());
+                    Bean.UserinfoBean.HfxBean hfxBean = gson.fromJson(hfx.toString(), Bean.UserinfoBean.HfxBean.class);
+                    Log.i("dsfdsfdsgdsf","json对象:" + hfxBean.toString());
+                }
+            }
 
         } catch (Exception e) {
+            Log.i("dsfsdfag",e.toString());
             e.printStackTrace();
         }
-
-
     }
+
+
+
+
 }

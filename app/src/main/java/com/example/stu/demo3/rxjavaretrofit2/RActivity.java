@@ -163,6 +163,13 @@ public class RActivity extends AppCompatActivity{
                         }
                     })
                     .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.io())
+                    .doOnNext(new Action1<String>() {  //这个里面的数据和下面flatMap里面的是一样的
+                        @Override
+                        public void call(String s) {
+                            Log.i("sdasfasd","----》先存储数据1---》"  + s);
+                        }
+                    })
                     .flatMap(new Func1<String, Observable<String>>() {
                         @Override
                         public Observable<String> call(String s) {
@@ -172,10 +179,9 @@ public class RActivity extends AppCompatActivity{
                             return mApi2.getOthers("Guolei1130");
                         }
                     })
-                    .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     //在处理下一个事件之前要做的事。 在调用getOthers之前要处理的事情
-                    .doOnNext(new Action1<String>() {
+                    .doOnNext(new Action1<String>() {//这个里面的数据和下面subscribe里面的是一样的
                         @Override
                         public void call(String s) {
                             Log.i("sdasfasd","----》先存储数据---》"  + s);
