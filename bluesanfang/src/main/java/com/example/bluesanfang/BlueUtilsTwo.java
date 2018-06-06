@@ -27,12 +27,11 @@ import io.reactivex.functions.Consumer;
  * Created by TanJieXi on 2018/4/2.
  */
 
-public class BlueUtils {
+public class BlueUtilsTwo {
     private static boolean isInit = false;
     private static BleManager mBleManager;
     private static List<BleDevice> mBleDevices;
-    private static String[] mDecicesTyes;
-    public volatile static BlueUtils sBlueUtils;
+    public volatile static BlueUtilsTwo sBlueUtils;
     private String service_uuid;
     private String[] c_uuid;   //可能需要对多个uuid进行通知监听
     private String write_command;  // 命令
@@ -41,36 +40,34 @@ public class BlueUtils {
     private String name = "";
     private boolean isRepet = false;
     private boolean isWrite = false;
-
-    private BlueUtils() {
+    private BlueUtilsTwo() {
 
     }
 
-    public static BlueUtils getInstance() {
-        if (sBlueUtils == null) {
-            synchronized (BlueUtils.class) {
-                if (sBlueUtils == null) {
-                    sBlueUtils = new BlueUtils();
+    public static BlueUtilsTwo getInstance(){
+        if(sBlueUtils == null){
+            synchronized (BlueUtils.class){
+                if(sBlueUtils == null){
+                    sBlueUtils = new BlueUtilsTwo();
                 }
             }
         }
 
-        if (!isInit) {
+        if(!isInit){
             init();
         }
         return sBlueUtils;
     }
 
-    private static void init() {
+    private static void init(){
         mBleManager = BleManager.getInstance();
         if (mBleManager.isSupportBle()) {
             mBleManager.enableBluetooth();
         }
         mBleDevices = new ArrayList<>();
-        mDecicesTyes = new String[1];
     }
 
-    protected void stopBlue() {
+    protected void stopBlue(){
         mBleManager.cancelScan();
         mBleManager.disconnectAllDevice();
         // mBleManager.disableBluetooth();
@@ -78,20 +75,20 @@ public class BlueUtils {
         isInit = false;
     }
 
-    protected void startScan(String name, String service_uuid, String[] c_uuid, ConnectBlueListener connectBlueListener) {
-        startScan(name, service_uuid, c_uuid, false, null, null, connectBlueListener);
+    protected void startScan(String name, String service_uuid, String[] c_uuid,ConnectBlueListener connectBlueListener){
+        startScan(name,service_uuid,c_uuid,false,null,null,connectBlueListener);
     }
 
 
-    protected void startScan(String name, String service_uuid, String[] c_uuid, final boolean isWrite, String write_c_uuid, String write_command, ConnectBlueListener connectBlueListener) {
-        if (!isInit) {
+    protected void startScan(String name, String service_uuid, String[] c_uuid,boolean isWrite,String write_c_uuid,String write_command ,ConnectBlueListener connectBlueListener){
+        if(!isInit){
             init();
         }
         this.isWrite = isWrite;
         this.name = name;
         this.c_uuid = c_uuid;
         this.service_uuid = service_uuid;
-        if (isWrite) {
+        if(isWrite) {
             this.write_command = write_command;
             this.write_c_uuid = write_c_uuid;
         }
@@ -99,26 +96,17 @@ public class BlueUtils {
         mBleManager.scan(new BleScanCallback() {
             @Override
             public void onScanStarted(boolean success) {
-                if (!isRepet) {
+                if(!isRepet) {
                     mConnectBlueListener.onChangeText("扫描设备中，请稍后");
-                } else {
+                }else{
                     mConnectBlueListener.onChangeText("请将设备靠近后进行重连");
                 }
             }
 
             @Override
             public void onScanning(BleDevice result) {
-                if (!StringUtil.isEmpty(result.getName())) {
-                    Log.i("dsfdasgasdf", result.getName());
-                    String scanRecord = Utils.convertHexToString(Utils.bytes2HexString(result.getScanRecord()));
-                    if (scanRecord.contains("iChoice")) {
-                        mDecicesTyes[0] = "iChoice";
-                    } else if (scanRecord.contains("JKFR")) {
-                        mDecicesTyes[0] = "JKFR";
-                    } else if (scanRecord.contains("JK_FR")) {
-                        mDecicesTyes[0] = "JK_FR";
-                    }
-
+                if(!StringUtil.isEmpty(result.getName())) {
+                    Log.i("dsfdasgasdf",result.getName());
                     mBleDevices.add(result);
                 }
             }
@@ -132,16 +120,16 @@ public class BlueUtils {
         });
     }
 
-    private void connectDevice() {
-        if (mBleDevices.size() <= 0) {
+    private void connectDevice(){
+        if(mBleDevices.size() <= 0){
             mConnectBlueListener.onChangeText("没有扫描到设备");
-            Toast.makeText(App.getContext(), "没有扫描到设备", Toast.LENGTH_SHORT).show();
+            Toast.makeText(App.getContext(),"没有扫描到设备",Toast.LENGTH_SHORT).show();
             return;
         }
-        Log.i("dsfdasgasdf", mBleDevices.toString());
-        for (BleDevice s : mBleDevices) {
-            if (mDecicesTyes[0].equals(s.getName())) {
-                this.name = mDecicesTyes[0];
+        Log.i("dsfdasgasdf",mBleDevices.toString());
+        for(BleDevice s : mBleDevices){
+            Log.i("dsfdasgasdf",s.getName());
+            if(name.contains(s.getName())){
                 connect(s);
             }
         }
@@ -169,27 +157,9 @@ public class BlueUtils {
                 for (BluetoothGattService s : services) {
                     Log.i("dsfdsfgd", service_uuid);
                     Log.i("dsfdsfgd", s.getUuid().toString() + "");
-                    if ("iChoice".equals(name)) {
-                        if (s.getUuid().toString().contains("ba11f08c-5f14-0b0d-1080")) {
+                    if("iChoice".equals(name)){
+                        if(s.getUuid().toString().contains("ba11f08c-5f14-0b0d-1080"))
                             service_uuid = s.getUuid().toString();
-                            c_uuid = new String[]{
-                                    "0000cd01-0000-1000-8000-00805f9b34fb",
-                                    "0000cd02-0000-1000-8000-00805f9b34fb",
-                                    "0000cd03-0000-1000-8000-00805f9b34fb",
-                                    "0000cd04-0000-1000-8000-00805f9b34fb",};
-
-                            isWrite = true;
-                            write_c_uuid = "0000cd20-0000-1000-8000-00805f9b34fb";
-                            write_command = "AA5504B10000B5";
-                        }
-                    } else if("JK_FR".equals(name)||"JKFR".equals(name)) {
-                        if(s.getUuid().toString().contains("0000fff0-0000-1000-8000-00805f9b34fb")){
-                            service_uuid = s.getUuid().toString();
-                            c_uuid = new String[]{"0000fff2-0000-1000-8000-00805f9b34fb"};
-                            isWrite = false;
-                            write_c_uuid = "";
-                            write_command = "";
-                        }
                     }
                 }
 
@@ -208,15 +178,15 @@ public class BlueUtils {
             @Override
             public void onDisConnected(boolean isActiveDisConnected, BleDevice device, BluetoothGatt gatt, int status) {
                 mConnectBlueListener.onChangeText("断开连接");
-                Log.i("dsfdasfgdsf", isActiveDisConnected + "");
-                if (!isActiveDisConnected) {
+                Log.i("dsfdasfgdsf",isActiveDisConnected + "");
+                if(!isActiveDisConnected){
                     Observable.timer(5000, TimeUnit.MILLISECONDS)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(new Consumer<Long>() {
                                 @Override
                                 public void accept(Long aLong) throws Exception {
                                     isRepet = true;
-                                    startScan(name, service_uuid, c_uuid, isWrite, write_c_uuid, write_command, mConnectBlueListener);
+                                    startScan(name,service_uuid,c_uuid,isWrite,write_c_uuid,write_command,mConnectBlueListener);
                                 }
                             });
                 }
@@ -225,9 +195,8 @@ public class BlueUtils {
     }
 
 
+
     private void write(BleDevice bleDevice) {
-        Log.i("dsfdasfgdsf", "-----write_c_uuid-------->" + write_c_uuid);
-        Log.i("dsfdasfgdsf", "-----write_command-------->" + write_command);
         mBleManager.write(bleDevice, service_uuid, write_c_uuid, DealDataUtils.getInstance().getHexBytes(write_command), new BleWriteCallback() {
             @Override
             public void onWriteSuccess(int current, int total, byte[] justWrite) {
@@ -236,7 +205,7 @@ public class BlueUtils {
 
             @Override
             public void onWriteFailure(BleException exception) {
-                Log.i("dsfdasfgdsf", "-----onWriteFailure-------->" + exception.toString());
+                Log.i("dsfdasfgdsf", "-----onWriteFailure-------->"+exception.toString());
             }
         });
     }
@@ -244,15 +213,15 @@ public class BlueUtils {
 
     private void setNo(final BleDevice bleDevice, final int i) {
         isRepet = false;
-        Log.i("dsfdsgdfg", service_uuid);
-        Log.i("dsfdsgdfg", c_uuid[i]);
+        Log.i("dsfdsgdfg",service_uuid);
+        Log.i("dsfdsgdfg",c_uuid[i]);
         mBleManager.notify(bleDevice,
                 service_uuid,
                 c_uuid[i],
                 new BleNotifyCallback() {
                     @Override
                     public void onNotifySuccess() {
-                        if (isWrite && !StringUtil.isEmpty(write_command) && i == (c_uuid.length - 1)) {
+                        if(isWrite && !StringUtil.isEmpty(write_command) && i == (c_uuid.length - 1)) {
                             write(bleDevice);
                         }
                         Log.i("dsfdasfgdsf", "-----onNotifySuccess-------->" + i);
@@ -261,14 +230,13 @@ public class BlueUtils {
 
                     @Override
                     public void onNotifyFailure(BleException exception) {
-                        Log.i("dsfdasfgdsf", "-----onNotifyFailure-------->" + exception.toString());
+                        Log.i("dsfdasfgdsf", "-----onNotifyFailure-------->"+exception.toString());
                     }
 
                     @Override
                     public void onCharacteristicChanged(byte[] data) {
-                        switch (name) {
-                            case "JKFR":
-                            case "JK_FR":
+                        switch (name){
+                            case "JKFR,JK_FR":
                                 DealDataUtils.getInstance().dealTemData(
                                         DealDataUtils.getInstance().bytes2HexString(data)
                                         , new DealDataListener() {
@@ -279,7 +247,7 @@ public class BlueUtils {
                                         });
                                 break;
                             case "iChoice":
-                                Log.i("dsfdasfgdsf", "--->message-" + DealDataUtils.getInstance().bytes2HexString(data));
+                                Log.i("dsfdasfgdsf","--->message-" +DealDataUtils.getInstance().bytes2HexString(data));
                                 DealDataUtils.getInstance().dealOxiData(
                                         DealDataUtils.getInstance().bytes2HexString(data)
                                         , new DealDataListener() {
