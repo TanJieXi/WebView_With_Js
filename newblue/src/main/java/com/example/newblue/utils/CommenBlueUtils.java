@@ -221,6 +221,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
      * @param uuid
      */
     public void setOxiUUid(BluetoothGattService service, String uuid) {
+        Log.i("dsfdsafgsdf",uuid);
         if (service != null && uuid.contains("ba11f08c-5f14-0b0d-1080")) {
             mBTServices = service;
             mBleWrapper

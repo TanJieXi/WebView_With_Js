@@ -56,7 +56,7 @@ public class deviceBox {
         CharSequence cs1 = "--";
         CharSequence cs2 = "--";
         uuidHeadWords = Utils.convertHexToString(uuidHeadWords);
-
+        Log.i("dsfdsgsdfdfs",uuidHeadWords);
         // UuidHeadWords:(2655): ðÿ ÿ����JêL[ Electronic
         // Scale������������������������������������������������������
         cs1 = "ÿ����JêL";
@@ -190,6 +190,16 @@ public class deviceBox {
             this.Des = "监测血压的变化，起到了预防脑出血 、心功能衰竭等疾病猝发的作用。";
             this.Type = "bpm";
         }
+
+        cs1 = "ID310-0B52";
+        cs2 = "";// ðÿ
+        if (uuidHeadWords.contains(cs1)) {
+            this.uuidHeadWords = "ID310-0B52";
+            this.Name = "血压计";
+            this.Des = "监测血压的变化，起到了预防脑出血 、心功能衰竭等疾病猝发的作用。";
+            this.Type = "ID310-0B52";
+        }
+
         cs1 = "eBlood-Pressure";
         if (uuidHeadWords.contains(cs1)) {
             this.uuidHeadWords = "eBlood-Pressure";

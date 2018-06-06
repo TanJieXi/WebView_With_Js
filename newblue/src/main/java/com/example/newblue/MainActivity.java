@@ -27,6 +27,8 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     Button btn_open;
     @BindView(R.id.btn_two)
     Button btn_two;
+    @BindView(R.id.btn_three)
+    Button btn_three;
     private String type = "tem";
 
     @Override
@@ -37,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     }
 
 
-    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open})
+    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open,R.id.btn_three})
     public void click(Button v) {
         switch (v.getId()) {
             case R.id.btn_startSao:
@@ -53,6 +55,10 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case R.id.btn_two: //血氧
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
                 type = "oxi";
+                break;
+            case R.id.btn_three:
+                CommenBlueUtils.getInstance().disConnectBlueTooth();
+                type = "ID310-0B52";
                 break;
         }
     }

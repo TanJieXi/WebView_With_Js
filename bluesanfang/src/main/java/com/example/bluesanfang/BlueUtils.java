@@ -1,6 +1,7 @@
 package com.example.bluesanfang;
 
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattService;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
@@ -125,7 +126,7 @@ public class BlueUtils {
             Toast.makeText(App.getContext(),"没有扫描到设备",Toast.LENGTH_SHORT).show();
             return;
         }
-
+        Log.i("dsfdasgasdf",mBleDevices.toString());
         for(BleDevice s : mBleDevices){
             if(name.equals(s.getName())){
                 connect(s);
@@ -151,10 +152,16 @@ public class BlueUtils {
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
             @Override
             public void onConnectSuccess(final BleDevice bleDevice, BluetoothGatt gatt, int status) {
-               /*  List<BluetoothGattService> services = gatt.getServices();
+                 List<BluetoothGattService> services = gatt.getServices();
                for (BluetoothGattService s : services) {
+                    Log.i("dsfdsfgd", service_uuid);
                     Log.i("dsfdsfgd", s.getUuid().toString() + "");
-                }*/
+                   if("iChoice".equals(name)){
+                       if(s.getUuid().toString().contains("ba11f08c-5f14-0b0d-1080"))
+                           service_uuid = s.getUuid().toString();
+                   }
+                }
+
                 mConnectBlueListener.onChangeText("连接设备成功");
                 isRepet = false;
                 for (int i = 0, len = c_uuid.length; i < len; i++) {
@@ -205,6 +212,8 @@ public class BlueUtils {
 
     private void setNo(final BleDevice bleDevice, final int i) {
         isRepet = false;
+        Log.i("dsfdsgdfg",service_uuid);
+        Log.i("dsfdsgdfg",c_uuid[i]);
         mBleManager.notify(bleDevice,
                 service_uuid,
                 c_uuid[i],

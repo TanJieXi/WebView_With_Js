@@ -406,7 +406,7 @@ public class BleWrapper {
          */
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.i("bleWrapper", "---onConnectionStateChange--->");
+            Log.i("bleWrapper", "---onConnectionStateChange--->"+ newState);
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 mConnected = true;
                 mUiCallback.uiDeviceConnected(mBluetoothGatt, mBluetoothDevice);

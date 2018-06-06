@@ -24,9 +24,17 @@
         android:text="血氧"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintLeft_toRightOf="@+id/btn_open"
-        app:layout_constraintRight_toLeftOf="@+id/btn_startSao"
+        app:layout_constraintRight_toLeftOf="@+id/btn_three"
        />
-
+    <Button
+        android:id="@+id/btn_three"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="血压"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintLeft_toRightOf="@+id/btn_two"
+        app:layout_constraintRight_toLeftOf="@+id/btn_startSao"
+        />
     <Button
         android:id="@+id/btn_startSao"
         android:layout_width="0dp"
@@ -34,7 +42,7 @@
         android:text="开始扫描"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintRight_toLeftOf="@+id/btn_disconnet"
-        app:layout_constraintLeft_toRightOf="@+id/btn_two"
+        app:layout_constraintLeft_toRightOf="@+id/btn_three"
         />
 
     <Button
