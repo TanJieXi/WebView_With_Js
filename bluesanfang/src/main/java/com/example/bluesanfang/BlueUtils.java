@@ -128,7 +128,8 @@ public class BlueUtils {
         }
         Log.i("dsfdasgasdf",mBleDevices.toString());
         for(BleDevice s : mBleDevices){
-            if(name.equals(s.getName())){
+            Log.i("dsfdasgasdf",s.getName());
+            if(name.contains(s.getName())){
                 connect(s);
             }
         }
@@ -235,7 +236,7 @@ public class BlueUtils {
                     @Override
                     public void onCharacteristicChanged(byte[] data) {
                         switch (name){
-                            case "JK_FR":
+                            case "JKFR,JK_FR":
                                 DealDataUtils.getInstance().dealTemData(
                                         DealDataUtils.getInstance().bytes2HexString(data)
                                         , new DealDataListener() {

@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements DealDataListener{
                 BlueUtils.getInstance().stopBlue();
                 break;
             case R.id.btn_open: //体温
-                setSixData("JK_FR",
+                setSixData("JKFR,JK_FR",
                         "0000fff0-0000-1000-8000-00805f9b34fb",
                         new String[]{"0000fff2-0000-1000-8000-00805f9b34fb"},
                         false,
