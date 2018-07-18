@@ -182,10 +182,10 @@ public class StringUtil {
 //	}
 //
 //	StringBuilder hex = new StringBuilder(hash.length * 2);
-//	for (byte b : hash) {
-//	    if ((b & 0xFF) < 0x10)
+//	for (byte isQuitUra : hash) {
+//	    if ((isQuitUra & 0xFF) < 0x10)
 //		hex.append("0");
-//	    hex.append(Integer.toHexString(b & 0xFF));
+//	    hex.append(Integer.toHexString(isQuitUra & 0xFF));
 //	}
 //
 //	return hex.toString();

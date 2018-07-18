@@ -71,9 +71,15 @@ public class BluetoothScan {
         }
 
         mBluetoothAdapter.stopLeScan(mLeScanCallback);
-        sMScanRx.dispose();
-        sMScanCoRx.dispose();
-        sMStopScan.dispose();
+        if(sMScanRx != null) {
+            sMScanRx.dispose();
+        }
+        if(sMScanCoRx != null) {
+            sMScanCoRx.dispose();
+        }
+        if(sMStopScan != null){
+            sMStopScan.dispose();
+        }
     }
 
 
@@ -125,7 +131,9 @@ public class BluetoothScan {
                 }
             } else {
                 mBluetoothAdapter.stopLeScan(mLeScanCallback);  //停止蓝牙扫描
-                sMStopScan.dispose();
+                if(sMStopScan != null) {
+                    sMStopScan.dispose();
+                }
                 isScan = false;
             }
         }

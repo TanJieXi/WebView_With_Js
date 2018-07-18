@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
                 break;
             case R.id.btn_three:
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
-                type = "ID310-0B52";
+                type = "ura";
                 break;
         }
     }
@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
 
     @Override
     public void onDataFromBlue(String type, String message) {
+        Log.i("sjkljklsjadkll", "---type--onDataFromBlue->" + type);
         Log.i("sjkljklsjadkll", "---数据--onDataFromBlue->" + message);
         switch (type) {
             case "tem":
@@ -83,6 +84,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
                 break;
             case "oxi":
                 DealDataUtils.getInstance().dealOxiData(message, this);
+                break;
+            case "ura":
+                DealDataUtils.getInstance().dealUraData(message, this);
                 break;
             default:
                 break;

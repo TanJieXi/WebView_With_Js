@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.os.Handler;
 import android.util.Log;
 
 import com.example.newblue.App;
@@ -53,6 +54,81 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     private String type = "";  //这个标记用于区分是哪个仪器
     private Disposable mSubscribe;
     private CompositeDisposable dispoList;   //这是一个集合，可以拿来把disposable装进去，统一注销
+    private int mDeviceID = -1;
+    boolean isQuitUra = false;
+    Handler timehandler1 = new Handler();
+    Runnable timerunnable1 = new Runnable() {
+        @Override
+        public void run() {
+            if (mBleWrapper != null && mDeviceAddress.length() > 5) {
+                mBleWrapper.connect(mDeviceAddress);
+            }
+            timehandler1.removeCallbacks(timerunnable1);
+            timehandler1.postDelayed(timerunnable1, 2000);
+
+        }
+    };
+    Handler handleraa = new Handler();
+    Runnable runnableaa = new Runnable() {
+
+        @SuppressLint("LongLogTag")
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            if (mBleWrapper != null && mCharacteristicWrite != null) {
+
+                if (mBTServices.getUuid().toString()
+                        .contains("49535343-fe7d-4ae5-8fa9")) {
+
+                    if (!isQuitUra) {
+                        // 获取数据
+                        Log.e("发送", "938E0400090411");
+                        mBleWrapper.WriteHexString(mCharacteristicWrite,
+                                "938E0400090411");
+                        handleraa.removeCallbacks(runnableaa);
+                        // handleraa.postDelayed(runnableaa, 3000);
+                    } else {
+                        // 关机
+                        Log.e("发送", "938E0400090A17");
+
+                        mBleWrapper.WriteHexString(mCharacteristicWrite,
+                                "938E0400090A17");
+                        handleraa.removeCallbacks(runnableaa);
+                        // handleraa.postDelayed(runnableaa, 3000);
+                        mConnectBlueToothListener.onInterceptConnect("设备断开");
+                    }
+
+                } else {
+
+                    if (!isQuitUra) {
+                        // 时钟读取指令
+                        Log.e("发送", "938e040008030f");
+                        isQuitUra = true;
+
+                        mBleWrapper.WriteHexString(mCharacteristicWrite,
+                                "938e040008030f");
+                        handleraa.removeCallbacks(runnableaa);
+                        handleraa.postDelayed(runnableaa, 3000);
+                    } else {
+                        // 单条数据传输指令
+                        Log.e("发送", "938e0400080410");
+
+                        mBleWrapper.WriteHexString(mCharacteristicWrite,
+                                "938e0400080410");
+                        handleraa.removeCallbacks(runnableaa);
+                        handleraa.postDelayed(runnableaa, 3000);
+                    }
+
+                }
+
+            } else {
+                Log.e("mBleWrapper或mCharacteristicWrite==空",
+                        "mBleWrapper或mCharacteristicWrite==空mBleWrapper或mCharacteristicWrite==空");
+            }
+
+        }
+    };
+
 
     private CommenBlueUtils() {
 
@@ -69,7 +145,22 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         return blue;
     }
 
+    public void writeHexString(String hex){
+        mBleWrapper.WriteHexString(mCharacteristicWrite, hex);
+    }
 
+    public void postUraHander(long time){
+        handleraa.removeCallbacks(runnableaa);
+        handleraa.postDelayed(runnableaa, time);
+    }
+
+    public void setBTrue(){
+        isQuitUra = true;
+    }
+
+    public int getDeviceId(){
+        return mDeviceID;
+    }
     public void disConnectBlueTooth() {
         BluetoothScan.getInstance().Stop();
         if (mSubscribe != null) {
@@ -127,6 +218,8 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                 });
     }
 
+
+
     /**
      * type仪器名
      *
@@ -137,21 +230,25 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
             return;
         }
         if (mDeviceAddress.length() < 2) {
-            //Log.i("bleWrapper", "--NewBlue-循环中，未扫描到设备" + Conver.LeDevices.size());
             for (int i = 0; i < App.LeDevices.size(); i++) {
                 deviceBox deviceBox = App.LeDevices.get(i);
-                //Log.i("bleWrapper", "--NewBlue-循环中，扫描到设备");
                 if (deviceBox.Type.equals(name.trim()) && deviceBox.isOnline() && deviceBox.device != null) {
-                    //String bule_address = SPUtils.getInstance(SPUtilsName.BULE_ALL_ADDRESS).getString(SPUtilsName.BULE_TEM_ADDRESS);
                     String bule_address = "";
-
-                    mDeviceAddress = StringUtil.isEmpty(bule_address) ?
-                            App.LeDevices.get(i).device.getAddress() : bule_address;
-
+                    mDeviceID = i;
                     mDeviceName = App.LeDevices.get(i).device.getName();
-                    Log.i("mDeviceName", "---mDeviceName->" + mDeviceName);
-                    Log.i("mDeviceName", "---mDeviceAddress->" + mDeviceAddress);
-                    mBleWrapper.connect(mDeviceAddress);
+                    if (mDeviceName.contains("C01478")) {
+                        if (mDeviceAddress.length() > 5) {
+                            mBleWrapper.connect(mDeviceAddress);
+                        }
+                        timehandler1.removeCallbacks(timerunnable1);
+                        timehandler1.postDelayed(timerunnable1, 1000);
+                    } else {
+                        mDeviceAddress = StringUtil.isEmpty(bule_address) ?
+                                App.LeDevices.get(i).device.getAddress() : bule_address;
+                        Log.i("mDeviceName", "---mDeviceName->" + mDeviceName);
+                        Log.i("mDeviceName", "---mDeviceAddress->" + mDeviceAddress);
+                        mBleWrapper.connect(mDeviceAddress);
+                    }
                     break;
                 }
             }
@@ -215,13 +312,67 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     }
 
     /**
+     * 设置ura的uuid
+     *
+     * @param service
+     * @param uuid
+     */
+    public void setUraUUid(BluetoothGattService service, String uuid) {
+        Log.i("dsfdsafgsdf", uuid);
+        if (service != null && uuid.contains("e7810a71-73ae-499d-8c15")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "bef8d6c9-9c21-4c9e-b632-bd58c1009f9f",
+                    16);
+            setDevUUID(service, "bef8d6c9-9c21-4c9e-b632-bd58c1009f9f",
+                    8);
+            bluetoothPass = "938E08000801434F4E5445";// 设备确认
+            SetNotfi();
+            handleraa.removeCallbacks(runnableaa);
+            handleraa.postDelayed(runnableaa, 3000);
+            return;
+        }
+
+        if (service != null && uuid.contains("49535343-fe7d-4ae5-8fa9")) {
+            mBTServices = service;
+            mBleWrapper
+                    .getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "49535343-1e4d-4bd9-ba61-23c647249616",
+                    16);
+            setDevUUID(service, "49535343-8841-43f4-a8d4-ecbe34729bb3",
+                    8);
+            bluetoothPass = "";// 获取数据
+            SetNotfi();
+            handleraa.removeCallbacks(runnableaa);
+            handleraa.postDelayed(runnableaa, 3000);
+            return;
+        }
+
+        if (service != null && uuid.contains("0000ffe0-0000-1000-8000-00805f9b34fb")) {
+
+            mBTServices = service;
+            mBleWrapper
+                    .getCharacteristicsForService(mBTServices);
+            setDevUUID(service,"0000ffe1-0000-1000-8000-00805f9b34fb",
+                    16);
+            setDevUUID(service,"0000ffe1-0000-1000-8000-00805f9b34fb",
+                    8);
+            bluetoothPass = "";// 获取数据
+            SetNotfi();
+            handleraa.removeCallbacks(runnableaa);
+            handleraa.postDelayed(runnableaa, 3000);
+        }
+
+    }
+
+    /**
      * 设置oxi的uuid
      *
      * @param service
      * @param uuid
      */
     public void setOxiUUid(BluetoothGattService service, String uuid) {
-        Log.i("dsfdsafgsdf",uuid);
+        Log.i("dsfdsafgsdf", uuid);
         if (service != null && uuid.contains("ba11f08c-5f14-0b0d-1080")) {
             mBTServices = service;
             mBleWrapper
@@ -344,6 +495,10 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                 switch (type.trim()) {
                     case "oxi":
                         setOxiUUid(service, uuid);
+                        break;
+                    case "ura":
+                        isQuitUra = false;
+                        setUraUUid(service, uuid);
                         break;
                     case "tem":
                         Log.i("piepoidjs", "--->-uuid-tem-uiAvailableServices->");

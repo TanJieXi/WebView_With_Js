@@ -83,7 +83,7 @@ public class BlueUtils {
     }
 
 
-    protected void startScan(String name, String service_uuid, String[] c_uuid, final boolean isWrite, String write_c_uuid, String write_command, ConnectBlueListener connectBlueListener) {
+    protected void startScan(final String name, String service_uuid, String[] c_uuid, final boolean isWrite, String write_c_uuid, String write_command, ConnectBlueListener connectBlueListener) {
         if (!isInit) {
             init();
         }

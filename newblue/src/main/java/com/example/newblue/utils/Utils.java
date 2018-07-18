@@ -32,6 +32,51 @@ public class Utils {
         return sb.toString();
     }
 
+    public static String hexString2binaryString(String hexString) {
+        if (hexString == null || hexString.length() % 2 != 0)
+            return null;
+        String bString = "", tmp;
+        for (int i = 0; i < hexString.length(); i++) {
+            tmp = "0000"
+                    + Integer.toBinaryString(Integer.parseInt(
+                    hexString.substring(i, i + 1), 16));
+            bString += tmp.substring(tmp.length() - 4);
+        }
+        return bString;
+    }
+
+    public static int twototen(String str) {
+        return Integer.valueOf(str, 2);
+    }
+
+    /**
+     * 累加和校验码
+     */
+    public static String Checksum(String hex) {
+        int chekint = 0;
+        String output = "";
+        for (int i = 0; i < hex.length() - 1; i = i + 2) {
+            output = hex.substring(i, i + 2);
+            if (output.length() > 1) {
+                int decimal = Integer.parseInt(output, 16);
+                chekint = chekint + decimal;
+            }
+        }
+        chekint = chekint % 256;
+        return intToHex(chekint);
+    }
+
+    /**
+     * 256以下10进制数字转16进制2位字符
+     */
+    public static String intToHex(int intNum) {
+        String output = "";
+        output = Integer.toHexString(intNum);
+        if (output.length() == 1) {
+            output = "0" + output;
+        }
+        return output;
+    }
 
     /**
      * byte[]转换成16进制字符串
