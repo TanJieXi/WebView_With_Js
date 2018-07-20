@@ -431,26 +431,59 @@ public class DealDataUtils {
     public void dealTemData(String data, DealDataListener listener) {
         this.mDealDataListener = listener;
         Log.i("sjkljklsjadkll", "数据---》" + data);
-        // 11-26 18:54:47.796: D/test(8170): data=AF6A725A0E440088
         sb = sb.append(data);
         if (data != null && !data.equals("")) {
             char[] chars = data.toCharArray();
             String hexStr = new String();
             // 体温
+            if (data.substring(0, 2).equals("FF")) {
+                if (data.length() > 7) {
+                    hexStr = "" + chars[2] + chars[3] + chars[4] + chars[5];
+                    Log.d("test", "parseInt=" + Integer.parseInt(hexStr, 16));
+                    float myweight = Integer.parseInt(hexStr, 16);
+                    if ((myweight / 10) >= 29 && (myweight / 10) <= 46) {
+                        //pvss = String.format("%4.1f °C", myweight / 10);
+                        String result = (myweight / 10) + "";
+                        mDealDataListener.onFetch(200, "体温：" + result);
+                    } else {
+                        mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
+                    }
+                }
+
+                if (data.length() > 4 && data.substring(0, 4).equals("55AA")) {
+                    if (data.length() > 7) {
+                        hexStr = "" + chars[8] + chars[9] + chars[10]
+                                + chars[11];
+                        if (!hexStr.equals("9999") && !hexStr.equals("FFFF")) {
+                            Log.d("test",
+                                    "parseInt=" + Integer.parseInt(hexStr, 16));
+                            float myweight = Integer.parseInt(hexStr, 16);
+                           // pvss = String.format("%4.2f °C", myweight / 100);
+                            if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
+                                String result = (myweight / 10) + "";
+                                mDealDataListener.onFetch(200, "体温：" + result);
+                            } else {
+                                mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
+                            }
+                        } else {
+                            if (hexStr.equals("9999")) {
+                                mDealDataListener.onFetch(100, "低于可测量范围");
+                            } else {
+                                mDealDataListener.onFetch(100, "高于可测量范围");
+                            }
+                        }
+                    }
+                }
+            }
             //家康体温枪
             String str = new String(sb);
             if (str.length() > 15 && str.trim().contains("AF6A")) {
                 str = str.trim().substring(str.indexOf("AF6A"));
                 if (str.length() > 15) {
-
                     chars = str.toCharArray();
-
                     hexStr = "" + chars[8] + chars[9] + chars[10] + chars[11];
-
                     Log.d("test", "parseInt=" + Integer.parseInt(hexStr, 16));
-
                     float myweight = Integer.parseInt(hexStr, 16);
-
                     DecimalFormat formater = new DecimalFormat("#0.#");
                     formater.setRoundingMode(RoundingMode.FLOOR);
                     if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
@@ -462,10 +495,57 @@ public class DealDataUtils {
                     sb.delete(0,sb.length());
                 }
             }
+
+            // 福达康体温枪
+            if (data.substring(0, 2).equals("FE") && data.contains("6A725A")
+                    && data.length() > 15
+                    && data.substring(12, 14).equals("00")) {
+                hexStr = "" + chars[8] + chars[9] + chars[10] + chars[11];
+                Log.e("test1", "parseInt=" + Integer.parseInt(hexStr, 16));
+                float myweight = Integer.parseInt(hexStr, 16);
+                if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
+                    String result = (myweight / 100) + "";
+                    mDealDataListener.onFetch(200, "体温：" + result);
+                } else {
+                    mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
+                }
+            }
+            //体达体温枪
+            if (data.length() > 11) {
+                if (data.substring(data.length() - 6).contains("000D0A")) {
+                    if (data.substring(0, 4).contains("426F")) {//体温
+                        data = Utils.convertHexToString(data);
+                        if (data.contains("Body")) {
+                            if (data.contains("C")) {
+                                data = data.substring(data.indexOf("Body:") + 5, data.indexOf("C"));
+                                mDealDataListener.onFetch(200, "体温：" + data);
+                            } else if (data.contains("F")) {
+                                data = data.substring(data.indexOf("Body:") + 5,
+                                        data.indexOf("F"));
+                                float tem = Float.parseFloat(data);
+                                tem = (tem - 32) * 5 / 9;
+                                data = new DecimalFormat("0.0").format(tem);
+                                mDealDataListener.onFetch(200, "体温：" + data);
+                            }
+                            if (Double.parseDouble(data) >= 29 && Double.parseDouble(data) <= 46) {
+
+                            } else {
+                                mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
+                            }
+                        }
+                    } else if (data.substring(0, 4).contains("526F")) {//室温
+                        mDealDataListener.onFetch(100, "你现在的模式是室温，请把模式调成体温！");
+                    } else if (data.substring(0, 4).contains("5375")) {//表面
+                        mDealDataListener.onFetch(100, "你现在的模式是表面，请把模式调成体温！");
+                    } else if (data.contains("45724C000D0A")) {
+                        mDealDataListener.onFetch(100, "测量温度过低，请重新测量！");
+                    } else if (data.contains("457248000D0A")) {
+                        mDealDataListener.onFetch(100, "测量温度过高，请重新测量！");
+                    }
+                }
+            }
+
         }
 
     }
-
-
-
 }
