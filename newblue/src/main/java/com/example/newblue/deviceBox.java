@@ -2,7 +2,6 @@ package com.example.newblue;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.util.Log;
 
 import com.example.newblue.utils.Utils;
@@ -56,7 +55,7 @@ public class deviceBox {
         CharSequence cs1 = "--";
         CharSequence cs2 = "--";
         uuidHeadWords = Utils.convertHexToString(uuidHeadWords);
-        Log.i("dsfdsgsdfdfs",uuidHeadWords);
+
         // UuidHeadWords:(2655): ðÿ ÿ����JêL[ Electronic
         // Scale������������������������������������������������������
         cs1 = "ÿ����JêL";
@@ -178,9 +177,9 @@ public class deviceBox {
         }
         /*
          * 11-21 16:07:11.188: E/未识别 UuidHeadWords:(6225):  @ Bluetooth
-		 * BP����������������������������������������������������������
-		 * ����������������
-		 */
+         * BP����������������������������������������������������������
+         * ����������������
+         */
 
         cs1 = "Bluetooth BP";
         cs2 = "";// ðÿ
@@ -190,16 +189,6 @@ public class deviceBox {
             this.Des = "监测血压的变化，起到了预防脑出血 、心功能衰竭等疾病猝发的作用。";
             this.Type = "bpm";
         }
-
-        cs1 = "ID310-0B52";
-        cs2 = "";// ðÿ
-        if (uuidHeadWords.contains(cs1)) {
-            this.uuidHeadWords = "ID310-0B52";
-            this.Name = "血压计";
-            this.Des = "监测血压的变化，起到了预防脑出血 、心功能衰竭等疾病猝发的作用。";
-            this.Type = "ID310-0B52";
-        }
-
         cs1 = "eBlood-Pressure";
         if (uuidHeadWords.contains(cs1)) {
             this.uuidHeadWords = "eBlood-Pressure";
@@ -254,6 +243,14 @@ public class deviceBox {
             this.Type = "bgm";
         }
 
+        cs1 = "BBK_BLOOD";//民康血糖
+        cs2 = "µ£ó\u0093à©å\u000E$ÜÊ";
+        if (uuidHeadWords.contains(cs1)||uuidHeadWords.contains(cs2)) {
+            this.uuidHeadWords = "BBK_BLOOD";
+            this.Name = "血糖仪";
+            this.Des = "监控血糖了解体内血糖变化，用血更少，测量更快。";
+            this.Type = "bgm";
+        }
         cs1 = "P10-B 3CAE";
         cs2 = "--";
         if (uuidHeadWords.contains(cs1)) {
@@ -325,9 +322,9 @@ public class deviceBox {
             this.Type = "tem";
         }
         // Tida体温枪
-        cs1 = "Bluetooth BP";
+        cs1 = "znjtys_tem";
         if (uuidHeadWords.contains(cs1)) {
-            this.uuidHeadWords = "Bluetooth BP";
+            this.uuidHeadWords = "znjtys_tem";
             this.Name = "体温枪";
             this.Des = "测量人体额头温度，环境温度、额头温度动态。";
             this.Type = "tem";
@@ -499,15 +496,32 @@ public class deviceBox {
             this.Des = "用于读取身份证信息。";
             this.Type = "idr";
         }
-        cs1 = "iDR2303712F";
-        cs2 = "--";
+        /**
+         * 国腾身份证阅读器
+         */
+        cs1 = "INVS300";
         if (uuidHeadWords.contains(cs1)) {
-            this.uuidHeadWords = "iDR2303712F";
+            this.uuidHeadWords = "INVS300";
             this.Name = "身份证阅读机";
             this.Des = "用于读取身份证信息。";
-            this.Type = "idr2303712f";
+            this.Type = "idr";
         }
-
+//        cs1 = "iDR2303712F";
+//        cs2 = "--";
+//        if (uuidHeadWords.contains(cs1)) {
+//            this.uuidHeadWords = "iDR2303712F";
+//            this.Name = "身份证阅读机";
+//            this.Des = "用于读取身份证信息。";
+//            this.Type = "idr2303712f";
+//        }
+        cs1 = "iDR";
+        cs2 = "--";
+        if (uuidHeadWords.contains(cs1)) {
+            this.uuidHeadWords = "iDR";
+            this.Name = "身份证阅读机";
+            this.Des = "用于读取身份证信息。";
+            this.Type = "idr";
+        }
         cs1 = "BC04";
         cs2 = "--";
         if (uuidHeadWords.contains(cs1)) {
@@ -528,10 +542,10 @@ public class deviceBox {
         }
     }
 
-    public int ImgResourceId() {
+   /* public int ImgResourceId() {
         // TODO Auto-generated method stub
 
-      /*  if (this.Type.equals("tem")) {
+        if (this.Type.equals("tem")) {
             return R.drawable.instrument01;
         } else if (this.Type.equals("bmi")) {
             return R.drawable.instrument04;
@@ -573,11 +587,13 @@ public class deviceBox {
             return R.drawable.instrument18;
         } else if (this.Type.equals("cdus2")) {
             return R.drawable.instrument19;
-        } else {
+        } else if (this.Type.equals("touserbase")) {
+            return R.drawable.instrument20;
+        }else {
             return R.drawable.pro00;
-        }*/
-        return 1;
-    }
+        }
+
+    }*/
 
     // public static boolean Begin_Jc(Context contthis, int arg2) {
     // if (Conver.LeDevices.get(arg2).device == null) {
@@ -619,9 +635,9 @@ public class deviceBox {
     // return false;
     // }
     // }
-
+  /*
     public static boolean Begin_Jc(Context contthis, int arg2, deviceBox[] myDev) {
-      /*  if (myDev[arg2].isUsed < 1) {
+      if (myDev[arg2].isUsed < 1) {
             myDev[arg2].isUsed = 1;// 手动模式
         }
         myDev[arg2].isUsed++;// 检测次数
@@ -670,6 +686,8 @@ public class deviceBox {
             intent = new Intent(contthis, BloodSampleCollection.class);
         } else if (myDev[arg2].Type.equals("cdus2")) {
             intent = new Intent(contthis, MainActivity.class);
+        } else if (myDev[arg2].Type.equals("touserbase")) {
+            intent = new Intent(contthis, TouserActivity.class);
         }
         if (intent != null) {
             intent.putExtra(Conver.EXTRAS_DEVICE_INDEX, arg2);
@@ -677,8 +695,7 @@ public class deviceBox {
             return true;
         } else {
             return false;
-        }*/
-      return false;
-    }
+        }
+    }*/
 
 }
