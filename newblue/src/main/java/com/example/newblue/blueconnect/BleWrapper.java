@@ -223,7 +223,9 @@ public class BleWrapper {
      * request to discover all services available on the remote devices
      * results are delivered through callback object */
     public void startServicesDiscovery() {
-        if (mBluetoothGatt != null) mBluetoothGatt.discoverServices();
+        if (mBluetoothGatt != null) {
+            mBluetoothGatt.discoverServices();
+        }
     }
 
     /* gets services and calls UI callback to handle them
@@ -415,8 +417,12 @@ public class BleWrapper {
                 mBluetoothGatt.readRemoteRssi();
 
                 // 成功连接后调用discoverService方法，直到onServicesDiscovered被回调，才算真正连接上了
-                startServicesDiscovery();
-
+                try {
+                    Thread.sleep(200);
+                    startServicesDiscovery();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 // 定期更新RSSI值
                 startMonitoringRssiValue();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {

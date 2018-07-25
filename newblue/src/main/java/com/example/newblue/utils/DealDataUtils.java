@@ -1,10 +1,12 @@
 package com.example.newblue.utils;
 
 import android.annotation.SuppressLint;
+import android.os.Handler;
 import android.util.Log;
 
 import com.example.newblue.App;
 import com.example.newblue.interfaces.DealDataListener;
+import com.example.newblue.scan.BluetoothScan;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -17,6 +19,7 @@ import java.util.Calendar;
 public class DealDataUtils {
     private DealDataListener mDealDataListener;
     private static volatile DealDataUtils instance = null;
+
     private DealDataUtils() {
 
     }
@@ -66,9 +69,175 @@ public class DealDataUtils {
         }
     }
 
+    Handler hh = new Handler();
+    Runnable rr = new Runnable() {
+
+        @Override
+        public void run() {
+            Log.i("sddasfasdgg","这里2");
+            CommenBlueUtils.getInstance().writeHexString("FDFDFA050D0A");
+            hh.postDelayed(this, 3000);
+
+        }
+    };
+    Runnable rr2 = new Runnable() {
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            iscf = false;
+            CommenBlueUtils.getInstance().closeBpm();
+            BluetoothScan.getInstance().Start();
+            Log.e("7秒之后执行",
+                    "7秒之后执行7秒之后执行7秒之后执行7秒之后执行7秒之后执行7秒之后执行");
+        }
+    };
+    private boolean iscf2 = false;
+    private boolean iscf = false;
+
+    /**
+     * 处理血压计的数据
+     */
+    public void dealBpmData(String data, DealDataListener listener) {
+        this.mDealDataListener = listener;
+        if (data != null) {
+            Log.e("data", data);
+            if (data.contains("FDFDFD")) {
+                String _date = data.substring(data.indexOf("FDFDFD") + 6);
+                if (_date.contains("0D0A")) {
+                    _date = _date.substring(0, _date.indexOf("0D0A"));
+                    if (_date.equals("0E")) {
+                        mDealDataListener.onFetch(300, "血压计异常,联系你的经销商!");
+                    } else if (_date.equals("01")) {
+                        mDealDataListener.onFetch(300, "人体心跳信号太小或压力突降!");
+                    } else if (_date.equals("02")) {
+                        mDealDataListener.onFetch(300, "杂讯干扰!");
+                    } else if (_date.equals("03")) {
+                        mDealDataListener.onFetch(300, "充气时间过长!");
+                    } else if (_date.equals("05")) {
+                        mDealDataListener.onFetch(300, "测得的结果异常!");
+                    } else if (_date.equals("0C")) {
+                        mDealDataListener.onFetch(300, "校正异常!");
+                    } else if (_date.equals("0B")) {
+                        mDealDataListener.onFetch(300, "电源低电压!");
+                    }
+                }
+                CommenBlueUtils.getInstance().writeHexString("FDFDFE060D0A");
+            } else if (data.contains("FDFD06")) {
+                String _date = data.substring(data.indexOf("FDFD06") + 6);
+                if (_date.contains("0D0A")) {
+                    _date = _date.substring(0, _date.indexOf("0D0A"));
+                    System.out.println("str:" + _date);
+                    if (_date.equals("")) {
+                        mDealDataListener.onFetch(300, "血压启动!");
+                    }
+                }
+
+                hh.removeCallbacks(rr);
+
+            } else if (data.contains("FDFD07")) {
+                String _date = data.substring(data.indexOf("FDFD07") + 6);
+                if (_date.contains("0D0A")) {
+                    _date = _date.substring(0, _date.indexOf("0D0A"));
+                    System.out.println("str:" + _date);
+                    if (_date.equals("")) {
+                        Log.e("data", "测试完毕");
+                        // Toast.makeText(Jc_Bpm.this, "血压计异常,联系你的经销商!",
+                        // Toast.LENGTH_LONG)
+                        // .show();
+                        if (!iscf2) {
+                            iscf2 = true;
+                            hh.postDelayed(rr2, 15000);
+                        }
+                    }
+
+                }
+            } else if (data.contains("FDFDFC")) {
+                String _date = data.substring(data.indexOf("FDFDFC") + 6);
+                if (_date.contains("0D0A")) {
+                    _date = _date.substring(0, _date.indexOf("0D0A"));
+                    System.out.println("str:" + _date);
+                    char[] chars = _date.toCharArray();
+                    if (_date.length() > 5) {
+                        String _sys, _dia, _pul;
+                        _sys = "" + chars[0] + chars[1];
+                        _dia = "" + chars[2] + chars[3];
+                        _pul = "" + chars[4] + chars[5];
+
+                        int sys = Integer.parseInt(_sys, 16);
+                        int dia = Integer.parseInt(_dia, 16);
+                        int pul = Integer.parseInt(_pul, 16);
+
+                        String result = dia + " ++舒张压 (mmHg)," + sys + " 收缩压 (mmHg)," + pul + " 心率(次/分钟)";
+                        mDealDataListener.onFetch(200, result);
+                        if (!iscf) {
+                            iscf = true;
+                        }
+                        App.LeDevices.get(CommenBlueUtils.getInstance().getDeviceId()).Des += ",上次检测结果是："
+                                + dia + " 舒张压 (mmHg)" + sys + " 收缩压 (mmHg)"
+                                + pul + " 脉率(次/分钟)";
+                    }
+                }
+                CommenBlueUtils.getInstance().writeHexString("FDFDFE060D0A");
+            } else if (data.contains("FDFDFB")) {
+                String _dates = data.substring(data.indexOf("FDFDFB") + 6);
+                if (_dates.contains("0D0A")) {
+                    _dates = _dates.substring(0, _dates.indexOf("0D0A"));
+                    char[] chars = _dates.toCharArray();
+                    System.out.println("str:" + _dates);
+                    String result = "压力:"
+                            + Integer.parseInt("" + chars[0] + chars[1], 16)
+                            + Integer.parseInt("" + chars[2] + chars[3], 16);
+                    Log.i("dfasdfdfsgsdf", "压力:" + result);
+                    mDealDataListener.onFetch(200, result);
+                }
+                hh.removeCallbacks(rr);
+            } else if (data.contains("FDFDFA050D0A")) {
+                CommenBlueUtils.getInstance().writeHexString("FDFDFA050D0A");
+                hh.removeCallbacks(rr);
+            } else if (data.contains("FDFDFB")) {
+                CommenBlueUtils.getInstance().writeHexString("FDFDFA050D0A");
+                hh.removeCallbacks(rr);
+            } else if (data.contains("A5")) {
+                CommenBlueUtils.getInstance().writeHexString("FDFDFA050D0A");
+            } else if (data.startsWith("20")) {
+                char[] chars = data.toCharArray();
+                System.out.println("str:" + data);
+                if (data.length() > 3) {
+                    String result = "压力:" + Integer.parseInt("" + chars[2] + chars[3], 16);
+                    mDealDataListener.onFetch(200, result);
+                }
+            } else if (data.startsWith("1C00")) {
+
+                char[] chars = data.toCharArray();
+                int sys = Integer.parseInt("" + chars[4] + chars[5], 16);
+                int dia = Integer.parseInt("" + chars[8] + chars[9], 16);
+                int pul = Integer.parseInt("" + chars[16] + chars[17], 16);
+
+                String result = dia + " --舒张压 (mmHg)," + sys + " 收缩压 (mmHg)," + pul + " 心率(次/分钟)";
+                mDealDataListener.onFetch(200, result);
+            }
+        }
+    }
+
+
+    public void removeBpmRRHanler() {
+        hh.removeCallbacks(rr);
+        Log.i("sddasfasdgg","这里1");
+        hh.postDelayed(rr, 3000);
+    }
+
+    public void removeAllBpmHander(){
+        if(hh != null){
+            hh.removeCallbacks(rr);
+            hh.removeCallbacks(rr2);
+        }
+    }
+
     String str = "";
+
     /**
      * 处理尿机的数据
+     *
      * @param data
      * @param listener
      */
@@ -217,16 +386,16 @@ public class DealDataUtils {
                             ressss += "尿比重 SG:/";
 
                             if (ressss.equals(res)) {
-                                mDealDataListener.onFetch(100, "数据为空" );
+                                mDealDataListener.onFetch(100, "数据为空");
                                 return;
                             }
 
                             if (res.equals(allpvss) && nowTime.equals(pvsTime)) {
-                                mDealDataListener.onFetch(100, "数据重复" );
+                                mDealDataListener.onFetch(100, "数据重复");
                                 // 清数据
                                 CommenBlueUtils.getInstance().writeHexString("938e0400080612");
                             } else {
-                                mDealDataListener.onFetch(200, res );
+                                mDealDataListener.onFetch(200, res);
 
                               /*  String json = "action=doura&data="
                                         + "{\"userid\":\""
@@ -347,18 +516,18 @@ public class DealDataUtils {
                             ressss += "尿比重 SG:/";
 
                             if (ressss.equals(res)) {
-                                mDealDataListener.onFetch(100, "数据为空" );
+                                mDealDataListener.onFetch(100, "数据为空");
                                 return;
                             }
 
 
                             if (res.equals(allpvss) && nowTime.equals(pvsTime)) {
-                                mDealDataListener.onFetch(100, "数据重复" );
+                                mDealDataListener.onFetch(100, "数据重复");
                                 // 清数据
                                 CommenBlueUtils.getInstance().writeHexString("938e0400080612");
 
                             } else {
-                                mDealDataListener.onFetch(200, res );
+                                mDealDataListener.onFetch(200, res);
                              /*
                                 String json = "action=doura&data="
                                         + "{\"userid\":\""
@@ -414,7 +583,7 @@ public class DealDataUtils {
                         }
 
                     } else {
-                        mDealDataListener.onFetch(100, "数据有误" );
+                        mDealDataListener.onFetch(100, "数据有误");
                     }
                 }
                 str = "";
@@ -425,9 +594,11 @@ public class DealDataUtils {
     /**
      * 处理体温计的数据
      * 备注：这个体温计的数据是由设备发送了两段数据过来配对的，所以会有一个追加操作
+     *
      * @param data
      */
     private StringBuilder sb = new StringBuilder();
+
     public void dealTemData(String data, DealDataListener listener) {
         this.mDealDataListener = listener;
         Log.i("sjkljklsjadkll", "数据---》" + data);
@@ -458,7 +629,7 @@ public class DealDataUtils {
                             Log.d("test",
                                     "parseInt=" + Integer.parseInt(hexStr, 16));
                             float myweight = Integer.parseInt(hexStr, 16);
-                           // pvss = String.format("%4.2f °C", myweight / 100);
+                            // pvss = String.format("%4.2f °C", myweight / 100);
                             if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
                                 String result = (myweight / 10) + "";
                                 mDealDataListener.onFetch(200, "体温：" + result);
@@ -492,7 +663,7 @@ public class DealDataUtils {
                     } else {
                         mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
                     }
-                    sb.delete(0,sb.length());
+                    sb.delete(0, sb.length());
                 }
             }
 

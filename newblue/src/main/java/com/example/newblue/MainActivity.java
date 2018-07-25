@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.newblue.interfaces.ConnectBlueToothListener;
 import com.example.newblue.interfaces.DealDataListener;
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     }
 
 
-    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open,R.id.btn_three})
+    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm})
     public void click(Button v) {
         switch (v.getId()) {
             case R.id.btn_startSao:
@@ -56,9 +57,15 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
                 type = "oxi";
                 break;
-            case R.id.btn_three:
+            case R.id.btn_three://尿机
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
                 type = "ura";
+                break;
+            case R.id.btn_bpm: //血压计
+                CommenBlueUtils.getInstance().disConnectBlueTooth();
+                type = "bpm";
+                break;
+            default:
                 break;
         }
     }
@@ -88,6 +95,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case "ura":
                 DealDataUtils.getInstance().dealUraData(message, this);
                 break;
+            case "bpm":
+                DealDataUtils.getInstance().dealBpmData(message, this);
+                break;
             default:
                 break;
         }
@@ -103,6 +113,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
                 break;
             case 200:
                 tv_text.setText(message);
+                break;
+            case 300:
+                Toast.makeText(this,message,Toast.LENGTH_SHORT).show();
                 break;
 
         }

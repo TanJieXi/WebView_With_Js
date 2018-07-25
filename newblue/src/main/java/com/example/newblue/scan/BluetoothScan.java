@@ -25,7 +25,7 @@ import io.reactivex.functions.Consumer;
 @SuppressLint("NewApi")
 public class BluetoothScan {
     private int ScanSecond = 2000;
-    private int FOUR_SCAN_SECOND = 4000;
+    private int FOUR_SCAN_SECOND = 2000;
     private boolean IsStart = false;
     private boolean isInit = false;
     private volatile static BluetoothScan instance;
@@ -60,9 +60,9 @@ public class BluetoothScan {
     }
 
     public void Stop() {
-        if(!IsStart){  //判断一下是否初始化了蓝牙
+        /*if(!IsStart){  //判断一下是否初始化了蓝牙
             return;
-        }
+        }*/
         IsStart = false;
         scanLeDevice(false);
 
@@ -155,7 +155,7 @@ public class BluetoothScan {
         @Override
         public void onLeScan(final BluetoothDevice device, int rssi,
                              final byte[] scanRecord) {
-            //Log.i("bleWrapper","---扫描成功--onLeScan- 设备信息存入Cover.LeDevices-->");
+            Log.i("bleWrapper","---扫描成功--onLeScan- 设备信息存入Cover.LeDevices-->");
 
             sMScanCoRx = Observable.timer(1, TimeUnit.MILLISECONDS)
                     .subscribeOn(AndroidSchedulers.mainThread())

@@ -9,8 +9,17 @@ import android.bluetooth.BluetoothGattService;
 import android.os.Handler;
 import android.util.Log;
 
+import com.clj.fastble.BleManager;
+import com.clj.fastble.callback.BleGattCallback;
+import com.clj.fastble.callback.BleNotifyCallback;
+import com.clj.fastble.callback.BleScanCallback;
+import com.clj.fastble.data.BleDevice;
+import com.clj.fastble.exception.BleException;
+import com.clj.fastble.scan.BleScanRuleConfig;
+import com.clj.fastble.utils.HexUtil;
 import com.example.newblue.App;
 import com.example.newblue.blueconnect.BleWrapper;
+import com.example.newblue.comm.ObserverManager;
 import com.example.newblue.deviceBox;
 import com.example.newblue.interfaces.BleWrapperUiCallbacks;
 import com.example.newblue.interfaces.ConnectBlueToothListener;
@@ -45,6 +54,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     private ArrayList<BluetoothGattCharacteristic> mCharacteristics;
     private String mLastUpdateTime = "";
     private boolean mNotificationEnabled = false;
+    private BleDevice mBleDevice;
     private String mDeviceRSSI = "";
     // 程序步进值
     private int nownotfi = 0;
@@ -55,6 +65,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     private Disposable mSubscribe;
     private CompositeDisposable dispoList;   //这是一个集合，可以拿来把disposable装进去，统一注销
     private int mDeviceID = -1;
+    private boolean isClickStop = false;
     boolean isQuitUra = false;
     Handler timehandler1 = new Handler();
     Runnable timerunnable1 = new Runnable() {
@@ -145,23 +156,27 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         return blue;
     }
 
-    public void writeHexString(String hex){
-        mBleWrapper.WriteHexString(mCharacteristicWrite, hex);
+    public void writeHexString(String hex) {
+        if (mBleWrapper != null && mCharacteristicWrite != null) {
+            mBleWrapper.WriteHexString(mCharacteristicWrite, hex);
+        }
     }
 
-    public void postUraHander(long time){
+    public void postUraHander(long time) {
         handleraa.removeCallbacks(runnableaa);
         handleraa.postDelayed(runnableaa, time);
     }
 
-    public void setBTrue(){
+    public void setBTrue() {
         isQuitUra = true;
     }
 
-    public int getDeviceId(){
+    public int getDeviceId() {
         return mDeviceID;
     }
+
     public void disConnectBlueTooth() {
+        isClickStop = true;
         BluetoothScan.getInstance().Stop();
         if (mSubscribe != null) {
             mSubscribe.dispose();
@@ -171,10 +186,15 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
             mBleWrapper.stopMonitoringRssiValue();
             mBleWrapper.diconnect();
             mBleWrapper.close();
+            mBleWrapper = null;
         }
         if (mConnectBlueToothListener != null) {
             mConnectBlueToothListener.onInterceptConnect("连接断开");
         }
+
+        BleManager.getInstance().disconnectAllDevice();//断开所有设备
+        BleManager.getInstance().destroy();//退出使用，清理资源
+        DealDataUtils.getInstance().removeAllBpmHander();
 
     }
 
@@ -182,6 +202,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     public void connectBlueTooth(Activity context, final String type, ConnectBlueToothListener connectBlueToothListener) {
         this.type = type;
         this.mConnectBlueToothListener = connectBlueToothListener;
+        isClickStop = false;
         mConnectBlueToothListener.onConnectSuccess("连接中，请稍后");
         mCharacteristics = new ArrayList<>();
         //BluetoothScan.IsAutoJump = false;
@@ -218,7 +239,12 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                 });
     }
 
-
+    public void closeBpm() {
+        mBleWrapper.stopMonitoringRssiValue();
+        mBleWrapper.diconnect();
+        mBleWrapper.close();
+        isClickStop = true;
+    }
 
     /**
      * type仪器名
@@ -242,6 +268,15 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                         }
                         timehandler1.removeCallbacks(timerunnable1);
                         timehandler1.postDelayed(timerunnable1, 1000);
+                    } else if (mDeviceName.contains("eBlood-Pressure")) { //血压计
+                        //停止
+                        CommenBlueUtils.getInstance().disConnectBlueTooth();
+                        if (BleManager.getInstance().isConnected(mBleDevice)) {
+                            BleManager.getInstance().disconnect(mBleDevice);
+                        }
+                        ThreadSleep(100);
+                        setScanRule(mDeviceAddress);
+                        startScan();
                     } else {
                         mDeviceAddress = StringUtil.isEmpty(bule_address) ?
                                 App.LeDevices.get(i).device.getAddress() : bule_address;
@@ -256,6 +291,131 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
     }
 
+    private void setScanRule(String blueAddress) {
+        BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
+                .setDeviceMac(blueAddress)                  // 只扫描指定mac的设备，可选
+                .setScanTimeOut(10000)              // 扫描超时时间，可选，默认10秒
+                .build();
+        BleManager.getInstance().initScanRule(scanRuleConfig);
+    }
+
+    private void startScan() {
+        BleManager.getInstance().scan(new BleScanCallback() {
+            @Override
+            public void onScanStarted(boolean success) {
+                // 开始扫描（UI线程）
+                Log.i("sjkljklsjadkll", "--血压计>--开始扫描");
+            }
+
+            @Override
+            public void onLeScan(BleDevice bleDevice) {
+                super.onLeScan(bleDevice);
+            }
+
+            @Override
+            public void onScanning(final BleDevice bleDevice) {
+                // 扫描到一个符合扫描规则的BLE设备（UI线程）
+                handleraa.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i("sjkljklsjadkll", "--血压计>--扫描到一个符合扫描规则的BLE设备");
+                        BleManager.getInstance().cancelScan();  //停止扫描
+                        blueconnect(bleDevice);
+                    }
+                });
+            }
+
+            @Override
+            public void onScanFinished(List<BleDevice> scanResultList) {
+                // 扫描结束，列出所有扫描到的符合扫描规则的BLE设备，可能为空（UI线程）
+                Log.i("sjkljklsjadkll", "--血压计>--扫描结束");
+            }
+        });
+    }
+
+    private void blueconnect(BleDevice bleDevice) {
+        BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
+            @Override
+            public void onStartConnect() {
+                // 开始连接（UI线程）
+                mConnectBlueToothListener.onInterceptConnect("开始连接");
+            }
+
+            @Override
+            public void onConnectFail(BleDevice bleDevice, BleException exception) {
+                // 连接失败（UI线程）
+                mConnectBlueToothListener.onInterceptConnect("连接失败");
+//                startScan();
+            }
+
+            @Override
+            public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
+                // 连接成功，BleDevice即为所连接的BLE设备（UI线程）
+                BleManager.getInstance().cancelScan();
+                mConnectBlueToothListener.onInterceptConnect("连接成功");
+                mBleDevice = bleDevice;
+                getBluetoothGattService(gatt);
+            }
+
+            @Override
+            public void onDisConnected(boolean isActiveDisConnected, BleDevice bleDevice, BluetoothGatt gatt, int status) {
+                // 连接中断，isActiveDisConnected表示是否是主动调用了断开连接方法（UI线程）
+                if (!isActiveDisConnected) {
+                    mConnectBlueToothListener.onInterceptConnect("连接中断");
+                    ObserverManager.getInstance().notifyObserver(bleDevice);
+                }
+            }
+        });
+    }
+
+
+    @SuppressLint("NewApi")
+    private void getBluetoothGattService(BluetoothGatt gatt) {
+        for (BluetoothGattService service : gatt.getServices()) {
+            Log.e("获取到的服务", service.getUuid() + "--------------------------");
+            for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+                Log.e("--------获取到服务特征", characteristic.getUuid() + "");
+            }
+            //倍泰ePA-46B4
+            if (service != null && service.getUuid().toString().contains("0000fff0-0000-1000-8000-00805f9b34fb") && mDeviceName.contains("eBlood-Pressure")) {
+                ThreadSleep(300);
+                BleManager.getInstance().notify(mBleDevice, service.getUuid().toString(), "0000fff4-0000-1000-8000-00805f9b34fb", new BleNotifyCallback() {
+                    @Override
+                    public void onNotifySuccess() {
+                        // 打开通知操作成功（UI线程）
+                        Log.e("打开通知操作成功22", "打开通知操作成功");
+                    }
+
+                    @Override
+                    public void onNotifyFailure(BleException exception) {
+                        // 打开通知操作失败（UI线程）
+                        Log.e("打开通知操作失败22", "打开通知操作失败");
+                        //BleManager.getInstance().handleException(exception);
+                    }
+
+                    @Override
+                    public void onCharacteristicChanged(byte[] data) {
+                        // 打开通知后，设备发过来的数据将在这里出现（UI线程）
+                        Log.e("血压返回数据22==", HexUtil.formatHexString(data, true) + "==");
+//                        ToastUtil.showShortToast(HexUtil.formatHexString(data, true) + "==");
+                        if (HexUtil.formatHexString(data, true) != null) {
+                            mConnectBlueToothListener.onDataFromBlue(type, HexUtil.formatHexString(data, true).replace(" ", "").toUpperCase());
+                        }
+                    }
+                });
+                break;
+            }
+
+        }
+    }
+
+    private void ThreadSleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void uiDeviceFound(BluetoothDevice device, int rssi, byte[] record) {
@@ -265,6 +425,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     /**
      * 连接到设备成功，在BleWrapper里面的mBleCallback的onConnectionStateChange连接成功后调用
      */
+    @SuppressLint("CheckResult")
     @Override
     public void uiDeviceConnected(BluetoothGatt gatt, BluetoothDevice device) {
         Observable.create(new ObservableOnSubscribe<Object>() {
@@ -290,6 +451,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
      * @param gatt
      * @param device
      */
+    @SuppressLint("CheckResult")
     @Override
     public void uiDeviceDisconnected(BluetoothGatt gatt, BluetoothDevice device) {
         Observable.create(new ObservableOnSubscribe<Object>() {
@@ -304,7 +466,9 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                     public void accept(Object o) throws Exception {
                         mConnectBlueToothListener.onInterceptConnect("连接断开");
                         Log.e("test", "设备断开");
-                        BluetoothScan.getInstance().Start();
+                        if(!isClickStop) {
+                            BluetoothScan.getInstance().Start();
+                        }
                         mDeviceAddress = "";
                     }
                 });
@@ -353,9 +517,9 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
             mBTServices = service;
             mBleWrapper
                     .getCharacteristicsForService(mBTServices);
-            setDevUUID(service,"0000ffe1-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service, "0000ffe1-0000-1000-8000-00805f9b34fb",
                     16);
-            setDevUUID(service,"0000ffe1-0000-1000-8000-00805f9b34fb",
+            setDevUUID(service, "0000ffe1-0000-1000-8000-00805f9b34fb",
                     8);
             bluetoothPass = "";// 获取数据
             SetNotfi();
@@ -364,6 +528,44 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         }
 
     }
+
+    /**
+     * 设置bpm的uuid
+     *
+     * @param service
+     * @param uuid
+     */
+    public void setBpmUUid(BluetoothGattService service, String uuid) {
+        Log.i("dsfdsafgsdf", uuid);
+        if (service != null
+                && uuid.contains("0000fff0-0000-1000-8000-00805f9b34fb") && mDeviceName.contains("eBlood-Pressure")) {
+            mBTServices = service;
+            mBleWrapper
+                    .getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000fff4-0000-1000-8000-00805f9b34fb",
+                    16);
+//                            setDevUUID("0000fff2-0000-1000-8000-00805f9b34fb",
+//                                    8);
+//                            bluetoothPass = "AA5504B10000B5";
+            bluetoothPass = "FFFD0203";
+            SetNotfi();
+        } else if (service != null && uuid.contains("0000fff0-0000-1000-8000-00805f9b34fb") && !mDeviceName.contains("eBlood-Pressure")) {
+            mBTServices = service;
+            mBleWrapper
+                    .getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000fff1-0000-1000-8000-00805f9b34fb",
+                    16);
+            setDevUUID(service, "0000fff2-0000-1000-8000-00805f9b34fb",
+                    8);
+//                            bluetoothPass = "AA5504B10000B5";
+            bluetoothPass = "FDFDFA050D0A";
+            SetNotfi();
+            DealDataUtils.getInstance().removeBpmRRHanler();
+            Log.e("服务和特征2222222222222222", "服务和特征222222222222222222222222222");
+        }
+
+    }
+
 
     /**
      * 设置oxi的uuid
@@ -512,6 +714,11 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                                     }
                                 });
 
+                        break;
+                    case "bpm":
+                        setBpmUUid(service, uuid);
+                        break;
+                    default:
                         break;
                 }
             }
