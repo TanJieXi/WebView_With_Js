@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.newblue.interfaces.ConnectBlueToothListener;
 import com.example.newblue.interfaces.DealDataListener;
@@ -108,6 +109,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case BlueConstants.BLUE_EQUIP_BMI://体重体脂秤
                 DealDataUtils.getInstance().dealBmiData(message, this);
                 break;
+            case BlueConstants.BLUE_EQUIP_BGM://血糖计
+                DealDataUtils.getInstance().dealBgmData(message, this);
+                break;
             default:
                 break;
         }
@@ -133,6 +137,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case BlueConstants.BLUE_EQUIP_BMI:
                 setData(tv_text,message,code);
                 break;
+            case BlueConstants.BLUE_EQUIP_BGM:
+                setData(tv_text,message,code);
+                break;
             default:
                 break;
         }
@@ -143,6 +150,8 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             tv.setText(message);
         }else if(200 == code){
             tv.setText(message);
+        }else if(300 == code){
+            Toast.makeText(this,message,Toast.LENGTH_SHORT).show();
         }
     }
 }

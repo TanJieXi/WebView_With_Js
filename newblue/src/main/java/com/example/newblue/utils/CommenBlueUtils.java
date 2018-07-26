@@ -172,6 +172,16 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         }
     }
 
+    public void writeBgmHexString(String uuid,String hex) {
+        if (mBleWrapper != null && mCharacteristicWrite != null) {
+            if (mBTServices.getUuid().toString()
+                    .contains(uuid)) {
+                mBleWrapper.WriteHexString(mCharacteristicWrite,
+                        hex);
+            }
+        }
+    }
+
     public void postUraHander(long time) {
         handleraa.removeCallbacks(runnableaa);
         handleraa.postDelayed(runnableaa, time);
@@ -209,7 +219,6 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         BleManager.getInstance().disconnectAllDevice();//断开所有设备
         BleManager.getInstance().destroy();//退出使用，清理资源
 
-        DealDataUtils.getInstance().removeAllBpmHander();
         if (timehandler2 != null) {
             timehandler2.removeCallbacks(timerunnable2);
         }
@@ -219,6 +228,8 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         if (handleraa != null) {
             handleraa.removeCallbacks(runnableaa);
         }
+
+        DealDataUtils.getInstance().removeAllHandler();
     }
 
 
@@ -601,6 +612,39 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
     }
 
+    /**
+     * 设置bgm的uuid
+     */
+    public void setBgmUUid(BluetoothGattService service, String uuid){
+        Log.i("dsfdsafgsdf", uuid);
+        if (service != null && uuid.contains("0000ffe0-0000-1000-8000")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service,"0000ffe1-0000-1000-8000-00805f9b34fb", 16);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            setDevUUID(service,"0000ffe1-0000-1000-8000-00805f9b34fb", 8);
+            bluetoothPass = "AA5504B10000B5";
+            SetNotfi();
+        }else if(service != null && uuid.contains("11223344-5566-7788-99aa-bbccddeeff00")){
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service,"00004a5b-0000-1000-8000-00805f9b34fb", 16);
+            setDevUUID(service,"00004a5b-0000-1000-8000-00805f9b34fb", 8);
+            SetNotfi();
+        }else if(service != null && uuid.contains("6e400001-b5a3-f393-e0a9-e50e24dcca9e")){
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service,"6e400002-b5a3-f393-e0a9-e50e24dcca9e",
+                    16);
+            setDevUUID(service,"6e400003-b5a3-f393-e0a9-e50e24dcca9e",
+                    16);
+            SetNotfi();
+        }
+    }
 
     /**
      * 设置bmi的uuid
@@ -610,7 +654,6 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
      */
     public void setBmiUUid(BluetoothGattService service, String uuid) {
         Log.i("dsfdsafgsdf", uuid);
-
         // 改进后的体脂称
         if (service != null && uuid.contains("0000ffe0-0000-1000-8000-00805f9b34fb")) {
             mBTServices = service;
@@ -851,6 +894,9 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                         break;
                     case BlueConstants.BLUE_EQUIP_BMI:
                         setBmiUUid(service, uuid);
+                        break;
+                    case BlueConstants.BLUE_EQUIP_BGM:
+                        setBgmUUid(service, uuid);
                         break;
                     default:
                         break;

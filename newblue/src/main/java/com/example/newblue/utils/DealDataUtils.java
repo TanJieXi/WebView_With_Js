@@ -2,6 +2,7 @@ package com.example.newblue.utils;
 
 import android.annotation.SuppressLint;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.example.newblue.App;
@@ -46,12 +47,32 @@ public class DealDataUtils {
                     "7秒之后执行7秒之后执行7秒之后执行7秒之后执行7秒之后执行7秒之后执行");
         }
     };
+
+    Runnable timerunnable2 = new Runnable() {
+        @Override
+        public void run() {
+            CommenBlueUtils.getInstance().writeBgmHexString("11223344-5566-7788-99aa-bbccddeeff00","2644312031200632373838340D");
+            hh.removeCallbacks(timerunnable2);
+            hh.postDelayed(timerunnable2, 1000);
+        }
+    };
+
+
     private boolean iscf2 = false;
     private boolean iscf = false;
 
     private DealDataUtils() {
 
     }
+
+    public void removeAllHandler(){
+        if(hh != null){
+            hh.removeCallbacks(rr);
+            hh.removeCallbacks(rr2);
+            hh.removeCallbacks(timerunnable2);
+        }
+    }
+
 
     public static DealDataUtils getInstance() {
         if (instance == null) {
@@ -106,6 +127,130 @@ public class DealDataUtils {
             return HTDataType.SexTypeFemale;
         }
 
+    }
+    int tt = 0;
+    private String mDates = "";
+    /**
+     * 处理血糖的数据
+     */
+    public void dealBgmData(String data, DealDataListener listener){
+        type = BlueConstants.BLUE_EQUIP_BGM;
+        this.mDealDataListener = listener;
+        if (data != null) {
+            mDates += data;
+            if (data.contains("534E")) {
+                String _date = data.substring(data.indexOf("534E") + 4);
+                char[] chars = _date.toCharArray();
+                String ml = "" + chars[6] + chars[7];
+                if (ml.equals("01")) {// 测试连接命令 需要仪器在开机状态且非倒计时的情况时才可测试连接
+                    mDealDataListener.onFetch(type,100,"等待滴血..." + (tt++));
+                } else if (ml.equals("02")) {// 错误状态
+                    mDealDataListener.onFetch(type,100,"血糖计异常!");
+                    CommenBlueUtils.getInstance().writeHexString("534E0600040B000015");
+                } else if (ml.equals("03")) {// 滴血符号闪烁
+                    mDealDataListener.onFetch(type,100,"滴血符号闪烁!");
+                    CommenBlueUtils.getInstance().writeHexString("534E0800040153494E4F46");
+                } else if (ml.equals("04")) {// 读当前结果命令
+                    if (_date.length() > 21) {
+                        String _bgm;
+                        _bgm = "" + chars[18] + chars[19] + chars[20]
+                                + chars[21];
+                        float bgm = Integer.parseInt(_bgm, 16);
+                        bgm = bgm / 10;
+                        String result = bgm + " (mmol/L)";
+                        mDealDataListener.onFetch(type,200,result);
+                    }
+                    CommenBlueUtils.getInstance().writeHexString("534E0600040B020017");
+                } else if (ml.equals("05")) {// 读历史数据命令
+
+                } else if (ml.equals("06")) {// 设置时间命令
+
+                } else if (ml.equals("07")) {// 读 ID 号命令
+
+                } else if (ml.equals("08")) {// 清空历史数据命令
+
+                } else if (ml.equals("09")) {// 修改校正码命令
+
+                } else if (ml.equals("0A")) {// 开始测试命令
+                    mDealDataListener.onFetch(type,300,"开始测试命令，倒计时中!");
+                } else if (ml.equals("0B")) {// 仪器关机命令
+                    mDealDataListener.onFetch(type,300,"关机成功!");
+                } else if (ml.equals("0C")) {// 仪器关蓝牙
+
+                }
+            }
+
+            if (mDates.contains("26445A") && mDates.length() > 41) {//艾科蓝牙
+                mDates = mDates.substring(mDates.indexOf("26445A"));
+                String mDate = Utils.convertHexToString(mDates);
+                if (mDate.startsWith("&DZ")) {
+                    String[] array = mDate.split(" ");
+                    if (array.length > 4) {
+                        float datas = (float) (Float.parseFloat(array[3]) / 18 + 0.05);
+                        if (Float.parseFloat(array[3]) == 9) {
+                            mDealDataListener.onFetch(type,100,"测量值低于仪器检测范围!");
+                        } else if (Float.parseFloat(array[3]) == 601) {
+                            mDealDataListener.onFetch(type,100,"测量值高于仪器检测范围!");
+                        } else {
+                            DecimalFormat formater = new DecimalFormat("#0.#");
+                            formater.setRoundingMode(RoundingMode.FLOOR);
+                            String bgm = formater.format(datas);
+                            String result = bgm + " (mmol/L)";
+                            mDealDataListener.onFetch(type,200,result);
+                            mDealDataListener.onFetch(type,300,"艾科血糖测试结果:" + formater.format(datas));
+                        }
+                        hh.postDelayed(timerunnable2, 1000);
+                    }
+
+                }
+            }
+
+            if (!TextUtils.isEmpty(mDates) && mDates.length() > 32 && mDates.startsWith("F10E")) {//民康血糖
+                char[] chars = mDates.toCharArray();
+                float n = Integer.parseInt(chars[30] + "", 16);//当 0 <= n <= 7：N*10的n次方    当 n >= 8：N*10的n次方-16
+                System.out.println("民康血糖测试n=" + n);
+                if (n >= 0 && n <= 7) {
+                    float myweight = (float) ((float) Integer.parseInt("" + chars[28] + chars[29], 16) * Math.pow(10, n));
+                    double a = Math.pow(10, n - 16);
+                    double myweight2 = (myweight * a) / 10000;
+                    System.out.println("myweight11=" + myweight + "  " + myweight2 + String.format("%4.1f", myweight2) + "mmol/L");
+                    String bgm = String.format("%4.1f", myweight2);
+                    try {
+                        double bgms = Double.parseDouble(bgm);
+                        if (bgms < 1.1) {
+                            mDealDataListener.onFetch(type,300,"测量值低于仪器检测范围");
+                        } else if (bgms > 33.3) {
+                            mDealDataListener.onFetch(type,300,"测量值高于仪器检测范围");
+                        } else {
+                            String result = bgm + " (mmol/L)";
+                            mDealDataListener.onFetch(type,200,"民康血糖测试结果:" + result);
+                        }
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                } else if (n >= 8) {
+                    float myweight = (float) Integer.parseInt("" + chars[28] + chars[29], 16);
+                    double a = Math.pow(10, n - 16);
+                    double myweight2 = myweight * a * 1000;
+                    System.out.println("myweight22==" + myweight + "  " + myweight2 + String.format("%4.1f", myweight2) + "mmol/L");
+                    String bgm = String.format("%4.1f", myweight2);
+                    try {
+                        double bgms = Double.parseDouble(bgm);
+                        if (bgms < 1.1) {
+                            mDealDataListener.onFetch(type,300,"测量值低于仪器检测范围");
+                        } else if (bgms > 33.3) {
+                            mDealDataListener.onFetch(type,300,"测量值高于仪器检测范围");
+                        } else {
+                            String result = bgm + " (mmol/L)";
+                            mDealDataListener.onFetch(type,200,"民康血糖测试结果:" + result);
+                        }
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                }
+                mDates = "";
+            }
+        }
     }
 
     private float tempweight = 0;
@@ -502,12 +647,7 @@ public class DealDataUtils {
         hh.postDelayed(rr, 3000);
     }
 
-    public void removeAllBpmHander() {
-        if (hh != null) {
-            hh.removeCallbacks(rr);
-            hh.removeCallbacks(rr2);
-        }
-    }
+
 
     String str = "";
 
