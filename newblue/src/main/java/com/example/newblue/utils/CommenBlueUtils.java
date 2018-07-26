@@ -285,11 +285,20 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                     String bule_address = "";
                     mDeviceID = i;
                     mDeviceName = App.LeDevices.get(i).device.getName();
-                    if (mDeviceName.contains("C01478")) {
-                        if (mDeviceAddress.length() > 5) {
-                            mBleWrapper.connect(mDeviceAddress);
+                    mDeviceAddress = App.LeDevices.get(i).device.getAddress();
+                    String endNeedAddress = "";
+                    //说明没有绑定设备
+                    if (StringUtil.isEmpty(bule_address)) {
+                        endNeedAddress = mDeviceAddress;
+                    } else {//绑定设备，但是要与扫描的仪器比较一下地址，确保是同一个
+                        if (bule_address.equals(mDeviceAddress)) {
+                            endNeedAddress = bule_address;
                         }
-
+                    }
+                    if (mDeviceName.contains("C01478")) {//尿机
+                        if (endNeedAddress.length() > 5) {
+                            mBleWrapper.connect(endNeedAddress);
+                        }
                         timehandler1.removeCallbacks(timerunnable1);
                         timehandler1.postDelayed(timerunnable1, 1000);
                     } else if (mDeviceName.contains("eBlood-Pressure")) { //血压计
@@ -299,14 +308,16 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                             BleManager.getInstance().disconnect(mBleDevice);
                         }
                         ThreadSleep(100);
-                        setScanRule(mDeviceAddress);
+                        setScanRule(endNeedAddress);
                         startScan();
                     } else {
-                        mDeviceAddress = StringUtil.isEmpty(bule_address) ?
-                                App.LeDevices.get(i).device.getAddress() : bule_address;
+                        /*mDeviceAddress = StringUtil.isEmpty(bule_address) ?
+                                App.LeDevices.get(i).device.getAddress() : bule_address;*/
                         Log.i("mDeviceName", "---mDeviceName->" + mDeviceName);
-                        Log.i("mDeviceName", "---mDeviceAddress->" + mDeviceAddress);
-                        mBleWrapper.connect(mDeviceAddress);
+                        Log.i("mDeviceName", "---mDeviceAddress->" + endNeedAddress);
+                        if (!StringUtil.isEmpty(endNeedAddress)) {
+                            mBleWrapper.connect(endNeedAddress);
+                        }
                     }
                     break;
                 }
@@ -890,7 +901,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
             //获取此服务结点下的某个Characteristic对象
             temch = service.getCharacteristic(UUID
                     .fromString(string));
-            if(temch != null) {
+            if (temch != null) {
                 props = temch.getProperties();
                 if ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {//设备具有可通知的功能，也可以判断可读可写 PROPERTY_READ和PROPERTY_WRITE
                     mCharacteristics.add(temch);
@@ -899,7 +910,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         } else {
             temch = service.getCharacteristic(UUID
                     .fromString(string));
-            if(temch != null) {
+            if (temch != null) {
                 props = temch.getProperties();
                 if ((props & (BluetoothGattCharacteristic.PROPERTY_WRITE | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) > 0) {
 

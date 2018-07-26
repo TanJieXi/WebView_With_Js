@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     }
 
 
-    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm,R.id.btn_bmi})
+    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm,R.id.btn_bmi,R.id.btn_bgm})
     public void click(Button v) {
         switch (v.getId()) {
             case R.id.btn_startSao:
@@ -67,6 +67,10 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case R.id.btn_bmi: //体重体脂秤
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
                 type = BlueConstants.BLUE_EQUIP_BMI;
+                break;
+            case R.id.btn_bgm: //血糖计
+                CommenBlueUtils.getInstance().disConnectBlueTooth();
+                type = BlueConstants.BLUE_EQUIP_BGM;
                 break;
             default:
                 break;

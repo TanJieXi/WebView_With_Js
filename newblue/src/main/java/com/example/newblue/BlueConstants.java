@@ -25,4 +25,8 @@ public class BlueConstants {
      *  体重体脂秤
      */
     public static final String BLUE_EQUIP_BMI = "bmi";
+    /**
+     *  血糖计
+     */
+    public static final String BLUE_EQUIP_BGM = "bgm";
 }
