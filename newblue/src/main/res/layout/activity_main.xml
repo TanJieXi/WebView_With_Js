@@ -75,5 +75,13 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_open"
         />
-
+    <Button
+        android:id="@+id/btn_bmi"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="体重体脂秤"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintLeft_toRightOf="@+id/btn_bpm"
+        app:layout_constraintTop_toBottomOf="@+id/btn_two"
+        />
 </android.support.constraint.ConstraintLayout>

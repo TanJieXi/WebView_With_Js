@@ -1,5 +1,14 @@
 package com.example.newblue.utils;
 
+import android.text.TextUtils;
+import android.util.Log;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  * Created by TanJieXi on 2018/3/30.
  */
@@ -99,11 +108,100 @@ public class Utils {
         }
         return stringBuilder.toString();
     }
+    // 把日期转为字符串
+    public static String ConverToString(Date date) {
+        if(date == null){
+            return "";
+        }
+        return ConverToString(date, "yyyy-MM-dd");
+    }
+
+    // 把日期转为字符串
+    public static String ConverToString(Date date, String type) {
+        DateFormat df = new SimpleDateFormat(type);
+        return df.format(date);
+    }
+    /**
+     * 计算年龄
+     *
+     * @param birth yyyy-MM-dd
+     * @return
+     */
+    public static String calcAge(String birth) {
+        if (!TextUtils.isEmpty(birth)) {
+            String str = "";
 
 
+            Date birthDate = null;
+
+            try {
+                birthDate = Utils.ConverToDate(birth);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
 
+            Calendar flightCal = Calendar.getInstance();
+            flightCal.setTime(new Date());
+            Calendar birthCal = Calendar.getInstance();
+            birthCal.setTime(birthDate);
+
+            int y = flightCal.get(Calendar.YEAR) - birthCal.get(Calendar.YEAR);
+            int m = flightCal.get(Calendar.MONTH)
+                    - birthCal.get(Calendar.MONTH);
+            int d = flightCal.get(Calendar.DATE) - birthCal.get(Calendar.DATE);
+            if (y < 0) {
+
+            }
+
+            if (m < 0) {
+                y--;
+            }
+            if (m >= 0 && d < 0) {
+                y--;
+            }
+            str = String.valueOf(y);
+
+            return str;
+        } else {
+            return "-1";
+        }
+
+    }
+
+    // 把字符串转为日期
+    public static Date ConverToDate(String strDate) {
+        return ConverToDate(strDate, "yyyy-MM-dd");
+    }
+    // 把字符串转为日期
+    public static Date ConverToDate(String strDate, String type) {
 
 
+        try {
+            if (!TextUtils.isEmpty(strDate)) {
+                DateFormat df = new SimpleDateFormat(type);
+                return df.parse(strDate);
+            } else {
+                return null;
+            }
+        } catch (ParseException e) {
+            Log.e("Conver", "ConverToDate出错：strDate=" + strDate + ";type=" + type);
+            return null;
+        }
 
+    }
+
+
+    public static byte[] getHexBytes(String message) {
+        int len = message.length() / 2;
+        char[] chars = message.toCharArray();
+        String[] hexStr = new String[len];
+        byte[] bytes = new byte[len];
+        for (int i = 0, j = 0; j < len; i += 2, j++) {
+            hexStr[j] = "" + chars[i] + chars[i + 1];
+            bytes[j] = (byte) Integer.parseInt(hexStr[j], 16);
+        }
+        return bytes;
+    }
 }

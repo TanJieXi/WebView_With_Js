@@ -7,7 +7,10 @@ import android.util.Log;
 import com.example.newblue.App;
 import com.example.newblue.interfaces.DealDataListener;
 import com.example.newblue.scan.BluetoothScan;
+import com.holtek.libHTBodyfat.HTDataType;
+import com.holtek.libHTBodyfat.HTPeopleGeneral;
 
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.Calendar;
@@ -19,6 +22,31 @@ import java.util.Calendar;
 public class DealDataUtils {
     private DealDataListener mDealDataListener;
     private static volatile DealDataUtils instance = null;
+    private String type = "";
+    Handler hh = new Handler();
+    Runnable rr = new Runnable() {
+
+        @Override
+        public void run() {
+            Log.i("sddasfasdgg", "这里2");
+            CommenBlueUtils.getInstance().writeHexString("FDFDFA050D0A");
+            hh.postDelayed(this, 3000);
+
+        }
+    };
+    Runnable rr2 = new Runnable() {
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            iscf = false;
+            CommenBlueUtils.getInstance().closeBpm();
+            BluetoothScan.getInstance().Start();
+            Log.e("7秒之后执行",
+                    "7秒之后执行7秒之后执行7秒之后执行7秒之后执行7秒之后执行7秒之后执行");
+        }
+    };
+    private boolean iscf2 = false;
+    private boolean iscf = false;
 
     private DealDataUtils() {
 
@@ -42,6 +70,7 @@ public class DealDataUtils {
      */
     @SuppressLint("DefaultLocale")
     public void dealOxiData(String data, DealDataListener listener) {
+        type = "oxi";
         this.mDealDataListener = listener;
         if (data != null) {
             System.out.println("data:" + data);
@@ -50,7 +79,7 @@ public class DealDataUtils {
 
             if (data.contains("55AA03")) {
                 if (data.contains("55AA03B100B4")) {
-                    mDealDataListener.onFetch(100, "血氧脉率测量中，请稍候...");
+                    mDealDataListener.onFetch(type, 100, "血氧脉率测量中，请稍候...");
                 } else {
                     if (data.length() > 11) {
                         // 07-05 18:03:37.544: D/test(8103): data=55AA03624BB0
@@ -61,7 +90,7 @@ public class DealDataUtils {
                         String result = "";
                         result = String.format("血氧：%d ;脉率：%d 次每分钟；", myoxi,
                                 mypulse);
-                        mDealDataListener.onFetch(200, result);
+                        mDealDataListener.onFetch(type, 200, result);
                         // 检测成功给界面组件赋值 袁明全加 20151001
                     }
                 }
@@ -69,35 +98,281 @@ public class DealDataUtils {
         }
     }
 
-    Handler hh = new Handler();
-    Runnable rr = new Runnable() {
+    public int getSexType(String sex) {
+        if (sex.equals("男")) {
+            return HTDataType.SexTypeMale;
+        } else {
+            return HTDataType.SexTypeFemale;
+        }
 
-        @Override
-        public void run() {
-            Log.i("sddasfasdgg","这里2");
-            CommenBlueUtils.getInstance().writeHexString("FDFDFA050D0A");
-            hh.postDelayed(this, 3000);
+    }
+
+    private float tempweight = 0;
+    /**
+     * 处理体重秤的数据
+     */
+    public void dealBmiData(String data, DealDataListener listener) {
+        type = "bmi";
+        this.mDealDataListener = listener;
+        Double uHeight = 170.0;
+        int age = 20;
+        Log.e("dealBmiData", "--->" + data);
+        if (data != null && data.length() > 20) {
+            System.out.println("data:" + data);
+            Log.e("dealBmiData", "ssssss" + data);
+            char[] chars = data.toCharArray();
+            String hexStr = new String();
+            // 计算体重 还要加个效验码验证，确保数据正确
+            if (data.substring(0, 10).equals("55AA054001")) {
+                hexStr = "" + chars[12] + chars[13] + chars[10] + chars[11];
+                Log.d("test", "parseInt=" + Integer.parseInt(hexStr, 16));
+                float myweight = Integer.parseInt(hexStr, 16);
+
+                String pvss = String.format("%4.2f kg (%4.2f 斤)", myweight / 10,
+                        myweight * 2 / 10);
+                sb.append(pvss);
+                // 检测成功给界面组件赋值
+                String result = "体重:" + (myweight / 10) + ",脂肪:0" + ",水分:0"+ ",肌肉:0"+ ",骨量:0"+ ",卡路里:0";
+                sb.append(result);
+                float mybmi = 0;
+                //Double uHeight = UsersMod.get_uHeight();
+                if (uHeight == 0.0 || uHeight == 0) {
+                    mybmi = 0;
+                } else {
+                    mybmi = (float) (((float) myweight / 10) / (float) ((uHeight / 100) * (uHeight / 100)));
+                }
+                sb.append("BMI：").append(mybmi).append("Kg/㎡");
+
+                App.LeDevices.get(CommenBlueUtils.getInstance().getDeviceId()).Des += ",上次检测结果是："
+                        + pvss;
+                mDealDataListener.onFetch(type, 200, sb.toString());
+            }
+
+            // 小体脂称
+            if (data.substring(0, 4).equals("02DD")
+                    && data.substring(data.length() - 2).equals("AA")) {
+                if (data.length() >= 28) {
+                    // 02DD02A000C9D7DC022602801BAA
+                    // // 体重
+                    int Unit_Weight_H = Integer.parseInt(data.substring(4, 6),
+                            16);
+                    int Weight_L = Integer.parseInt(data.substring(6, 8), 16);// 体重低字节
+                    int weight_h = (Unit_Weight_H & 0x3f) * 256;// 体重高字节
+                    Log.e("tag", "-------weight = " + weight_h + "  "
+                            + Weight_L);
+                    double W = (double) ((weight_h + Weight_L) / 10.0);// 体重数值
+                    Log.e("tag", "-------weight = " + W + "KG");
+                    hexStr = "" + chars[8] + chars[9] + chars[10] + chars[11] + chars[12] + chars[13] + chars[14] + chars[15];
+                    int resistance = Integer.parseInt(hexStr, 16);// 电阻值
+                    Log.e("电阻系数resistance=", resistance + "=====");
+                    HTPeopleGeneral bodyfats = new HTPeopleGeneral(W, uHeight,
+                            getSexType("男"), age, resistance);
+                    int errorType = bodyfats.getBodyfatParameters();
+                    Log.e("-----", "w=" + W + "||height=" + uHeight + "||getSexType()=" + getSexType("男") + "||age=" + age + "||resistance=" + resistance);
+                    if (errorType == HTDataType.ErrorNone) {
+                        // 正常计算
+                        Log.e("计算结果===",
+                                "阻抗:"
+                                        + bodyfats.ZTwoLegs
+                                        + "Ω  BMI:"
+                                        + String.format("%.1f", bodyfats.BMI)
+                                        + "  BMR:"
+                                        + (int) bodyfats.BMR
+                                        + "  内脏脂肪:"
+                                        + (int) bodyfats.VFAL
+                                        + "  骨量:"
+                                        + String.format("%.1fkg",
+                                        bodyfats.boneKg)
+                                        + "  脂肪率:"
+                                        + String.format("%.1f%%",
+                                        bodyfats.bodyfatPercentage)
+                                        + "  水分:"
+                                        + String.format("%.1f%%",
+                                        bodyfats.waterPercentage)
+                                        + "  肌肉:"
+                                        + String.format("%.1fkg",
+                                        bodyfats.muscleKg) + "\r\n");
+                    } else if (errorType == HTDataType.ErrorAge) {
+                        Log.e("年龄错误", "年龄错误年龄错误年龄错误");
+                        mDealDataListener.onFetch(type, 100,"年龄错误");
+                    } else if (errorType == HTDataType.ErrorHeight) {
+                        Log.e("身高错误", "身高错误身高错误身高错误身");
+                        mDealDataListener.onFetch(type, 100,"身高错误");
+                    } else if (errorType == HTDataType.ErrorWeight) {
+                        Log.e("体重错误", "体重错误体重错误体重错误体重错");
+                        mDealDataListener.onFetch(type, 100,"体重错误");
+                    } else {
+                        mDealDataListener.onFetch(type, 100,"未知错误");
+                    }
+                    String fat = String.format("%.1f",
+                            bodyfats.bodyfatPercentage);
+                    String humidity = String.format("%.1f",
+                            bodyfats.waterPercentage);
+                    double humiditys = Double.parseDouble(humidity);
+                    String muscl = String.format("%.1f", bodyfats.muscleKg);
+                    double musclea = Double.parseDouble(muscl) / W * 100 - humiditys;
+                    String muscles = String.format("%.1f",
+                            musclea);
+                    String bone = String.format("%.1f", bodyfats.boneKg);
+                    int BMR = (int) bodyfats.BMR;
+                    String bmis = String.format("%.1f", bodyfats.BMI);
+
+                    // 检测成功给界面组件赋值
+                    String result = "体重:" + W + ",脂肪:" + fat + ",水分:" + humidity
+                            + ",肌肉:" + muscles + ",骨量:" + bone + ",卡路里:" + BMR
+                            + ",BMI:" + bmis + "Kg/㎡" + ",身高:" + uHeight + "m" ;
+
+                    mDealDataListener.onFetch(type, 200, result);
+                }
+            }
+
+            // 体脂秤1
+            if (data.substring(0, 4).equals("A100")) {
+                // 09-05 11:40:26.072: E/Bmi(5204): A10019 05F1 0114 0214 016B
+                // 001F 0A79 00000000E9
+
+                // kg 体脂% 水分% 肌肉% 骨量% 卡路里
+                if (data.length() > 13) {
+                    hexStr = "" + chars[6] + chars[7] + chars[8] + chars[9];
+
+                    Log.e("test",
+                            "parseInt=" + hexStr + "++++"
+                                    + Integer.parseInt(hexStr, 16));
+
+                    float myweight = Integer.parseInt(hexStr, 16);
+                    float mybodyfat = Integer.parseInt("" + chars[10]
+                            + chars[11] + chars[12] + chars[13], 16);
+                    float mywater = Integer.parseInt("" + chars[14] + chars[15]
+                            + chars[16] + chars[17], 16);
+                    float mymuscle = Integer.parseInt("" + chars[18]
+                            + chars[19] + chars[20] + chars[21], 16);
+                    float mybonemass = Integer.parseInt("" + chars[22]
+                            + chars[23] + chars[24] + chars[25], 16);
+                    float mycalorie = Integer.parseInt("" + chars[26]
+                            + chars[27] + chars[28] + chars[29], 16);
+                    float mybmi = (float) (((float) myweight / 2 / 10) / (float) ((uHeight / 100) * (uHeight / 100)));
+                    if (myweight > 0) {
+
+                        BigDecimal bd = new BigDecimal(mybmi);
+                        bd = bd.setScale(1, BigDecimal.ROUND_HALF_UP);
+
+                        String pvss = String.format("%4.2f kg (%4.2f 斤)",
+                                myweight / 2 / 10, myweight / 10);
+
+
+                        // 检测成功给界面组件赋值
+                        String result = "体重:" + (myweight / 2 / 10) + ",脂肪:" + (mybodyfat / 10) + ",水分:" + (mywater / 10)
+                                + ",肌肉:" + (mymuscle / 10) + ",骨量:" + (mybonemass / 10) + ",卡路里:" + (mycalorie)
+                                + ",BMI:" + bd + "Kg/㎡" + ",身高:" + uHeight + "m" ;
+
+                        mDealDataListener.onFetch(type, 200, pvss + "<>"+ result);
+
+                    }
+                }
+            }
+            Log.e("test", data.substring(4, 6));
+            // 体脂秤2
+            if (data.substring(0, 10).equals("5A000028AA")
+                    || (data.substring(0, 2).equals("55") && data.substring(6,
+                    8).equals("00"))) {
+                if (data.length() > 13) {
+
+                    if (data.substring(0, 10).equals("5A000028AA")) {
+                        hexStr = "" + chars[10] + chars[11] + chars[12]
+                                + chars[13];
+
+                        Log.e("test",
+                                "parseInt=" + hexStr + "++++"
+                                        + Integer.parseInt(hexStr, 16));
+
+                        float myweight = Integer.parseInt(hexStr, 16);
+                        if (myweight == 0 && tempweight > 0) {
+                            myweight = tempweight;
+                        }
+                        float mybodyfat = Integer.parseInt("" + chars[16]
+                                + chars[17] + chars[18] + chars[19], 16);
+                        float mywater = Integer.parseInt("" + chars[20]
+                                + chars[21] + chars[22] + chars[23], 16);
+                        float mymuscle = Integer.parseInt("" + chars[24]
+                                + chars[25] + chars[26] + chars[27], 16);
+                        float mybonemass = Integer.parseInt("" + chars[28]
+                                + chars[29] + chars[30] + chars[31], 16);
+                        float mycalorie = Integer.parseInt("" + chars[32]
+                                + chars[33] + chars[34] + chars[35], 16);
+                        float mybmi = (float) (((float) myweight / 10) / (float) ((uHeight / 100) * (uHeight / 100)));
+                        if (myweight > 0) {
+                            // results.setText(String
+                            // .format("体重：%4.1f kg 体脂：%4.1f %% "
+                            // + "身体水分：%4.1f %% 肌肉：%4.1f %% 骨量：%4.1f kg 卡路里：%5f
+                            // KCAL BMI：%4.1f ",
+                            // myweight / 10, mybodyfat / 10,
+                            // mywater / 10, mymuscle / 10,
+                            // mybonemass / 10, mycalorie, mybmi));
+                            String result = String.format("体重：%4.1f kg 体脂：%4.1f %% 身体水分：%4.1f %% 肌肉：%4.1f %% 骨量：%4.1f kg 卡路里：%5f KCAL BMI：%4.1f "
+                            ,myweight / 10, mybodyfat / 10, mywater / 10, mymuscle / 10,mybonemass / 10, mycalorie, mybmi);
+                            mDealDataListener.onFetch(type, 200, result);
+
+                        }
+                    } else if ((data.substring(0, 2).equals("55") && data
+                            .substring(6, 8).equals("00"))) {
+                        hexStr = "" + chars[2] + chars[3] + chars[4] + chars[5];
+                        float myweight = Integer.parseInt(hexStr, 16);
+                        tempweight = myweight;
+                        String result = String.format("%4.2f kg ", myweight / 10 + "Kg/㎡");
+                        mDealDataListener.onFetch(type, 200, result);
+                    }
+                }
+            }
+
+            byte[] bytes = Utils.getHexBytes(data);
+            // CF 03 15 A8 01 C1 00 40 11 01 72 01 02 5B 05 5F
+            // CF 03 99 AA 02 41 00 60 18 01 D1 01 02 59 05 FB
+            // CF 03 99 AA 02 49 00 00 00 00 00 00 00 00 00 00
+            if ((bytes[0] & 0xFF) == 207) {
+                //timehandler.removeCallbacks(timerunnable);
+
+                String myweight = String.format("%.1f",
+                        (((bytes[4] & 0xFF) * 256) + (bytes[5] & 0xFF)) / 10.0);
+                String mybodyfat = String.format("%.1f",
+                        (((bytes[6] & 0xFF) * 256) + (bytes[7] & 0xFF)) / 10.0);
+                String mywater = String
+                        .format("%.1f",
+                                (((bytes[12] & 0xFF) * 256) + (bytes[13] & 0xFF)) / 10.0);
+                String mymuscle = String
+                        .format("%.1f",
+                                (((bytes[9] & 0xFF) * 256) + (bytes[10] & 0xFF)) / 10.0);
+                String mybonemass = String.format("%.1f",
+                        ((bytes[8] & 0xFF) / 10.0));
+                String mycalorie = String.format("%.1f",
+                        ((bytes[14] & 0xFF) * 256) + (bytes[15] & 0xFF) * 1.0);
+
+                float mybmift = (float) ((Float.valueOf(myweight) / 10) / (float) ((uHeight / 100) * (uHeight / 100)));
+
+                String mybmi = String.format("%.1f", mybmift);
+
+                if (Float.valueOf(myweight) > 0) {
+                    // 检测成功给组件赋值
+                    String result = String.format("体重：%4.1f kg 体脂：%4.1f %% 身体水分：%4.1f %% 肌肉：%4.1f %% 骨量：%4.1f kg 卡路里：%5f KCAL BMI：%4.1f "
+                            ,myweight, mybodyfat,mywater,mymuscle,mybonemass, mycalorie, mybmi);
+                    mDealDataListener.onFetch(type, 200, result);
+                }
+            } else if ((bytes[0] & 0xFF) == 253) {
+                //timehandler.removeCallbacks(timerunnable);
+                mDealDataListener.onFetch(type, 100, "测量错误，请重新测量.");
+            }
 
         }
-    };
-    Runnable rr2 = new Runnable() {
-        @Override
-        public void run() {
-            // TODO Auto-generated method stub
-            iscf = false;
-            CommenBlueUtils.getInstance().closeBpm();
-            BluetoothScan.getInstance().Start();
-            Log.e("7秒之后执行",
-                    "7秒之后执行7秒之后执行7秒之后执行7秒之后执行7秒之后执行7秒之后执行");
+        if (data.startsWith("FC42") && data.length() > 9) {
+
+
         }
-    };
-    private boolean iscf2 = false;
-    private boolean iscf = false;
+    }
 
     /**
      * 处理血压计的数据
      */
     public void dealBpmData(String data, DealDataListener listener) {
+        type = "bpm";
         this.mDealDataListener = listener;
         if (data != null) {
             Log.e("data", data);
@@ -106,19 +381,19 @@ public class DealDataUtils {
                 if (_date.contains("0D0A")) {
                     _date = _date.substring(0, _date.indexOf("0D0A"));
                     if (_date.equals("0E")) {
-                        mDealDataListener.onFetch(300, "血压计异常,联系你的经销商!");
+                        mDealDataListener.onFetch(type, 100, "血压计异常,联系你的经销商!");
                     } else if (_date.equals("01")) {
-                        mDealDataListener.onFetch(300, "人体心跳信号太小或压力突降!");
+                        mDealDataListener.onFetch(type, 100, "人体心跳信号太小或压力突降!");
                     } else if (_date.equals("02")) {
-                        mDealDataListener.onFetch(300, "杂讯干扰!");
+                        mDealDataListener.onFetch(type, 100, "杂讯干扰!");
                     } else if (_date.equals("03")) {
-                        mDealDataListener.onFetch(300, "充气时间过长!");
+                        mDealDataListener.onFetch(type, 100, "充气时间过长!");
                     } else if (_date.equals("05")) {
-                        mDealDataListener.onFetch(300, "测得的结果异常!");
+                        mDealDataListener.onFetch(type, 100, "测得的结果异常!");
                     } else if (_date.equals("0C")) {
-                        mDealDataListener.onFetch(300, "校正异常!");
+                        mDealDataListener.onFetch(type, 100, "校正异常!");
                     } else if (_date.equals("0B")) {
-                        mDealDataListener.onFetch(300, "电源低电压!");
+                        mDealDataListener.onFetch(type, 100, "电源低电压!");
                     }
                 }
                 CommenBlueUtils.getInstance().writeHexString("FDFDFE060D0A");
@@ -128,7 +403,7 @@ public class DealDataUtils {
                     _date = _date.substring(0, _date.indexOf("0D0A"));
                     System.out.println("str:" + _date);
                     if (_date.equals("")) {
-                        mDealDataListener.onFetch(300, "血压启动!");
+                        mDealDataListener.onFetch(type, 100, "血压启动!");
                     }
                 }
 
@@ -168,7 +443,7 @@ public class DealDataUtils {
                         int pul = Integer.parseInt(_pul, 16);
 
                         String result = dia + " ++舒张压 (mmHg)," + sys + " 收缩压 (mmHg)," + pul + " 心率(次/分钟)";
-                        mDealDataListener.onFetch(200, result);
+                        mDealDataListener.onFetch(type, 200, result);
                         if (!iscf) {
                             iscf = true;
                         }
@@ -188,7 +463,7 @@ public class DealDataUtils {
                             + Integer.parseInt("" + chars[0] + chars[1], 16)
                             + Integer.parseInt("" + chars[2] + chars[3], 16);
                     Log.i("dfasdfdfsgsdf", "压力:" + result);
-                    mDealDataListener.onFetch(200, result);
+                    mDealDataListener.onFetch(type, 100, result);
                 }
                 hh.removeCallbacks(rr);
             } else if (data.contains("FDFDFA050D0A")) {
@@ -204,7 +479,7 @@ public class DealDataUtils {
                 System.out.println("str:" + data);
                 if (data.length() > 3) {
                     String result = "压力:" + Integer.parseInt("" + chars[2] + chars[3], 16);
-                    mDealDataListener.onFetch(200, result);
+                    mDealDataListener.onFetch(type, 100, result);
                 }
             } else if (data.startsWith("1C00")) {
 
@@ -214,7 +489,7 @@ public class DealDataUtils {
                 int pul = Integer.parseInt("" + chars[16] + chars[17], 16);
 
                 String result = dia + " --舒张压 (mmHg)," + sys + " 收缩压 (mmHg)," + pul + " 心率(次/分钟)";
-                mDealDataListener.onFetch(200, result);
+                mDealDataListener.onFetch(type, 200, result);
             }
         }
     }
@@ -222,12 +497,12 @@ public class DealDataUtils {
 
     public void removeBpmRRHanler() {
         hh.removeCallbacks(rr);
-        Log.i("sddasfasdgg","这里1");
+        Log.i("sddasfasdgg", "这里1");
         hh.postDelayed(rr, 3000);
     }
 
-    public void removeAllBpmHander(){
-        if(hh != null){
+    public void removeAllBpmHander() {
+        if (hh != null) {
             hh.removeCallbacks(rr);
             hh.removeCallbacks(rr2);
         }
@@ -243,7 +518,7 @@ public class DealDataUtils {
      */
     public void dealUraData(String data, DealDataListener listener) {
         this.mDealDataListener = listener;
-
+        type = "ura";
         String[] LEU = new String[]{"-", "+-", "+", "++", "+++", "/", "/", "/"};
         String[] NIT = new String[]{"-", "+", "/", "/", "/", "/", "/", "/"};
         String[] UBG = new String[]{"-", "+", "++", "+++", "/", "/", "/", "/"};
@@ -274,7 +549,7 @@ public class DealDataUtils {
                     }
 
                 } else if (ml.contains("01")) {
-                    mDealDataListener.onFetch(100, "尿液数据测量中，请稍候...");
+                    mDealDataListener.onFetch(type, 100, "尿液数据测量中，请稍候...");
                 }
             } else {
                 str += data;
@@ -287,7 +562,7 @@ public class DealDataUtils {
                 DataChar = calendar.get(Calendar.HOUR_OF_DAY) + ":"
                         + calendar.get(Calendar.MINUTE) + ":"
                         + calendar.get(Calendar.SECOND);
-                mDealDataListener.onFetch(100, "等待新数据中，当前时间：" + DataChar);
+                mDealDataListener.onFetch(type, 100, "等待新数据中，当前时间：" + DataChar);
                 str = "";
                 return;
             }
@@ -299,7 +574,7 @@ public class DealDataUtils {
                 DataChar = calendar.get(Calendar.HOUR_OF_DAY) + ":"
                         + calendar.get(Calendar.MINUTE) + ":"
                         + calendar.get(Calendar.SECOND);
-                mDealDataListener.onFetch(100, "等待新数据中，当前时间：" + DataChar);
+                mDealDataListener.onFetch(type, 100, "等待新数据中，当前时间：" + DataChar);
                 str = "";
                 return;
             }
@@ -386,16 +661,16 @@ public class DealDataUtils {
                             ressss += "尿比重 SG:/";
 
                             if (ressss.equals(res)) {
-                                mDealDataListener.onFetch(100, "数据为空");
+                                mDealDataListener.onFetch(type, 100, "数据为空");
                                 return;
                             }
 
                             if (res.equals(allpvss) && nowTime.equals(pvsTime)) {
-                                mDealDataListener.onFetch(100, "数据重复");
+                                mDealDataListener.onFetch(type, 100, "数据重复");
                                 // 清数据
                                 CommenBlueUtils.getInstance().writeHexString("938e0400080612");
                             } else {
-                                mDealDataListener.onFetch(200, res);
+                                mDealDataListener.onFetch(type, 200, res);
 
                               /*  String json = "action=doura&data="
                                         + "{\"userid\":\""
@@ -516,18 +791,18 @@ public class DealDataUtils {
                             ressss += "尿比重 SG:/";
 
                             if (ressss.equals(res)) {
-                                mDealDataListener.onFetch(100, "数据为空");
+                                mDealDataListener.onFetch(type, 100, "数据为空");
                                 return;
                             }
 
 
                             if (res.equals(allpvss) && nowTime.equals(pvsTime)) {
-                                mDealDataListener.onFetch(100, "数据重复");
+                                mDealDataListener.onFetch(type, 100, "数据重复");
                                 // 清数据
                                 CommenBlueUtils.getInstance().writeHexString("938e0400080612");
 
                             } else {
-                                mDealDataListener.onFetch(200, res);
+                                mDealDataListener.onFetch(type, 200, res);
                              /*
                                 String json = "action=doura&data="
                                         + "{\"userid\":\""
@@ -583,7 +858,7 @@ public class DealDataUtils {
                         }
 
                     } else {
-                        mDealDataListener.onFetch(100, "数据有误");
+                        mDealDataListener.onFetch(type, 100, "数据有误");
                     }
                 }
                 str = "";
@@ -600,6 +875,7 @@ public class DealDataUtils {
     private StringBuilder sb = new StringBuilder();
 
     public void dealTemData(String data, DealDataListener listener) {
+        type = "tem";
         this.mDealDataListener = listener;
         Log.i("sjkljklsjadkll", "数据---》" + data);
         sb = sb.append(data);
@@ -615,9 +891,9 @@ public class DealDataUtils {
                     if ((myweight / 10) >= 29 && (myweight / 10) <= 46) {
                         //pvss = String.format("%4.1f °C", myweight / 10);
                         String result = (myweight / 10) + "";
-                        mDealDataListener.onFetch(200, "体温：" + result);
+                        mDealDataListener.onFetch(type, 200, "体温：" + result);
                     } else {
-                        mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
+                        mDealDataListener.onFetch(type, 100, "测量温度不正常,请重新测量!");
                     }
                 }
 
@@ -632,15 +908,15 @@ public class DealDataUtils {
                             // pvss = String.format("%4.2f °C", myweight / 100);
                             if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
                                 String result = (myweight / 10) + "";
-                                mDealDataListener.onFetch(200, "体温：" + result);
+                                mDealDataListener.onFetch(type, 200, "体温：" + result);
                             } else {
-                                mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
+                                mDealDataListener.onFetch(type, 100, "测量温度不正常,请重新测量!");
                             }
                         } else {
                             if (hexStr.equals("9999")) {
-                                mDealDataListener.onFetch(100, "低于可测量范围");
+                                mDealDataListener.onFetch(type, 100, "低于可测量范围");
                             } else {
-                                mDealDataListener.onFetch(100, "高于可测量范围");
+                                mDealDataListener.onFetch(type, 100, "高于可测量范围");
                             }
                         }
                     }
@@ -659,9 +935,9 @@ public class DealDataUtils {
                     formater.setRoundingMode(RoundingMode.FLOOR);
                     if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
                         String result = formater.format(myweight / 100);
-                        mDealDataListener.onFetch(200, "体温：" + result);
+                        mDealDataListener.onFetch(type, 200, "体温：" + result);
                     } else {
-                        mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
+                        mDealDataListener.onFetch(type, 100, "测量温度不正常,请重新测量!");
                     }
                     sb.delete(0, sb.length());
                 }
@@ -676,9 +952,9 @@ public class DealDataUtils {
                 float myweight = Integer.parseInt(hexStr, 16);
                 if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
                     String result = (myweight / 100) + "";
-                    mDealDataListener.onFetch(200, "体温：" + result);
+                    mDealDataListener.onFetch(type, 200, "体温：" + result);
                 } else {
-                    mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
+                    mDealDataListener.onFetch(type, 100, "测量温度不正常,请重新测量!");
                 }
             }
             //体达体温枪
@@ -689,29 +965,29 @@ public class DealDataUtils {
                         if (data.contains("Body")) {
                             if (data.contains("C")) {
                                 data = data.substring(data.indexOf("Body:") + 5, data.indexOf("C"));
-                                mDealDataListener.onFetch(200, "体温：" + data);
+                                mDealDataListener.onFetch(type, 200, "体温：" + data);
                             } else if (data.contains("F")) {
                                 data = data.substring(data.indexOf("Body:") + 5,
                                         data.indexOf("F"));
                                 float tem = Float.parseFloat(data);
                                 tem = (tem - 32) * 5 / 9;
                                 data = new DecimalFormat("0.0").format(tem);
-                                mDealDataListener.onFetch(200, "体温：" + data);
+                                mDealDataListener.onFetch(type, 200, "体温：" + data);
                             }
                             if (Double.parseDouble(data) >= 29 && Double.parseDouble(data) <= 46) {
 
                             } else {
-                                mDealDataListener.onFetch(100, "测量温度不正常,请重新测量!");
+                                mDealDataListener.onFetch(type, 100, "测量温度不正常,请重新测量!");
                             }
                         }
                     } else if (data.substring(0, 4).contains("526F")) {//室温
-                        mDealDataListener.onFetch(100, "你现在的模式是室温，请把模式调成体温！");
+                        mDealDataListener.onFetch(type, 100, "你现在的模式是室温，请把模式调成体温！");
                     } else if (data.substring(0, 4).contains("5375")) {//表面
-                        mDealDataListener.onFetch(100, "你现在的模式是表面，请把模式调成体温！");
+                        mDealDataListener.onFetch(type, 100, "你现在的模式是表面，请把模式调成体温！");
                     } else if (data.contains("45724C000D0A")) {
-                        mDealDataListener.onFetch(100, "测量温度过低，请重新测量！");
+                        mDealDataListener.onFetch(type, 100, "测量温度过低，请重新测量！");
                     } else if (data.contains("457248000D0A")) {
-                        mDealDataListener.onFetch(100, "测量温度过高，请重新测量！");
+                        mDealDataListener.onFetch(type, 100, "测量温度过高，请重新测量！");
                     }
                 }
             }

@@ -14,6 +14,7 @@ import com.clj.fastble.callback.BleGattCallback;
 import com.clj.fastble.callback.BleNotifyCallback;
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.data.BleDevice;
+import com.clj.fastble.data.BleScanState;
 import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.BleScanRuleConfig;
 import com.clj.fastble.utils.HexUtil;
@@ -26,6 +27,7 @@ import com.example.newblue.interfaces.ConnectBlueToothListener;
 import com.example.newblue.scan.BluetoothScan;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -66,9 +68,9 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     private CompositeDisposable dispoList;   //这是一个集合，可以拿来把disposable装进去，统一注销
     private int mDeviceID = -1;
     private boolean isClickStop = false;
-    boolean isQuitUra = false;
-    Handler timehandler1 = new Handler();
-    Runnable timerunnable1 = new Runnable() {
+    private boolean isQuitUra = false;
+    private Handler timehandler1 = new Handler();
+    private Runnable timerunnable1 = new Runnable() {
         @Override
         public void run() {
             if (mBleWrapper != null && mDeviceAddress.length() > 5) {
@@ -79,8 +81,15 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
         }
     };
-    Handler handleraa = new Handler();
-    Runnable runnableaa = new Runnable() {
+    private Handler timehandler2 = new Handler();
+    private Runnable timerunnable2 = new Runnable() {
+        @Override
+        public void run() {
+            SetNotfi();
+        }
+    };
+    private Handler handleraa = new Handler();
+    private Runnable runnableaa = new Runnable() {
 
         @SuppressLint("LongLogTag")
         @Override
@@ -192,10 +201,23 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
             mConnectBlueToothListener.onInterceptConnect("连接断开");
         }
 
+
+        if (BleScanState.STATE_SCANNING == BleManager.getInstance().getScanSate()) {
+            BleManager.getInstance().cancelScan();
+        }
         BleManager.getInstance().disconnectAllDevice();//断开所有设备
         BleManager.getInstance().destroy();//退出使用，清理资源
-        DealDataUtils.getInstance().removeAllBpmHander();
 
+        DealDataUtils.getInstance().removeAllBpmHander();
+        if (timehandler2 != null) {
+            timehandler2.removeCallbacks(timerunnable2);
+        }
+        if (timehandler1 != null) {
+            timehandler1.removeCallbacks(timerunnable1);
+        }
+        if (handleraa != null) {
+            handleraa.removeCallbacks(runnableaa);
+        }
     }
 
 
@@ -466,7 +488,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                     public void accept(Object o) throws Exception {
                         mConnectBlueToothListener.onInterceptConnect("连接断开");
                         Log.e("test", "设备断开");
-                        if(!isClickStop) {
+                        if (!isClickStop) {
                             BluetoothScan.getInstance().Start();
                         }
                         mDeviceAddress = "";
@@ -568,6 +590,106 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
 
     /**
+     * 设置bmi的uuid
+     *
+     * @param service
+     * @param uuid
+     */
+    public void setBmiUUid(BluetoothGattService service, String uuid) {
+        Log.i("dsfdsafgsdf", uuid);
+
+        // 改进后的体脂称
+        if (service != null && uuid.contains("0000ffe0-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000ffe1-0000-1000-8000-00805f9b34fb", 16);
+
+            bluetoothPass = "";
+            SetNotfi();
+        } else if (service != null && uuid.contains("ba11f08c-5f14-0b0d-1070")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000cd01-0000-1000-8000-00805f9b34fb",
+                    16);
+            setDevUUID(service, "0000cd02-0000-1000-8000-00805f9b34fb",
+                    16);
+            setDevUUID(service, "0000cd03-0000-1000-8000-00805f9b34fb",
+                    16);
+            setDevUUID(service, "0000cd04-0000-1000-8000-00805f9b34fb",
+                    16);
+            setDevUUID(service, "0000cd20-0000-1000-8000-00805f9b34fb",
+                    8);
+            bluetoothPass = "AA5504B10000B5";
+            SetNotfi();
+        } else if (service != null && uuid.contains("00001950-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "00002a6d-0000-1000-8000-00805f9b34fb",
+                    16);
+            setDevUUID(service, "00002a6c-0000-1000-8000-00805f9b34fb",
+                    8);
+            bluetoothPass = "";
+            SetNotfi();
+        } else if (service != null && uuid.contains("0000fff0-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000fff4-0000-1000-8000-00805f9b34fb",
+                    16);
+            setDevUUID(service, "0000fff1-0000-1000-8000-00805f9b34fb",
+                    16);
+            setDevUUID(service, "0000fff1-0000-1000-8000-00805f9b34fb",
+                    8);
+
+            String bp = "03";
+            String bmi_sex = "男";
+            Date bmi_birth = Utils.ConverToDate("1993-12-01");
+            int bmi_height = 170;
+            if ("男".equals(bmi_sex)) {
+                bp += "01";
+            } else {
+                bp += "00";
+            }
+
+            bp += "00";
+
+            if (bmi_height >= 0) {
+                int h = (int) (double) bmi_height;
+                bp += Utils.intToHex(h).toUpperCase();
+            } else {
+                bp += "AA";
+            }
+
+            if (bmi_birth != null) {
+                String ag = Utils.calcAge(Utils
+                        .ConverToString(bmi_birth));
+
+                int a = (int) Integer.parseInt(ag);
+                bp += Utils.intToHex(a).toUpperCase();
+            } else {
+                bp += "AA";
+            }
+
+            bp += "01";
+
+            byte[] bytes = Utils.getHexBytes(bp);
+
+            int ChkSum = 0;
+            for (int i = 0; i < bytes.length; i++) {
+                ChkSum = (int) (ChkSum ^ bytes[i]);
+            }
+            String mm = Integer.toHexString(ChkSum & 0x0FF);
+            System.out.println("----------------" + mm + "H");
+
+            bluetoothPass = "FE" + bp + mm;
+            Log.e("bluetoothPass3==", bluetoothPass
+                    + "zzzzzzzzzzz");
+
+            timehandler2.removeCallbacks(timerunnable2);
+            timehandler2.postDelayed(timerunnable2, 3000);
+        }
+    }
+
+    /**
      * 设置oxi的uuid
      *
      * @param service
@@ -622,8 +744,6 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                     .getCharacteristicsForService(service);
             setDevUUID(service, "02005970-6d75-4753-5053-676e6f6c7553",
                     16);
-            // setDevUUID("02005970-6d75-4753-5053-676e6f6c7553",
-            // 8);
             SetNotfi();
             // 体达体温枪
         } else if (service != null && uuid.contains("45531234-6565-7370-6f54-676e6f6c7553")) {
@@ -632,8 +752,6 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                     .getCharacteristicsForService(service);
             setDevUUID(service, "45531236-6565-7370-6f54-676e6f6c7553",
                     16);
-            // setDevUUID("02005970-6d75-4753-5053-676e6f6c7553",
-            // 8);
             SetNotfi();
             // 如果是 连续体温
         } else if (service != null && uuid.contains("ba11f08c-5f14-0b0d-10d0-ff434d4d4544")) {
@@ -652,7 +770,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                     8);
             bluetoothPass = "";
             SetNotfi();
-        } else if (service != null && uuid.contains("0000fff0-0000-1000-8000-00805f9b34fb") && mDeviceName.contains("Bluetooth BP")) {
+        } else if (service != null && uuid.contains("0000fff0-0000-1000-8000-00805f9b34fb") && mDeviceName.contains("znjtys_tem")) {
             mBTServices = service;
             mBleWrapper
                     .getCharacteristicsForService(service);
@@ -718,6 +836,9 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                     case "bpm":
                         setBpmUUid(service, uuid);
                         break;
+                    case "bmi":
+                        setBmiUUid(service, uuid);
+                        break;
                     default:
                         break;
                 }
@@ -767,18 +888,22 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
             //获取此服务结点下的某个Characteristic对象
             temch = service.getCharacteristic(UUID
                     .fromString(string));
-            props = temch.getProperties();
-            if ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {//设备具有可通知的功能，也可以判断可读可写 PROPERTY_READ和PROPERTY_WRITE
-                mCharacteristics.add(temch);
+            if(temch != null) {
+                props = temch.getProperties();
+                if ((props & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {//设备具有可通知的功能，也可以判断可读可写 PROPERTY_READ和PROPERTY_WRITE
+                    mCharacteristics.add(temch);
+                }
             }
         } else {
             temch = service.getCharacteristic(UUID
                     .fromString(string));
-            props = temch.getProperties();
-            if ((props & (BluetoothGattCharacteristic.PROPERTY_WRITE | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) > 0) {
+            if(temch != null) {
+                props = temch.getProperties();
+                if ((props & (BluetoothGattCharacteristic.PROPERTY_WRITE | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) > 0) {
 
-                mCharacteristicWrite = temch;
+                    mCharacteristicWrite = temch;
 
+                }
             }
         }
     }
@@ -801,6 +926,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
      * 在BleWrapper里面onCharacteristicRead，在手机连接设备成功以后，接到设备发过来的数据就会调用这个
      * 这个就是需要自己处理的数据
      */
+    @SuppressLint("CheckResult")
     @Override
     public void uiNewValueForCharacteristic(BluetoothGatt gatt, BluetoothDevice device, BluetoothGattService service, final BluetoothGattCharacteristic ch, final String strValue, final int intValue, final byte[] rawValue, final String timestamp) {
         if (mCharacteristics.size() <= 0) {
@@ -824,9 +950,9 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     }
 
 
-    public void newValueForCharacteristic(final BluetoothGattCharacteristic ch,
-                                          final String strVal, final int intVal, final byte[] rawValue,
-                                          final String timestamp) {
+    private void newValueForCharacteristic(final BluetoothGattCharacteristic ch,
+                                           final String strVal, final int intVal, final byte[] rawValue,
+                                           final String timestamp) {
         if (!mCharacteristics.contains(ch)) {
             return;
         }
@@ -840,6 +966,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     }
 
 
+    @SuppressLint("CheckResult")
     @Override
     public void uiGotNotification(BluetoothGatt gatt, BluetoothDevice device, BluetoothGattService service, final BluetoothGattCharacteristic characteristic) {
 
@@ -876,6 +1003,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
     }
 
+    @SuppressLint("CheckResult")
     @Override
     public void uiNewRssiAvailable(BluetoothGatt gatt, BluetoothDevice device, final int rssi) {
         Observable.create(new ObservableOnSubscribe<Object>() {

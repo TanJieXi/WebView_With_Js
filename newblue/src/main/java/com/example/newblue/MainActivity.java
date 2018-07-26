@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.newblue.interfaces.ConnectBlueToothListener;
 import com.example.newblue.interfaces.DealDataListener;
@@ -40,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     }
 
 
-    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm})
+    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm,R.id.btn_bmi})
     public void click(Button v) {
         switch (v.getId()) {
             case R.id.btn_startSao:
@@ -64,6 +63,10 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case R.id.btn_bpm: //血压计
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
                 type = "bpm";
+                break;
+            case R.id.btn_bmi: //体重体脂秤
+                CommenBlueUtils.getInstance().disConnectBlueTooth();
+                type = "bmi";
                 break;
             default:
                 break;
@@ -98,6 +101,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case "bpm":
                 DealDataUtils.getInstance().dealBpmData(message, this);
                 break;
+            case "bmi":
+                DealDataUtils.getInstance().dealBmiData(message, this);
+                break;
             default:
                 break;
         }
@@ -106,18 +112,33 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
 
 
     @Override
-    public void onFetch(int code, String message) {
-        switch (code) {
-            case 100:
-                tv_text.setText(message);
+    public void onFetch(String type,int code, String message) {
+        switch (type){
+            case "tem":
+                setData(tv_text,message,code);
                 break;
-            case 200:
-                tv_text.setText(message);
+            case "oxi":
+                setData(tv_text,message,code);
                 break;
-            case 300:
-                Toast.makeText(this,message,Toast.LENGTH_SHORT).show();
+            case "ura":
+                setData(tv_text,message,code);
                 break;
+            case "bpm":
+                setData(tv_text,message,code);
+                break;
+            case "bmi":
+                setData(tv_text,message,code);
+                break;
+            default:
+                break;
+        }
+    }
 
+    public void setData(TextView tv,String message,int code){
+        if(100 == code){
+            tv.setText(message);
+        }else if(200 == code){
+            tv.setText(message);
         }
     }
 }
