@@ -288,6 +288,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                         if (mDeviceAddress.length() > 5) {
                             mBleWrapper.connect(mDeviceAddress);
                         }
+
                         timehandler1.removeCallbacks(timerunnable1);
                         timehandler1.postDelayed(timerunnable1, 1000);
                     } else if (mDeviceName.contains("eBlood-Pressure")) { //血压计
