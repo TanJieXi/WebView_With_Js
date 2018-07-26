@@ -50,23 +50,23 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
                 break;
             case R.id.btn_open: //体温
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
-                type = "tem";
+                type = BlueConstants.BLUE_EQUIP_TEM;
                 break;
             case R.id.btn_two: //血氧
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
-                type = "oxi";
+                type = BlueConstants.BLUE_EQUIP_OXI;
                 break;
             case R.id.btn_three://尿机
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
-                type = "ura";
+                type = BlueConstants.BLUE_EQUIP_URA;
                 break;
             case R.id.btn_bpm: //血压计
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
-                type = "bpm";
+                type = BlueConstants.BLUE_EQUIP_BPM;
                 break;
             case R.id.btn_bmi: //体重体脂秤
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
-                type = "bmi";
+                type = BlueConstants.BLUE_EQUIP_BMI;
                 break;
             default:
                 break;
@@ -89,19 +89,19 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
         Log.i("sjkljklsjadkll", "---type--onDataFromBlue->" + type);
         Log.i("sjkljklsjadkll", "---数据--onDataFromBlue->" + message);
         switch (type) {
-            case "tem":
+            case BlueConstants.BLUE_EQUIP_TEM: //体温
                 DealDataUtils.getInstance().dealTemData(message, this);
                 break;
-            case "oxi":
+            case BlueConstants.BLUE_EQUIP_OXI://血氧
                 DealDataUtils.getInstance().dealOxiData(message, this);
                 break;
-            case "ura":
+            case BlueConstants.BLUE_EQUIP_URA://尿机
                 DealDataUtils.getInstance().dealUraData(message, this);
                 break;
-            case "bpm":
+            case BlueConstants.BLUE_EQUIP_BPM://血压计
                 DealDataUtils.getInstance().dealBpmData(message, this);
                 break;
-            case "bmi":
+            case BlueConstants.BLUE_EQUIP_BMI://体重体脂秤
                 DealDataUtils.getInstance().dealBmiData(message, this);
                 break;
             default:
@@ -114,19 +114,19 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     @Override
     public void onFetch(String type,int code, String message) {
         switch (type){
-            case "tem":
+            case BlueConstants.BLUE_EQUIP_TEM:
                 setData(tv_text,message,code);
                 break;
-            case "oxi":
+            case BlueConstants.BLUE_EQUIP_OXI:
                 setData(tv_text,message,code);
                 break;
-            case "ura":
+            case BlueConstants.BLUE_EQUIP_URA:
                 setData(tv_text,message,code);
                 break;
-            case "bpm":
+            case BlueConstants.BLUE_EQUIP_BPM:
                 setData(tv_text,message,code);
                 break;
-            case "bmi":
+            case BlueConstants.BLUE_EQUIP_BMI:
                 setData(tv_text,message,code);
                 break;
             default:

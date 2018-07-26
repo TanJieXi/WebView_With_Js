@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.example.newblue.App;
+import com.example.newblue.BlueConstants;
 import com.example.newblue.interfaces.DealDataListener;
 import com.example.newblue.scan.BluetoothScan;
 import com.holtek.libHTBodyfat.HTDataType;
@@ -70,7 +71,7 @@ public class DealDataUtils {
      */
     @SuppressLint("DefaultLocale")
     public void dealOxiData(String data, DealDataListener listener) {
-        type = "oxi";
+        type = BlueConstants.BLUE_EQUIP_OXI;
         this.mDealDataListener = listener;
         if (data != null) {
             System.out.println("data:" + data);
@@ -112,7 +113,7 @@ public class DealDataUtils {
      * 处理体重秤的数据
      */
     public void dealBmiData(String data, DealDataListener listener) {
-        type = "bmi";
+        type = BlueConstants.BLUE_EQUIP_BMI;
         this.mDealDataListener = listener;
         Double uHeight = 170.0;
         int age = 20;
@@ -372,7 +373,7 @@ public class DealDataUtils {
      * 处理血压计的数据
      */
     public void dealBpmData(String data, DealDataListener listener) {
-        type = "bpm";
+        type = BlueConstants.BLUE_EQUIP_BPM;
         this.mDealDataListener = listener;
         if (data != null) {
             Log.e("data", data);
@@ -518,7 +519,7 @@ public class DealDataUtils {
      */
     public void dealUraData(String data, DealDataListener listener) {
         this.mDealDataListener = listener;
-        type = "ura";
+        type = BlueConstants.BLUE_EQUIP_URA;
         String[] LEU = new String[]{"-", "+-", "+", "++", "+++", "/", "/", "/"};
         String[] NIT = new String[]{"-", "+", "/", "/", "/", "/", "/", "/"};
         String[] UBG = new String[]{"-", "+", "++", "+++", "/", "/", "/", "/"};
@@ -875,7 +876,7 @@ public class DealDataUtils {
     private StringBuilder sb = new StringBuilder();
 
     public void dealTemData(String data, DealDataListener listener) {
-        type = "tem";
+        type = BlueConstants.BLUE_EQUIP_TEM;
         this.mDealDataListener = listener;
         Log.i("sjkljklsjadkll", "数据---》" + data);
         sb = sb.append(data);

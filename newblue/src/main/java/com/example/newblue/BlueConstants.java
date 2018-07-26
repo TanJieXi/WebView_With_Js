@@ -1,0 +1,28 @@
+package com.example.newblue;
+
+/**
+ * Created by TanJieXi on 2018/7/26.
+ * 常量
+ */
+public class BlueConstants {
+    /**
+     *  体温枪
+     */
+    public static final String BLUE_EQUIP_TEM = "tem";
+    /**
+     *  血氧
+     */
+    public static final String BLUE_EQUIP_OXI = "oxi";
+    /**
+     *  尿机
+     */
+    public static final String BLUE_EQUIP_URA = "ura";
+    /**
+     *  血压计
+     */
+    public static final String BLUE_EQUIP_BPM = "bpm";
+    /**
+     *  体重体脂秤
+     */
+    public static final String BLUE_EQUIP_BMI = "bmi";
+}

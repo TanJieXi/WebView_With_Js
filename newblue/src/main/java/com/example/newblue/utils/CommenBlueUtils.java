@@ -19,6 +19,7 @@ import com.clj.fastble.exception.BleException;
 import com.clj.fastble.scan.BleScanRuleConfig;
 import com.clj.fastble.utils.HexUtil;
 import com.example.newblue.App;
+import com.example.newblue.BlueConstants;
 import com.example.newblue.blueconnect.BleWrapper;
 import com.example.newblue.comm.ObserverManager;
 import com.example.newblue.deviceBox;
@@ -814,14 +815,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                 // 我们也可以通过上下一步的方法来获取（打印所有特征UUID，取出自己想要的特征）
                 checkUUID(service);
                 switch (type.trim()) {
-                    case "oxi":
-                        setOxiUUid(service, uuid);
-                        break;
-                    case "ura":
-                        isQuitUra = false;
-                        setUraUUid(service, uuid);
-                        break;
-                    case "tem":
+                    case BlueConstants.BLUE_EQUIP_TEM:
                         Log.i("piepoidjs", "--->-uuid-tem-uiAvailableServices->");
                         setTemUUid(service, uuid);
                         Observable.timer(1, TimeUnit.MILLISECONDS)
@@ -834,10 +828,17 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                                 });
 
                         break;
-                    case "bpm":
+                    case BlueConstants.BLUE_EQUIP_OXI:
+                        setOxiUUid(service, uuid);
+                        break;
+                    case BlueConstants.BLUE_EQUIP_URA:
+                        isQuitUra = false;
+                        setUraUUid(service, uuid);
+                        break;
+                    case BlueConstants.BLUE_EQUIP_BPM:
                         setBpmUUid(service, uuid);
                         break;
-                    case "bmi":
+                    case BlueConstants.BLUE_EQUIP_BMI:
                         setBmiUUid(service, uuid);
                         break;
                     default:
