@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     }
 
 
-    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm,R.id.btn_bmi,R.id.btn_bgm})
+    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm,R.id.btn_bmi,R.id.btn_bgm,R.id.btn_hgb})
     public void click(Button v) {
         switch (v.getId()) {
             case R.id.btn_startSao:
@@ -72,6 +72,10 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case R.id.btn_bgm: //血糖计
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
                 type = BlueConstants.BLUE_EQUIP_BGM;
+                break;
+            case R.id.btn_hgb: //血红蛋白检测
+                CommenBlueUtils.getInstance().disConnectBlueTooth();
+                type = BlueConstants.BLUE_EQUIP_HGB;
                 break;
             default:
                 break;
@@ -112,6 +116,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case BlueConstants.BLUE_EQUIP_BGM://血糖计
                 DealDataUtils.getInstance().dealBgmData(message, this);
                 break;
+            case BlueConstants.BLUE_EQUIP_HGB://血红蛋白检测
+                DealDataUtils.getInstance().dealHgbData(message, this);
+                break;
             default:
                 break;
         }
@@ -138,6 +145,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
                 setData(tv_text,message,code);
                 break;
             case BlueConstants.BLUE_EQUIP_BGM:
+                setData(tv_text,message,code);
+                break;
+            case BlueConstants.BLUE_EQUIP_HGB:
                 setData(tv_text,message,code);
                 break;
             default:

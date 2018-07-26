@@ -8,7 +8,6 @@ import android.util.Log;
 import com.example.newblue.App;
 import com.example.newblue.BlueConstants;
 import com.example.newblue.interfaces.DealDataListener;
-import com.example.newblue.scan.BluetoothScan;
 import com.holtek.libHTBodyfat.HTDataType;
 import com.holtek.libHTBodyfat.HTPeopleGeneral;
 
@@ -42,7 +41,7 @@ public class DealDataUtils {
             // TODO Auto-generated method stub
             iscf = false;
             CommenBlueUtils.getInstance().closeBpm();
-            BluetoothScan.getInstance().Start();
+            //BluetoothScan.getInstance().Start();
             Log.e("7秒之后执行",
                     "7秒之后执行7秒之后执行7秒之后执行7秒之后执行7秒之后执行7秒之后执行");
         }
@@ -252,6 +251,53 @@ public class DealDataUtils {
             }
         }
     }
+
+
+
+    private boolean flag = false;
+    public void setHgbFlag(){
+        flag = false;
+    }
+    /**
+     * 处理血红蛋白检测器的数据
+     */
+    public void dealHgbData(String data, DealDataListener listener){
+        type = BlueConstants.BLUE_EQUIP_HGB;
+        this.mDealDataListener = listener;
+        Log.e("test", "data=" + data);
+        if (data != null) {
+            char[] chars = data.toCharArray();
+            Log.e("chars长度==", chars.length + "----------------------------");
+            String hexStr = "";
+            if (!flag) {
+                if (chars.length >= 20) {
+                    hexStr = "" + chars[8] + chars[9];
+                    if (Integer.parseInt(hexStr, 16) == 225) {
+                        hexStr = "" + chars[16] + chars[17];
+                        if (Integer.parseInt(hexStr, 16) == 9) {
+                            hexStr = "" + chars[chars.length - 4]
+                                    + chars[chars.length - 3]
+                                    + chars[chars.length - 6]
+                                    + chars[chars.length - 5];
+                            float str = (float) (Integer.parseInt(hexStr, 16));
+                            if (str < 70) {
+                                mDealDataListener.onFetch(type,100,"测量结果低于检测范围,请重新测量！");
+                            } else if (str > 260) {
+                                mDealDataListener.onFetch(type,100,"测量结果高于检测范围,请重新测量！");
+                            } else {
+                                String result = str + "g/L";
+                                mDealDataListener.onFetch(type,200,"测量结果：" + result);
+                                flag = true;
+                            }
+                        }
+                    }
+
+                }
+            }
+
+        }
+    }
+
 
     private float tempweight = 0;
     /**

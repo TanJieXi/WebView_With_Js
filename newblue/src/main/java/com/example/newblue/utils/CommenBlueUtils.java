@@ -39,15 +39,13 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by TanJieXi on 2018/3/28.
  */
 @SuppressLint("NewApi")
-public class CommenBlueUtils implements BleWrapperUiCallbacks {
+public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnScanSuccessListener {
 
     private volatile static CommenBlueUtils blue;
     private BleWrapper mBleWrapper;
@@ -240,7 +238,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         mConnectBlueToothListener.onConnectSuccess("连接中，请稍后");
         mCharacteristics = new ArrayList<>();
         //BluetoothScan.IsAutoJump = false;
-        BluetoothScan.getInstance().Start();
+        BluetoothScan.getInstance().Start(this);
         Log.i("bleWrapper", "---CommenBlueUtisl--BluetoothScanStart->");
         if (mBleWrapper == null) {
             mBleWrapper = new BleWrapper(context, this);
@@ -251,8 +249,9 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
         }
 
 
+        return;
         //每0.5s去连接一下
-        mSubscribe = Observable.interval(500, TimeUnit.MILLISECONDS).
+        /*mSubscribe = Observable.interval(500, TimeUnit.MILLISECONDS).
                 observeOn(Schedulers.io())
                 .subscribe(new Consumer<Long>() {
                     @Override
@@ -270,7 +269,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                     public void run() throws Exception {
                         //这里接收onComplete。
                     }
-                });
+                });*/
     }
 
     public void closeBpm() {
@@ -513,7 +512,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                         mConnectBlueToothListener.onInterceptConnect("连接断开");
                         Log.e("test", "设备断开");
                         if (!isClickStop) {
-                            BluetoothScan.getInstance().Start();
+                            BluetoothScan.getInstance().Start(CommenBlueUtils.this);
                         }
                         mDeviceAddress = "";
                     }
@@ -527,7 +526,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
      * @param service
      * @param uuid
      */
-    public void setUraUUid(BluetoothGattService service, String uuid) {
+    private void setUraUUid(BluetoothGattService service, String uuid) {
         Log.i("dsfdsafgsdf", uuid);
         if (service != null && uuid.contains("e7810a71-73ae-499d-8c15")) {
             mBTServices = service;
@@ -581,7 +580,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
      * @param service
      * @param uuid
      */
-    public void setBpmUUid(BluetoothGattService service, String uuid) {
+    private void setBpmUUid(BluetoothGattService service, String uuid) {
         Log.i("dsfdsafgsdf", uuid);
         if (service != null
                 && uuid.contains("0000fff0-0000-1000-8000-00805f9b34fb") && mDeviceName.contains("eBlood-Pressure")) {
@@ -612,10 +611,13 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
 
     }
 
+
+
+
     /**
      * 设置bgm的uuid
      */
-    public void setBgmUUid(BluetoothGattService service, String uuid){
+    private void setBgmUUid(BluetoothGattService service, String uuid){
         Log.i("dsfdsafgsdf", uuid);
         if (service != null && uuid.contains("0000ffe0-0000-1000-8000")) {
             mBTServices = service;
@@ -652,7 +654,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
      * @param service
      * @param uuid
      */
-    public void setBmiUUid(BluetoothGattService service, String uuid) {
+    private void setBmiUUid(BluetoothGattService service, String uuid) {
         Log.i("dsfdsafgsdf", uuid);
         // 改进后的体脂称
         if (service != null && uuid.contains("0000ffe0-0000-1000-8000-00805f9b34fb")) {
@@ -746,12 +748,27 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
     }
 
     /**
-     * 设置oxi的uuid
-     *
-     * @param service
-     * @param uuid
+     * 血红蛋白检测
      */
-    public void setOxiUUid(BluetoothGattService service, String uuid) {
+    private void setHgbUUid(BluetoothGattService service, String uuid){
+        Log.i("dsfdsafgsdf", uuid);
+        if (service != null && uuid.contains("00001000-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service,"00001002-0000-1000-8000-00805f9b34fb",
+                    16);
+            setDevUUID(service,"00001001-0000-1000-8000-00805f9b34fb",
+                    8);
+            bluetoothPass = "";
+            SetNotfi();
+        }
+    }
+
+
+    /**
+     * 设置oxi的uuid
+     */
+    private void setOxiUUid(BluetoothGattService service, String uuid) {
         Log.i("dsfdsafgsdf", uuid);
         if (service != null && uuid.contains("ba11f08c-5f14-0b0d-1080")) {
             mBTServices = service;
@@ -869,7 +886,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                 // 我们也可以通过上下一步的方法来获取（打印所有特征UUID，取出自己想要的特征）
                 checkUUID(service);
                 switch (type.trim()) {
-                    case BlueConstants.BLUE_EQUIP_TEM:
+                    case BlueConstants.BLUE_EQUIP_TEM://体温枪
                         Log.i("piepoidjs", "--->-uuid-tem-uiAvailableServices->");
                         setTemUUid(service, uuid);
                         Observable.timer(1, TimeUnit.MILLISECONDS)
@@ -882,21 +899,25 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                                 });
 
                         break;
-                    case BlueConstants.BLUE_EQUIP_OXI:
+                    case BlueConstants.BLUE_EQUIP_OXI://血氧
                         setOxiUUid(service, uuid);
                         break;
-                    case BlueConstants.BLUE_EQUIP_URA:
+                    case BlueConstants.BLUE_EQUIP_URA://尿机
                         isQuitUra = false;
                         setUraUUid(service, uuid);
                         break;
-                    case BlueConstants.BLUE_EQUIP_BPM:
+                    case BlueConstants.BLUE_EQUIP_BPM://血压
                         setBpmUUid(service, uuid);
                         break;
-                    case BlueConstants.BLUE_EQUIP_BMI:
+                    case BlueConstants.BLUE_EQUIP_BMI://体重体脂称
                         setBmiUUid(service, uuid);
                         break;
-                    case BlueConstants.BLUE_EQUIP_BGM:
+                    case BlueConstants.BLUE_EQUIP_BGM://血糖计
                         setBgmUUid(service, uuid);
+                        break;
+                    case BlueConstants.BLUE_EQUIP_HGB://血红蛋白检测
+                        DealDataUtils.getInstance().setHgbFlag();
+                        setHgbUUid(service, uuid);
                         break;
                     default:
                         break;
@@ -959,9 +980,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
             if (temch != null) {
                 props = temch.getProperties();
                 if ((props & (BluetoothGattCharacteristic.PROPERTY_WRITE | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) > 0) {
-
                     mCharacteristicWrite = temch;
-
                 }
             }
         }
@@ -1102,6 +1121,58 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks {
                 if (bluetoothPass.length() > 0) {
                     mBleWrapper.WriteHexString(mCharacteristicWrite,
                             bluetoothPass);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onScanFetch(List<deviceBox> deviceBoxList) {
+        if (StringUtil.isEmpty(type)) {
+            return;
+        }
+        if (mDeviceAddress.length() < 2) {
+            for (int i = 0; i < deviceBoxList.size(); i++) {
+                deviceBox deviceBox = deviceBoxList.get(i);
+                if (deviceBox.Type.equals(type.trim()) && deviceBox.isOnline() && deviceBox.device != null) {
+                    String bule_address = "";
+                    mDeviceID = i;
+                    mDeviceName = deviceBoxList.get(i).device.getName();
+                    mDeviceAddress = deviceBoxList.get(i).device.getAddress();
+                    String endNeedAddress = "";
+                    //说明没有绑定设备
+                    if (StringUtil.isEmpty(bule_address)) {
+                        endNeedAddress = mDeviceAddress;
+                    } else {//绑定设备，但是要与扫描的仪器比较一下地址，确保是同一个
+                        if (bule_address.equals(mDeviceAddress)) {
+                            endNeedAddress = bule_address;
+                        }
+                    }
+                    if (mDeviceName.contains("C01478")) {//尿机
+                        if (endNeedAddress.length() > 5) {
+                            mBleWrapper.connect(endNeedAddress);
+                        }
+                        timehandler1.removeCallbacks(timerunnable1);
+                        timehandler1.postDelayed(timerunnable1, 1000);
+                    } else if (mDeviceName.contains("eBlood-Pressure")) { //血压计
+                        //停止
+                        CommenBlueUtils.getInstance().disConnectBlueTooth();
+                        if (BleManager.getInstance().isConnected(mBleDevice)) {
+                            BleManager.getInstance().disconnect(mBleDevice);
+                        }
+                        ThreadSleep(100);
+                        setScanRule(endNeedAddress);
+                        startScan();
+                    } else {
+                        /*mDeviceAddress = StringUtil.isEmpty(bule_address) ?
+                                App.LeDevices.get(i).device.getAddress() : bule_address;*/
+                        Log.i("mDeviceName", "---mDeviceName->" + mDeviceName);
+                        Log.i("mDeviceName", "---mDeviceAddress->" + endNeedAddress);
+                        if (!StringUtil.isEmpty(endNeedAddress)) {
+                            mBleWrapper.connect(endNeedAddress);
+                        }
+                    }
+                    break;
                 }
             }
         }

@@ -29,4 +29,8 @@ public class BlueConstants {
      *  血糖计
      */
     public static final String BLUE_EQUIP_BGM = "bgm";
+    /**
+     *  血红蛋白检测
+     */
+    public static final String BLUE_EQUIP_HGB = "hgb";
 }

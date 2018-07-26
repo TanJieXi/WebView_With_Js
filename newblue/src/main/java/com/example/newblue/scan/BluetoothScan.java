@@ -12,6 +12,7 @@ import com.example.newblue.deviceBox;
 import com.example.newblue.utils.Utils;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -82,8 +83,8 @@ public class BluetoothScan {
         }
     }
 
-
-    public void Start() {
+    public void Start(OnScanSuccessListener listener) {
+        this.listener = listener;
         IsStart = true;
         if(sMScanRx != null && !sMScanRx.isDisposed()){
             sMScanRx.dispose();
@@ -170,9 +171,7 @@ public class BluetoothScan {
                             Log.e("搜索蓝牙名称==", device.getName() + "");
                             Log.e("搜索蓝牙地址==", device.getAddress() + "");
                             if (newDevice.Type.length() > 0) {
-
                                 boolean havdevice = false;
-
                                 //判断App.LeDevices里面是否已存在该设备
                                 for (int i = 0, len = App.LeDevices.size(); i < len; i++) {
                                     deviceBox d = App.LeDevices.get(i);
@@ -187,12 +186,19 @@ public class BluetoothScan {
                                     newDevice.reFreshDateTime = new Date();
                                     App.LeDevices.add(newDevice);
                                 }
-
+                                listener.onScanFetch(App.LeDevices);
 
                             }
                         }
                     });
         }
     };
+
+    private OnScanSuccessListener listener;
+
+    public interface OnScanSuccessListener{
+        void onScanFetch(List<deviceBox> newDevice);
+    }
+
 
 }
