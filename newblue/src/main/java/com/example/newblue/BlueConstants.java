@@ -37,4 +37,8 @@ public class BlueConstants {
      *  糖化血红蛋白检测
      */
     public static final String BLUE_EQUIP_GLHGB = "glhgb";
+    /**
+     *  血脂
+     */
+    public static final String BLUE_EQUIP_BFT = "bft";
 }

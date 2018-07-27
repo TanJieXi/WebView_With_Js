@@ -18,18 +18,8 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity implements ConnectBlueToothListener, DealDataListener {
 
-    @BindView(R.id.btn_startSao)
-    Button btn_startSao;
     @BindView(R.id.tv_text)
     TextView tv_text;
-    @BindView(R.id.btn_disconnet)
-    Button btn_disconnet;
-    @BindView(R.id.btn_open)
-    Button btn_open;
-    @BindView(R.id.btn_two)
-    Button btn_two;
-    @BindView(R.id.btn_three)
-    Button btn_three;
     private String type = "tem";
 
     @Override
@@ -40,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     }
 
 
-    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm,R.id.btn_bmi,R.id.btn_bgm,R.id.btn_hgb,R.id.btn_glhgb})
+    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm,R.id.btn_bmi,R.id.btn_bgm,R.id.btn_hgb,R.id.btn_glhgb,R.id.btn_bft})
     public void click(Button v) {
         switch (v.getId()) {
             case R.id.btn_startSao:
@@ -81,11 +71,19 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
                 type = BlueConstants.BLUE_EQUIP_GLHGB;
                 break;
+            case R.id.btn_bft://血脂
+                CommenBlueUtils.getInstance().disConnectBlueTooth();
+                type = BlueConstants.BLUE_EQUIP_BFT;
+                break;
             default:
                 break;
         }
     }
 
+    @Override
+    public void onReConnectEqip(String message) {
+        tv_text.setText(message);
+    }
 
     @Override
     public void onConnectSuccess(String message) {
@@ -126,11 +124,15 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case BlueConstants.BLUE_EQUIP_GLHGB://糖化血红蛋白检测
                 DealDataUtils.getInstance().dealGlHgbData(message, this);
                 break;
+            case BlueConstants.BLUE_EQUIP_BFT: //血脂
+                DealDataUtils.getInstance().dealBftData(message, this);
+                break;
             default:
                 break;
         }
 
     }
+
 
 
     @Override
@@ -158,6 +160,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
                 setData(tv_text,message,code);
                 break;
             case BlueConstants.BLUE_EQUIP_GLHGB://血红蛋白检测
+                setData(tv_text,message,code);
+                break;
+            case BlueConstants.BLUE_EQUIP_BFT: //血脂
                 setData(tv_text,message,code);
                 break;
             default:

@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by TanJieXi on 2018/3/30.
@@ -50,7 +52,7 @@ public class DealDataUtils {
     Runnable timerunnable2 = new Runnable() {
         @Override
         public void run() {
-            CommenBlueUtils.getInstance().writeBgmHexString("11223344-5566-7788-99aa-bbccddeeff00","2644312031200632373838340D");
+            CommenBlueUtils.getInstance().writeBgmHexString("11223344-5566-7788-99aa-bbccddeeff00", "2644312031200632373838340D");
             hh.removeCallbacks(timerunnable2);
             hh.postDelayed(timerunnable2, 1000);
         }
@@ -64,8 +66,8 @@ public class DealDataUtils {
 
     }
 
-    public void removeAllHandler(){
-        if(hh != null){
+    public void removeAllHandler() {
+        if (hh != null) {
             hh.removeCallbacks(rr);
             hh.removeCallbacks(rr2);
             hh.removeCallbacks(timerunnable2);
@@ -127,12 +129,14 @@ public class DealDataUtils {
         }
 
     }
+
     int tt = 0;
     private String mDates = "";
+
     /**
      * 处理血糖的数据
      */
-    public void dealBgmData(String data, DealDataListener listener){
+    public void dealBgmData(String data, DealDataListener listener) {
         type = BlueConstants.BLUE_EQUIP_BGM;
         this.mDealDataListener = listener;
         if (data != null) {
@@ -142,12 +146,12 @@ public class DealDataUtils {
                 char[] chars = _date.toCharArray();
                 String ml = "" + chars[6] + chars[7];
                 if (ml.equals("01")) {// 测试连接命令 需要仪器在开机状态且非倒计时的情况时才可测试连接
-                    mDealDataListener.onFetch(type,100,"等待滴血..." + (tt++));
+                    mDealDataListener.onFetch(type, 100, "等待滴血..." + (tt++));
                 } else if (ml.equals("02")) {// 错误状态
-                    mDealDataListener.onFetch(type,100,"血糖计异常!");
+                    mDealDataListener.onFetch(type, 100, "血糖计异常!");
                     CommenBlueUtils.getInstance().writeHexString("534E0600040B000015");
                 } else if (ml.equals("03")) {// 滴血符号闪烁
-                    mDealDataListener.onFetch(type,100,"滴血符号闪烁!");
+                    mDealDataListener.onFetch(type, 100, "滴血符号闪烁!");
                     CommenBlueUtils.getInstance().writeHexString("534E0800040153494E4F46");
                 } else if (ml.equals("04")) {// 读当前结果命令
                     if (_date.length() > 21) {
@@ -157,7 +161,7 @@ public class DealDataUtils {
                         float bgm = Integer.parseInt(_bgm, 16);
                         bgm = bgm / 10;
                         String result = bgm + " (mmol/L)";
-                        mDealDataListener.onFetch(type,200,result);
+                        mDealDataListener.onFetch(type, 200, result);
                     }
                     CommenBlueUtils.getInstance().writeHexString("534E0600040B020017");
                 } else if (ml.equals("05")) {// 读历史数据命令
@@ -171,9 +175,9 @@ public class DealDataUtils {
                 } else if (ml.equals("09")) {// 修改校正码命令
 
                 } else if (ml.equals("0A")) {// 开始测试命令
-                    mDealDataListener.onFetch(type,300,"开始测试命令，倒计时中!");
+                    mDealDataListener.onFetch(type, 300, "开始测试命令，倒计时中!");
                 } else if (ml.equals("0B")) {// 仪器关机命令
-                    mDealDataListener.onFetch(type,300,"关机成功!");
+                    mDealDataListener.onFetch(type, 300, "关机成功!");
                 } else if (ml.equals("0C")) {// 仪器关蓝牙
 
                 }
@@ -187,16 +191,16 @@ public class DealDataUtils {
                     if (array.length > 4) {
                         float datas = (float) (Float.parseFloat(array[3]) / 18 + 0.05);
                         if (Float.parseFloat(array[3]) == 9) {
-                            mDealDataListener.onFetch(type,100,"测量值低于仪器检测范围!");
+                            mDealDataListener.onFetch(type, 100, "测量值低于仪器检测范围!");
                         } else if (Float.parseFloat(array[3]) == 601) {
-                            mDealDataListener.onFetch(type,100,"测量值高于仪器检测范围!");
+                            mDealDataListener.onFetch(type, 100, "测量值高于仪器检测范围!");
                         } else {
                             DecimalFormat formater = new DecimalFormat("#0.#");
                             formater.setRoundingMode(RoundingMode.FLOOR);
                             String bgm = formater.format(datas);
                             String result = bgm + " (mmol/L)";
-                            mDealDataListener.onFetch(type,200,result);
-                            mDealDataListener.onFetch(type,300,"艾科血糖测试结果:" + formater.format(datas));
+                            mDealDataListener.onFetch(type, 200, result);
+                            mDealDataListener.onFetch(type, 300, "艾科血糖测试结果:" + formater.format(datas));
                         }
                         hh.postDelayed(timerunnable2, 1000);
                     }
@@ -217,12 +221,12 @@ public class DealDataUtils {
                     try {
                         double bgms = Double.parseDouble(bgm);
                         if (bgms < 1.1) {
-                            mDealDataListener.onFetch(type,300,"测量值低于仪器检测范围");
+                            mDealDataListener.onFetch(type, 300, "测量值低于仪器检测范围");
                         } else if (bgms > 33.3) {
-                            mDealDataListener.onFetch(type,300,"测量值高于仪器检测范围");
+                            mDealDataListener.onFetch(type, 300, "测量值高于仪器检测范围");
                         } else {
                             String result = bgm + " (mmol/L)";
-                            mDealDataListener.onFetch(type,200,"民康血糖测试结果:" + result);
+                            mDealDataListener.onFetch(type, 200, "民康血糖测试结果:" + result);
                         }
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
@@ -236,12 +240,12 @@ public class DealDataUtils {
                     try {
                         double bgms = Double.parseDouble(bgm);
                         if (bgms < 1.1) {
-                            mDealDataListener.onFetch(type,300,"测量值低于仪器检测范围");
+                            mDealDataListener.onFetch(type, 300, "测量值低于仪器检测范围");
                         } else if (bgms > 33.3) {
-                            mDealDataListener.onFetch(type,300,"测量值高于仪器检测范围");
+                            mDealDataListener.onFetch(type, 300, "测量值高于仪器检测范围");
                         } else {
                             String result = bgm + " (mmol/L)";
-                            mDealDataListener.onFetch(type,200,"民康血糖测试结果:" + result);
+                            mDealDataListener.onFetch(type, 200, "民康血糖测试结果:" + result);
                         }
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
@@ -252,14 +256,335 @@ public class DealDataUtils {
         }
     }
 
-    public void setGlHgbString(){
+
+    /**
+     * 血脂返回数据过滤
+     *
+     * @param str
+     * @return
+     */
+    private String filtration(String str) {
+        Log.e("str1===", str);
+        if (str.contains("mmol/L")) {
+            str = str.replace("mmol/L", "");
+        }
+        if (str.contains("<")) {
+            str = str.replace("<", "");
+        }
+        if (str.contains(">")) {
+            str = str.replace(">", "");
+        }
+        if (str.contains("=")) {
+            str = str.replace("=", "");
+        }
+        Log.e("str2===", str);
+        return str.replace(" ", "");
+    }
+
+    /**
+     * 处理血脂的数据
+     */
+    public void dealBftData(String data, DealDataListener listener) {
+        type = BlueConstants.BLUE_EQUIP_BFT;
+        this.mDealDataListener = listener;
+        if (data != null) {
+            str += data;
+            if (str.contains("220A0A4E0A")) {
+                Log.e("str", str);
+                if (str.indexOf("6D6D6F6C2F4C22") > 0) {
+                    String _date = str.substring(str.indexOf("2243484F4C202020203A") + 20);
+                    String s1 = "-1";
+                    if (_date.indexOf("6D6D6F6C2F4C22") > 0 && _date.indexOf("6D6D6F6C2F4C22") < 20) {
+                        s1 = _date.substring(0, _date.indexOf("6D6D6F6C2F4C22"));
+                        s1 = Utils.convertHexToString(s1);
+                        s1 = s1.replace(" ", "").replace("<", "")
+                                .replace(">", "");
+                    }
+                    _date = str.substring(str.indexOf("2248444C2043484F4C3A") + 20);
+                    String s2 = "-1";
+                    if (_date.indexOf("6D6D6F6C2F4C22") > 0
+                            && _date.indexOf("6D6D6F6C2F4C22") < 20) {
+                        s2 = _date.substring(0, _date.indexOf("6D6D6F6C2F4C22"));
+                        s2 = Utils.convertHexToString(s2);
+                        s2 = s2.replace(" ", "").replace("<", "")
+                                .replace(">", "");
+                    }
+                    _date = str.substring(str.indexOf("2254524947202020203A") + 20);
+                    String s3 = "-1";
+                    if (_date.indexOf("6D6D6F6C2F4C22") > 0 && _date.indexOf("6D6D6F6C2F4C22") < 20) {
+                        s3 = _date.substring(0, _date.indexOf("6D6D6F6C2F4C22"));
+                        s3 = Utils.convertHexToString(s3);
+                        s3 = s3.replace(" ", "").replace("<", "")
+                                .replace(">", "");
+                    }
+                    _date = str.substring(str.indexOf("2243414C43204C444C3A") + 20);
+                    String s4 = "-1";
+                    if (_date.indexOf("6D6D6F6C2F4C22") > 0 && _date.indexOf("6D6D6F6C2F4C22") < 20) {
+                        s4 = _date.substring(0, _date.indexOf("6D6D6F6C2F4C22"));
+                        s4 = Utils.convertHexToString(s4);
+                        s4 = s4.replace(" ", "").replace("<", "")
+                                .replace(">", "");
+                    }
+                    _date = str.substring(str.indexOf("2254432F48444C20203A") + 20);
+                    String s5 = "-1";
+                    if (_date.indexOf("22") > 0 && _date.indexOf("22") < 20) {
+                        if (_date.indexOf("2D2D2D2D") > 0 && _date.indexOf("2D2D2D2D") < 20) {
+
+                        } else {
+                            s5 = _date.substring(0, _date.indexOf("22"));
+                            s5 = Utils.convertHexToString(s5);
+                            s5 = s5.replace(" ", "").replace("<", "")
+                                    .replace(">", "");
+                        }
+                    }
+
+                    String result = "总胆固醇(CHOL):" + s1 + " (mmol/L) "
+                            + "高密度脂蛋白(HDL CHOL):" + s2 + " (mmol/L) "
+                            + "甘油三脂(TRIG):" + s3 + " (mmol/L) " + "低密度脂蛋白:" + s4
+                            + " (mmol/L) ";
+                    mDealDataListener.onFetch(type, 200, result);
+                    str = "";
+                } else if (str.indexOf("6D672F644C22") > 0) {
+                    String _date = str.substring(str.indexOf("2243484F4C202020203A") + 20);
+                    String s1 = "-1";
+                    if (_date.indexOf("6D672F644C22") > 0 && _date.indexOf("6D672F644C22") < 20) {
+                        s1 = _date.substring(0, _date.indexOf("6D672F644C22"));
+                        s1 = Utils.convertHexToString(s1);
+                        s1 = s1.replace(" ", "").replace("<", "")
+                                .replace(">", "");
+                        try {
+                            double s = Double.valueOf(s1) / 38.7;
+                            s1 = String.format("%.2f", s);
+                        } catch (Exception e) {
+
+                        }
+                    }
+                    _date = str.substring(str.indexOf("2248444C2043484F4C3A") + 20);
+                    String s2 = "-1";
+                    if (_date.indexOf("6D672F644C22") > 0 && _date.indexOf("6D672F644C22") < 20) {
+                        s2 = _date.substring(0, _date.indexOf("6D672F644C22"));
+                        s2 = Utils.convertHexToString(s2);
+                        s2 = s2.replace(" ", "").replace("<", "")
+                                .replace(">", "");
+                        try {
+                            double s = Double.valueOf(s2) / 38.7;
+                            s2 = String.format("%.2f", s);
+                        } catch (Exception e) {
+
+                        }
+                    }
+                    _date = str.substring(str.indexOf("2254524947202020203A") + 20);
+                    String s3 = "-1";
+                    if (_date.indexOf("6D672F644C22") > 0 && _date.indexOf("6D672F644C22") < 20) {
+                        s3 = _date.substring(0, _date.indexOf("6D672F644C22"));
+                        s3 = Utils.convertHexToString(s3);
+                        s3 = s3.replace(" ", "").replace("<", "")
+                                .replace(">", "");
+                        try {
+                            double s = Double.valueOf(s3) / 88.6;
+                            s3 = String.format("%.2f", s);
+                        } catch (Exception e) {
+
+                        }
+                    }
+                    _date = str.substring(str.indexOf("2243414C43204C444C3A") + 20);
+                    String s4 = "-1";
+                    if (_date.indexOf("6D672F644C22") > 0 && _date.indexOf("6D672F644C22") < 20) {
+                        s4 = _date.substring(0, _date.indexOf("6D672F644C22"));
+                        s4 = Utils.convertHexToString(s4);
+                        s4 = s4.replace(" ", "").replace("<", "")
+                                .replace(">", "");
+                        try {
+                            double s = Double.valueOf(s4) / 38.7;
+                            s4 = String.format("%.2f", s);
+                        } catch (Exception e) {
+                        }
+                    }
+                    _date = str.substring(str.indexOf("2254432F48444C20203A") + 20);
+                    String s5 = "-1";
+                    if (_date.indexOf("22") > 0 && _date.indexOf("22") < 20) {
+                        if (_date.indexOf("2D2D2D2D") > 0
+                                && _date.indexOf("2D2D2D2D") < 20) {
+
+                        } else {
+                            s5 = _date.substring(0, _date.indexOf("22"));
+                            s5 = Utils.convertHexToString(s5);
+                            s5 = s5.replace(" ", "").replace("<", "")
+                                    .replace(">", "");
+                        }
+                    }
+
+                    String result = "总胆固醇(CHOL):" + s1 + " (mmol/L) "
+                            + "高密度脂蛋白(HDL CHOL):" + s2 + " (mmol/L) "
+                            + "甘油三脂(TRIG):" + s3 + " (mmol/L) " + "低密度脂蛋白:" + s4
+                            + " (mmol/L) ";
+                    mDealDataListener.onFetch(type, 200, result);
+                    str = "";
+                }
+            } else if ((str.contains("55AA00FA3630") || str
+                    .contains("1C50000D0A")) && str.contains("54432F48444C")) { // 血脂新蓝牙2
+                Log.e("血脂新蓝牙2str=========", str);
+                String bftdata = Utils.convertHexToString(str);
+                bftdata = bftdata.replaceAll("[\\t\\n\\r]", "");// 将内容区域的回车换行去除
+                Log.e("bftdata", bftdata);
+                String s1 = "";
+                String s2 = "";
+                String s3 = "";
+                String s4 = "";
+                // 正则表达式获取匹配返回数据
+                // Pattern p1 =
+                // Pattern.compile("CHOL   : <  (.*?) mmol/LHDL CHOL :  (.*?) mmol/LTRIG     :  (.*?) mmol/LCALC LDL        : (.*?)\\s.*?");//正则表达式，取=和|之间的字符串，不包括=和|
+                Pattern p1 = Pattern
+                        .compile("CHOL[\\s|\\S]*:\\s+(.*?)HDL[\\s|\\S]*:\\s+(.*?)TR[\\s|\\S]*:\\s+(.*?)CA[\\s|\\S]*:\\s+(.*?)T");
+
+                Matcher m1 = p1.matcher(bftdata);
+                if (m1.find()) {
+                    s1 = filtration(m1.group(1));
+                    s2 = filtration(m1.group(2));
+                    s3 = filtration(m1.group(3));
+                    s4 = filtration(m1.group(4));
+                    if (s4.contains("-")) {
+                        s4 = "-1";
+                    }
+
+                }
+                DecimalFormat fnum = new DecimalFormat("##0.00");
+                if (s1.contains("mg/dL") || s1.contains("g/L")) {
+                    double s11 = Integer.parseInt(s1.replaceAll("mg/dL|g/L", "")
+                            .trim()) * 0.0259;
+                    s1 = fnum.format(s11);
+                    Log.e("qqq", s1 + "qqq");
+                }
+                if (s2.contains("mg/dL") || s2.contains("g/L")) {
+                    double s22 = Integer.parseInt(s2.replaceAll("mg/dL|g/L", "")
+                            .trim()) * 0.0259;
+                    s2 = fnum.format(s22);
+                    Log.e("www", s2 + "www");
+                }
+                if (s3.contains("mg/dL") || s3.contains("g/L")) {
+                    double s33 = Integer.parseInt(s3.replaceAll("mg/dL|g/L", "")
+                            .trim()) * 0.0113;
+                    s3 = fnum.format(s33).trim();
+                    Log.e("eee", s3 + "eee");
+                }
+                if (s4.contains("mg/dL") || s4.contains("g/L")) {
+                    double s44 = Integer.parseInt(s4.replaceAll("mg/dL|g/L", "")
+                            .trim()) * 0.0259;
+                    s4 = fnum.format(s44);
+                    Log.e("rrr", s4 + "rrr");
+                }
+                String result = "总胆固醇(CHOL):" + s1 + " (mmol/L) "
+                        + "高密度脂蛋白(HDL CHOL):" + s2 + " (mmol/L) "
+                        + "甘油三脂(TRIG):" + s3 + " (mmol/L) " + "低密度脂蛋白:" + s4
+                        + " (mmol/L) ";
+                mDealDataListener.onFetch(type, 200, result);
+                str = "";
+            }
+            if (str != null && str.length() > 200) {
+                String mData = Utils.convertHexToString(str);
+                if (mData.startsWith("ZS") && mData.endsWith("ZJ")) {
+                    String[] mArrays = mData.split("ZJ");
+                    String TC00 = null;
+                    String HDL0 = null;
+                    String TG00 = null;
+                    String LDL0 = null;
+                    String unit = null;
+                    double tc00 = 0, hdl0 = 0, tg00 = 0, ldl0 = 0;
+                    for (int i = 0; i < mArrays.length; i++) {
+                        Log.e("中生血脂返回数据", "中生血脂返回数据：" + mArrays[i] + "ZJ");
+                        String mdata = mArrays[i] + "ZJ";
+                        if (mdata.length() > 15) {
+                            if (mdata.contains("--") && mdata.substring(4, 5).equals("0")) {//为0时代表单位为（u）mmoL/L,为1时代表单位为mg/dL(g/L)
+                                unit = "0";
+                            }
+                            if (mdata.contains("--") && mdata.substring(4, 5).equals("1")) {
+                                unit = "1";
+                            }
+                            if (unit.equals("0")) {
+                                if (mdata.contains("TC00")) {
+                                    TC00 = mdata.substring(6, 13);
+                                    tc00 = Double.parseDouble(TC00);
+                                    Log.e("TC00", "TC00:" + tc00);//胆固醇
+                                }
+                                if (mdata.contains("HDL0")) {
+                                    HDL0 = mdata.substring(6, 13);
+                                    hdl0 = Double.parseDouble(HDL0);
+                                    Log.e("HDL0", "HDL0:" + hdl0);//高密度脂蛋白胆固醇（简称HDL-C）
+                                }
+                                if (mdata.contains("TG00")) {
+                                    TG00 = mdata.substring(6, 13);
+                                    tg00 = Double.parseDouble(TG00);
+                                    Log.e("TG00", "TG00:" + tg00);//甘油三酯
+                                }
+                                if (mdata.contains("LDL0")) {
+                                    LDL0 = mdata.substring(6, 13);
+                                    ldl0 = Double.parseDouble(LDL0);
+                                    Log.e("LDL0", "LDL0:" + ldl0);//低密度脂蛋白胆固醇(简称LDL-C）
+                                }
+                            } else if (unit.equals("1")) {
+
+                            }
+
+                        }
+                    }
+                   /* et1.setText(tc00 + "");//胆固醇
+                    et2.setText(hdl0 + "");//高密度脂蛋白
+                    et3.setText(tg00 + "");//甘油三酯
+                    et4.setText(ldl0 + "");//低密度脂蛋白*/
+                    String result = "总胆固醇(CHOL):" + tc00 + " (mmol/L) "
+                            + "高密度脂蛋白(HDL CHOL):" + hdl0 + " (mmol/L) "
+                            + "甘油三脂(TRIG):" + tg00 + " (mmol/L) " + "低密度脂蛋白:" + ldl0
+                            + " (mmol/L) ";
+                    mDealDataListener.onFetch(type, 200, result);
+                    str = "";
+                }
+
+                if ((str.length() == 230 && str.contains("323031") && str.endsWith("0D0A") && mData.contains("ID:")) || (str.length() > 240 && str.contains("323031") && str.endsWith("0D0A") && mData.contains("ID:"))) {//艾科蓝牙数据
+                    mData = mData.substring(mData.indexOf("CHOL"));
+                    String[] mValue = mData.split(":");
+                    double tc00 = 0, hdl0 = 0, tg00 = 0, ldl0 = 0;
+                    for (int i = 0; i < mValue.length; i++) {
+                        if (mValue[i].contains("mmol/L")) {
+                            String[] mDatasub = mValue[i].split("mmol/L");
+                            if (mDatasub.length > 0) {
+                                if (i == 1) {
+                                    System.out.println("CHOL--:" + mDatasub[0].replaceAll(">|<", ""));
+                                    tc00 = Double.parseDouble(mDatasub[0].replaceAll(">|<", ""));
+                                } else if (i == 2) {
+                                    System.out.println("HDL:--:" + mDatasub[0].replaceAll(">|<", ""));
+                                    hdl0 = Double.parseDouble(mDatasub[0].replaceAll(">|<", ""));
+                                } else if (i == 3) {
+                                    System.out.println("TRIG--:" + mDatasub[0].replaceAll(">|<", ""));
+                                    tg00 = Double.parseDouble(mDatasub[0].replaceAll(">|<", ""));
+                                } else if (i == 5) {
+                                    System.out.println("LDL--:" + mDatasub[0].replaceAll(">|<", ""));
+                                    ldl0 = Double.parseDouble(mDatasub[0].replaceAll(">|<", ""));
+                                }
+                            }
+                        }
+                    }
+                    String result = "总胆固醇(CHOL):" + tc00 + " (mmol/L) "
+                            + "高密度脂蛋白(HDL CHOL):" + hdl0 + " (mmol/L) "
+                            + "甘油三脂(TRIG):" + tg00 + " (mmol/L) " + "低密度脂蛋白:" + ldl0
+                            + " (mmol/L) ";
+                    mDealDataListener.onFetch(type, 200, result);
+                    str = "";
+                }
+            }
+        }
+    }
+
+
+    public void setGlHgbString() {
         strDA = "";
     }
+
     private String strDA = "";
+
     /**
      * 处理糖化血红蛋白的数据
      */
-    public void dealGlHgbData(String data, DealDataListener listener){
+    public void dealGlHgbData(String data, DealDataListener listener) {
         type = BlueConstants.BLUE_EQUIP_GLHGB;
         this.mDealDataListener = listener;
         Log.e("test", "data=" + data);
@@ -278,8 +603,8 @@ public class DealDataUtils {
                         + chars[chars.length - 36] + "" + chars[chars.length - 35]
                         + "" + chars[chars.length - 38] + "" + chars[chars.length - 37];
                 Float value = Float.intBitsToFloat(Integer.valueOf(s.trim(), 16));
-                String reuslt = "糖化血红蛋白：" +  value + "%";
-                mDealDataListener.onFetch(type,200,reuslt);
+                String reuslt = "糖化血红蛋白：" + value + "%";
+                mDealDataListener.onFetch(type, 200, reuslt);
                 strDA = "";
             }
 
@@ -287,13 +612,15 @@ public class DealDataUtils {
     }
 
     private boolean flag = false;
-    public void setHgbFlag(){
+
+    public void setHgbFlag() {
         flag = false;
     }
+
     /**
      * 处理血红蛋白检测器的数据
      */
-    public void dealHgbData(String data, DealDataListener listener){
+    public void dealHgbData(String data, DealDataListener listener) {
         type = BlueConstants.BLUE_EQUIP_HGB;
         this.mDealDataListener = listener;
         Log.e("test", "data=" + data);
@@ -313,12 +640,12 @@ public class DealDataUtils {
                                     + chars[chars.length - 5];
                             float str = (float) (Integer.parseInt(hexStr, 16));
                             if (str < 70) {
-                                mDealDataListener.onFetch(type,100,"测量结果低于检测范围,请重新测量！");
+                                mDealDataListener.onFetch(type, 100, "测量结果低于检测范围,请重新测量！");
                             } else if (str > 260) {
-                                mDealDataListener.onFetch(type,100,"测量结果高于检测范围,请重新测量！");
+                                mDealDataListener.onFetch(type, 100, "测量结果高于检测范围,请重新测量！");
                             } else {
                                 String result = str + "g/L";
-                                mDealDataListener.onFetch(type,200,"测量结果：" + result);
+                                mDealDataListener.onFetch(type, 200, "测量结果：" + result);
                                 flag = true;
                             }
                         }
@@ -332,6 +659,7 @@ public class DealDataUtils {
 
 
     private float tempweight = 0;
+
     /**
      * 处理体重秤的数据
      */
@@ -356,7 +684,7 @@ public class DealDataUtils {
                         myweight * 2 / 10);
                 sb.append(pvss);
                 // 检测成功给界面组件赋值
-                String result = "体重:" + (myweight / 10) + ",脂肪:0" + ",水分:0"+ ",肌肉:0"+ ",骨量:0"+ ",卡路里:0";
+                String result = "体重:" + (myweight / 10) + ",脂肪:0" + ",水分:0" + ",肌肉:0" + ",骨量:0" + ",卡路里:0";
                 sb.append(result);
                 float mybmi = 0;
                 //Double uHeight = UsersMod.get_uHeight();
@@ -418,15 +746,15 @@ public class DealDataUtils {
                                         bodyfats.muscleKg) + "\r\n");
                     } else if (errorType == HTDataType.ErrorAge) {
                         Log.e("年龄错误", "年龄错误年龄错误年龄错误");
-                        mDealDataListener.onFetch(type, 100,"年龄错误");
+                        mDealDataListener.onFetch(type, 100, "年龄错误");
                     } else if (errorType == HTDataType.ErrorHeight) {
                         Log.e("身高错误", "身高错误身高错误身高错误身");
-                        mDealDataListener.onFetch(type, 100,"身高错误");
+                        mDealDataListener.onFetch(type, 100, "身高错误");
                     } else if (errorType == HTDataType.ErrorWeight) {
                         Log.e("体重错误", "体重错误体重错误体重错误体重错");
-                        mDealDataListener.onFetch(type, 100,"体重错误");
+                        mDealDataListener.onFetch(type, 100, "体重错误");
                     } else {
-                        mDealDataListener.onFetch(type, 100,"未知错误");
+                        mDealDataListener.onFetch(type, 100, "未知错误");
                     }
                     String fat = String.format("%.1f",
                             bodyfats.bodyfatPercentage);
@@ -444,7 +772,7 @@ public class DealDataUtils {
                     // 检测成功给界面组件赋值
                     String result = "体重:" + W + ",脂肪:" + fat + ",水分:" + humidity
                             + ",肌肉:" + muscles + ",骨量:" + bone + ",卡路里:" + BMR
-                            + ",BMI:" + bmis + "Kg/㎡" + ",身高:" + uHeight + "m" ;
+                            + ",BMI:" + bmis + "Kg/㎡" + ",身高:" + uHeight + "m";
 
                     mDealDataListener.onFetch(type, 200, result);
                 }
@@ -487,9 +815,9 @@ public class DealDataUtils {
                         // 检测成功给界面组件赋值
                         String result = "体重:" + (myweight / 2 / 10) + ",脂肪:" + (mybodyfat / 10) + ",水分:" + (mywater / 10)
                                 + ",肌肉:" + (mymuscle / 10) + ",骨量:" + (mybonemass / 10) + ",卡路里:" + (mycalorie)
-                                + ",BMI:" + bd + "Kg/㎡" + ",身高:" + uHeight + "m" ;
+                                + ",BMI:" + bd + "Kg/㎡" + ",身高:" + uHeight + "m";
 
-                        mDealDataListener.onFetch(type, 200, pvss + "<>"+ result);
+                        mDealDataListener.onFetch(type, 200, pvss + "<>" + result);
 
                     }
                 }
@@ -533,7 +861,7 @@ public class DealDataUtils {
                             // mywater / 10, mymuscle / 10,
                             // mybonemass / 10, mycalorie, mybmi));
                             String result = String.format("体重：%4.1f kg 体脂：%4.1f %% 身体水分：%4.1f %% 肌肉：%4.1f %% 骨量：%4.1f kg 卡路里：%5f KCAL BMI：%4.1f "
-                            ,myweight / 10, mybodyfat / 10, mywater / 10, mymuscle / 10,mybonemass / 10, mycalorie, mybmi);
+                                    , myweight / 10, mybodyfat / 10, mywater / 10, mymuscle / 10, mybonemass / 10, mycalorie, mybmi);
                             mDealDataListener.onFetch(type, 200, result);
 
                         }
@@ -577,7 +905,7 @@ public class DealDataUtils {
                 if (Float.valueOf(myweight) > 0) {
                     // 检测成功给组件赋值
                     String result = String.format("体重：%4.1f kg 体脂：%4.1f %% 身体水分：%4.1f %% 肌肉：%4.1f %% 骨量：%4.1f kg 卡路里：%5f KCAL BMI：%4.1f "
-                            ,myweight, mybodyfat,mywater,mymuscle,mybonemass, mycalorie, mybmi);
+                            , myweight, mybodyfat, mywater, mymuscle, mybonemass, mycalorie, mybmi);
                     mDealDataListener.onFetch(type, 200, result);
                 }
             } else if ((bytes[0] & 0xFF) == 253) {
@@ -726,8 +1054,11 @@ public class DealDataUtils {
     }
 
 
-
     String str = "";
+
+    public void setUraSra() {
+        str = "";
+    }
 
     /**
      * 处理尿机的数据
@@ -1093,9 +1424,10 @@ public class DealDataUtils {
      */
     private StringBuilder sb = new StringBuilder();
 
-    public void setTemString(){
+    public void setTemString() {
         sb.setLength(0);
     }
+
     public void dealTemData(String data, DealDataListener listener) {
         type = BlueConstants.BLUE_EQUIP_TEM;
         this.mDealDataListener = listener;

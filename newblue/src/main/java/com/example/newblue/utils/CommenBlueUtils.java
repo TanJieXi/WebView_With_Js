@@ -147,6 +147,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
 
         }
     };
+    private Disposable disObs;
 
 
     private CommenBlueUtils() {
@@ -196,8 +197,13 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
     public void disConnectBlueTooth() {
         isClickStop = true;
         BluetoothScan.getInstance().Stop();
+        mDeviceAddress = "";
         if (mSubscribe != null) {
             mSubscribe.dispose();
+        }
+
+        if(disObs != null){
+            disObs.dispose();
         }
 
         if (mBleWrapper != null) {
@@ -235,6 +241,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
         this.type = type;
         this.mConnectBlueToothListener = connectBlueToothListener;
         isClickStop = false;
+        mDeviceAddress = "";
         mConnectBlueToothListener.onConnectSuccess("连接中，请稍后");
         mCharacteristics = new ArrayList<>();
         //BluetoothScan.IsAutoJump = false;
@@ -246,6 +253,10 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
         Log.i("bleWrapper", "---CommenBlueUtisl--BleWrapper->");
         if (!mBleWrapper.initialize()) {
             BluetoothScan.getInstance().Stop();
+        }
+
+        if(disObs != null){
+            disObs.dispose();
         }
 
 
@@ -483,8 +494,8 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                 .subscribe(new Consumer<Object>() {
                     @Override
                     public void accept(Object o) throws Exception {
-                        mConnectBlueToothListener.onConnectSuccess("设备在线");
-                        Log.i("sjkljklsjadkll", "连接到设备成功--user_heathe");
+                        /*mConnectBlueToothListener.onConnectSuccess("设备在线");
+                        Log.i("sjkljklsjadkll", "连接到设备成功--user_heathe");*/
                         BluetoothScan.getInstance().Stop();
                     }
                 });
@@ -499,7 +510,32 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
     @SuppressLint("CheckResult")
     @Override
     public void uiDeviceDisconnected(BluetoothGatt gatt, BluetoothDevice device) {
-        Observable.create(new ObservableOnSubscribe<Object>() {
+        if(disObs != null){
+            disObs.dispose();
+            disObs = null;
+        }
+        disObs = Observable.interval(0,3, TimeUnit.SECONDS)
+                .take(2)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long aLong){
+                        Log.i("dfdsaffgdsfg",aLong + "");
+                        if(0 == aLong){
+                            mConnectBlueToothListener.onInterceptConnect("连接断开");
+                            Log.e("test", "设备断开");
+                            if (!isClickStop) {
+                                BluetoothScan.getInstance().Start(CommenBlueUtils.this);
+                            }
+                            mDeviceAddress = "";
+                        }else if(1 == aLong){
+                            if (!isClickStop) {
+                                mConnectBlueToothListener.onReConnectEqip("正在尝试重连中,请稍后,请确保设备已打开");
+                            }
+                        }
+                    }
+                });
+       /* Observable.create(new ObservableOnSubscribe<Object>() {
             @Override
             public void subscribe(ObservableEmitter<Object> e) throws Exception {
                 e.onNext("");
@@ -517,7 +553,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                         mDeviceAddress = "";
                     }
                 });
-
+*/
     }
 
     /**
@@ -746,6 +782,51 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
     }
 
     /**
+     * 血脂检测
+     */
+    private void setBftUUid(BluetoothGattService service, String uuid) {
+        if (service != null
+                && uuid.contains("0000fff0-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000fff4-0000-1000-8000-00805f9b34fb", 16);
+            setDevUUID(service, "0000fff1-0000-1000-8000-00805f9b34fb", 8);
+            bluetoothPass = "";
+            SetNotfi();
+        } else if (service != null
+                && uuid.contains("0000f808-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000fa52-0000-1000-8000-00805f9b34fb", 16);
+            setDevUUID(service, "0000fa18-0000-1000-8000-00805f9b34fb", 8);
+            bluetoothPass = "";
+            SetNotfi();
+        } else if (service != null && uuid.contains("0000ffe0-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000ffe4-0000-1000-8000-00805f9b34fb", 16);
+            bluetoothPass = "";
+            SetNotfi();
+        } else if (service != null && uuid.contains("0000ff12-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000ff02-0000-1000-8000-00805f9b34fb",
+                    16);//0000ff02-0000-1000-8000-00805f9b34fb
+            bluetoothPass = "";
+            SetNotfi();
+        } else if (service != null && uuid.contains("c14d2c0a-401f-b7a9-841f-e2e93b80f631")) {//艾科血脂蓝牙
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "81eb77bd-89b8-4494-8a09-7f83d986ddc7", 16);
+            setDevUUID(service, "6c1cef07-3377-410e-b231-47f76c5a39e1", 16);
+            bluetoothPass = "";
+            SetNotfi();
+        }
+
+    }
+
+
+    /**
      * 糖化血球蛋白检测
      */
     private void setGlHgbUUid(BluetoothGattService service, String uuid) {
@@ -753,13 +834,13 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
         if (service != null && uuid.contains("0000ffe0-0000-1000-8000-00805f9b34fb")) {
             mBTServices = service;
             mBleWrapper.getCharacteristicsForService(mBTServices);
-            setDevUUID(service,"0000ffe1-0000-1000-8000-00805f9b34fb", 16);
+            setDevUUID(service, "0000ffe1-0000-1000-8000-00805f9b34fb", 16);
             bluetoothPass = "";
             SetNotfi();
         } else if (service != null && uuid.contains("0000ffe1-0000-1000-8000-00805f9b34fb")) {
             mBTServices = service;
             mBleWrapper.getCharacteristicsForService(mBTServices);
-            setDevUUID(service,"0000ffe1-0000-1000-8000-00805f9b34fb", 16);
+            setDevUUID(service, "0000ffe1-0000-1000-8000-00805f9b34fb", 16);
             bluetoothPass = "";
             SetNotfi();
         }
@@ -892,10 +973,21 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
      * @param device
      * @param services 可以通过这个方法的getCharatristic，然后通过readCharacteristic去读取特定数据
      */
+    @SuppressLint("CheckResult")
     @Override
     public void uiAvailableServices(BluetoothGatt gatt, BluetoothDevice device, List<BluetoothGattService> services) {
         Log.i("bleWrapper", "--->-uuid-->" + "uiAvailableServices");
         Log.i("bleWrapper", "--->-uuid-->" + services.size());
+        //之前这两句话是写在startServicesDiscovery里面的，不一定连接成功，services.size >0才说明成功了
+        if(services.size() > 0) {
+            handleraa.post(new Runnable() {
+                @Override
+                public void run() {
+                    mConnectBlueToothListener.onConnectSuccess("设备在线，请测量");
+                    Log.i("sjkljklsjadkll", "连接到设备成功--user_heathe");
+                }
+            });
+        }
         nownotfi = 0;
         mCharacteristics.clear();
         for (BluetoothGattService service : services) {
@@ -910,7 +1002,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                     case BlueConstants.BLUE_EQUIP_TEM://体温枪
                         DealDataUtils.getInstance().setTemString();
                         setTemUUid(service, uuid);
-                        Observable.timer(1, TimeUnit.MILLISECONDS)
+                       /* Observable.timer(1000, TimeUnit.MICROSECONDS)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(new Consumer<Long>() {
                                     @Override
@@ -918,12 +1010,13 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                                         mConnectBlueToothListener.onConnectSuccess("体温测量中，请稍后。。。");
                                     }
                                 });
-
+*/
                         break;
                     case BlueConstants.BLUE_EQUIP_OXI://血氧
                         setOxiUUid(service, uuid);
                         break;
                     case BlueConstants.BLUE_EQUIP_URA://尿机
+                        DealDataUtils.getInstance().setUraSra();
                         isQuitUra = false;
                         setUraUUid(service, uuid);
                         break;
@@ -944,10 +1037,14 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                         DealDataUtils.getInstance().setGlHgbString();
                         setGlHgbUUid(service, uuid);
                         break;
+                    case BlueConstants.BLUE_EQUIP_BFT://血脂
+                        DealDataUtils.getInstance().setUraSra();
+                        setBftUUid(service, uuid);
+                        break;
                     default:
                         break;
                 }
-            }else{
+            } else {
                 Log.i("bleWrapper", "--->-uuid-tem-uiAvailableServices-nullaaaaaa>");
             }
         }
