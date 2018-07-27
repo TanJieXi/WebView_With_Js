@@ -252,7 +252,39 @@ public class DealDataUtils {
         }
     }
 
+    public void setGlHgbString(){
+        strDA = "";
+    }
+    private String strDA = "";
+    /**
+     * 处理糖化血红蛋白的数据
+     */
+    public void dealGlHgbData(String data, DealDataListener listener){
+        type = BlueConstants.BLUE_EQUIP_GLHGB;
+        this.mDealDataListener = listener;
+        Log.e("test", "data=" + data);
+        if (data != null) {
+            strDA += data;
+            if (strDA.length() > 100) {
+                if (data.startsWith("4842")) {
+                } else {
+                    strDA = "";
+                    return;
+                }
+                Log.e("strDA", "strDA=" + strDA);
+                char[] chars = strDA.toCharArray();
+                String s = chars[chars.length - 32] + "" + chars[chars.length - 31]
+                        + "" + chars[chars.length - 34] + "" + chars[chars.length - 33]
+                        + chars[chars.length - 36] + "" + chars[chars.length - 35]
+                        + "" + chars[chars.length - 38] + "" + chars[chars.length - 37];
+                Float value = Float.intBitsToFloat(Integer.valueOf(s.trim(), 16));
+                String reuslt = "糖化血红蛋白：" +  value + "%";
+                mDealDataListener.onFetch(type,200,reuslt);
+                strDA = "";
+            }
 
+        }
+    }
 
     private boolean flag = false;
     public void setHgbFlag(){
@@ -1061,6 +1093,9 @@ public class DealDataUtils {
      */
     private StringBuilder sb = new StringBuilder();
 
+    public void setTemString(){
+        sb.setLength(0);
+    }
     public void dealTemData(String data, DealDataListener listener) {
         type = BlueConstants.BLUE_EQUIP_TEM;
         this.mDealDataListener = listener;

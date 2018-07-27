@@ -60,7 +60,7 @@
         android:layout_height="0dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_bpm"
+        app:layout_constraintTop_toBottomOf="@+id/btn_glhgb"
         app:layout_constraintBottom_toBottomOf="parent"
         android:text="数据"
         android:gravity="center"
@@ -101,5 +101,13 @@
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintLeft_toRightOf="@+id/btn_bgm"
         app:layout_constraintTop_toBottomOf="@+id/btn_two"
+        />
+    <Button
+        android:id="@+id/btn_glhgb"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="糖化血红蛋白"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintTop_toBottomOf="@+id/btn_bpm"
         />
 </android.support.constraint.ConstraintLayout>

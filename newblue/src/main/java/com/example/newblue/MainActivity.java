@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     }
 
 
-    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm,R.id.btn_bmi,R.id.btn_bgm,R.id.btn_hgb})
+    @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open, R.id.btn_three, R.id.btn_bpm,R.id.btn_bmi,R.id.btn_bgm,R.id.btn_hgb,R.id.btn_glhgb})
     public void click(Button v) {
         switch (v.getId()) {
             case R.id.btn_startSao:
@@ -77,6 +77,10 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
                 type = BlueConstants.BLUE_EQUIP_HGB;
                 break;
+            case R.id.btn_glhgb://糖化血红蛋白检测
+                CommenBlueUtils.getInstance().disConnectBlueTooth();
+                type = BlueConstants.BLUE_EQUIP_GLHGB;
+                break;
             default:
                 break;
         }
@@ -95,8 +99,8 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
 
     @Override
     public void onDataFromBlue(String type, String message) {
-        Log.i("sjkljklsjadkll", "---type--onDataFromBlue->" + type);
-        Log.i("sjkljklsjadkll", "---数据--onDataFromBlue->" + message);
+        Log.i("bleWrapper", "---type--onDataFromBlue->" + type);
+        Log.i("bleWrapper", "---数据--onDataFromBlue->" + message);
         switch (type) {
             case BlueConstants.BLUE_EQUIP_TEM: //体温
                 DealDataUtils.getInstance().dealTemData(message, this);
@@ -119,6 +123,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case BlueConstants.BLUE_EQUIP_HGB://血红蛋白检测
                 DealDataUtils.getInstance().dealHgbData(message, this);
                 break;
+            case BlueConstants.BLUE_EQUIP_GLHGB://糖化血红蛋白检测
+                DealDataUtils.getInstance().dealGlHgbData(message, this);
+                break;
             default:
                 break;
         }
@@ -129,25 +136,28 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
     @Override
     public void onFetch(String type,int code, String message) {
         switch (type){
-            case BlueConstants.BLUE_EQUIP_TEM:
+            case BlueConstants.BLUE_EQUIP_TEM://体温
                 setData(tv_text,message,code);
                 break;
-            case BlueConstants.BLUE_EQUIP_OXI:
+            case BlueConstants.BLUE_EQUIP_OXI://血氧
                 setData(tv_text,message,code);
                 break;
-            case BlueConstants.BLUE_EQUIP_URA:
+            case BlueConstants.BLUE_EQUIP_URA://尿机
                 setData(tv_text,message,code);
                 break;
-            case BlueConstants.BLUE_EQUIP_BPM:
+            case BlueConstants.BLUE_EQUIP_BPM://血压计
                 setData(tv_text,message,code);
                 break;
-            case BlueConstants.BLUE_EQUIP_BMI:
+            case BlueConstants.BLUE_EQUIP_BMI://体重体脂秤
                 setData(tv_text,message,code);
                 break;
-            case BlueConstants.BLUE_EQUIP_BGM:
+            case BlueConstants.BLUE_EQUIP_BGM://血糖计
                 setData(tv_text,message,code);
                 break;
-            case BlueConstants.BLUE_EQUIP_HGB:
+            case BlueConstants.BLUE_EQUIP_HGB://血红蛋白检测
+                setData(tv_text,message,code);
+                break;
+            case BlueConstants.BLUE_EQUIP_GLHGB://血红蛋白检测
                 setData(tv_text,message,code);
                 break;
             default:

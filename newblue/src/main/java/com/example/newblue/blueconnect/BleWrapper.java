@@ -20,6 +20,7 @@ import com.example.newblue.App;
 import com.example.newblue.interfaces.BleWrapperUiCallbacks;
 import com.example.newblue.scan.BluetoothScan;
 
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -179,9 +180,28 @@ public class BleWrapper {
     /* close GATT client completely */
     public void close() {
         if (mBluetoothGatt != null) mBluetoothGatt.close();
+        //refreshDeviceCache();
         mBluetoothGatt = null;
     }
-
+    /**
+     * 清理蓝牙缓存
+     */
+    public boolean refreshDeviceCache() {
+        if (mBluetoothGatt != null) {
+            try {
+                Method localMethod = mBluetoothGatt.getClass().getMethod(
+                        "refresh", new Class[0]);
+                if (localMethod != null) {
+                    boolean bool = ((Boolean) localMethod.invoke(
+                            mBluetoothGatt, new Object[0])).booleanValue();
+                    return bool;
+                }
+            } catch (Exception localException) {
+                Log.e("BleWrapper", "An exception occured while refreshing device");
+            }
+        }
+        return false;
+    }
     /* request new RSSi value for the connection*/
     public void readPeriodicalyRssiValue(final boolean repeat) {
         mTimerEnabled = repeat;
@@ -235,7 +255,7 @@ public class BleWrapper {
             mBluetoothGattServices.clear();
         // keep reference to all services in local array:
         if (mBluetoothGatt != null) mBluetoothGattServices = mBluetoothGatt.getServices();
-        Log.i("dfdsafgsdf", "--数量--" + mBluetoothGatt.getServices().size());
+        Log.i("bleWrapper", "--服务数量--" + mBluetoothGatt.getServices().size());
         mUiCallback.uiAvailableServices(mBluetoothGatt, mBluetoothDevice, mBluetoothGattServices);
     }
 
@@ -411,7 +431,6 @@ public class BleWrapper {
             Log.i("bleWrapper", "---onConnectionStateChange--->"+ newState);
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 mConnected = true;
-                mUiCallback.uiDeviceConnected(mBluetoothGatt, mBluetoothDevice);
 
                 //  发现该设备的RSSI，RSSI：信号强度
                 mBluetoothGatt.readRemoteRssi();
@@ -423,6 +442,8 @@ public class BleWrapper {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                mUiCallback.uiDeviceConnected(mBluetoothGatt, mBluetoothDevice);
+
                 // 定期更新RSSI值
                 startMonitoringRssiValue();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -447,7 +468,7 @@ public class BleWrapper {
          */
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            Log.i("bleWrapper", "---onServicesDiscovered--->");
+            Log.i("bleWrapper", "---onServicesDiscovered--状态->" + status);
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 // 现在，当服务发现完成时，我们可以为Gatt调用getServices（）
                 getSupportedServices();
