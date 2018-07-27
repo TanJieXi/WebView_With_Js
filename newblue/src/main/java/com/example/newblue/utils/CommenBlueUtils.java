@@ -249,7 +249,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
         }
 
 
-        return;
+        //return;
         //每0.5s去连接一下
         /*mSubscribe = Observable.interval(500, TimeUnit.MILLISECONDS).
                 observeOn(Schedulers.io())
