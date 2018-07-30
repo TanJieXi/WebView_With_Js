@@ -202,7 +202,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
             mSubscribe.dispose();
         }
 
-        if(disObs != null){
+        if (disObs != null) {
             disObs.dispose();
         }
 
@@ -233,7 +233,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
             handleraa.removeCallbacks(runnableaa);
         }
 
-        DealDataUtils.getInstance().removeAllHandler();
+        DealBlueDataUtils.getInstance().removeAllHandler();
     }
 
 
@@ -255,7 +255,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
             BluetoothScan.getInstance().Stop();
         }
 
-        if(disObs != null){
+        if (disObs != null) {
             disObs.dispose();
         }
 
@@ -510,25 +510,25 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
     @SuppressLint("CheckResult")
     @Override
     public void uiDeviceDisconnected(BluetoothGatt gatt, BluetoothDevice device) {
-        if(disObs != null){
+        if (disObs != null) {
             disObs.dispose();
             disObs = null;
         }
-        disObs = Observable.interval(0,3, TimeUnit.SECONDS)
+        disObs = Observable.interval(0, 3, TimeUnit.SECONDS)
                 .take(2)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Long>() {
                     @Override
-                    public void accept(Long aLong){
-                        Log.i("dfdsaffgdsfg",aLong + "");
-                        if(0 == aLong){
+                    public void accept(Long aLong) {
+                        Log.i("dfdsaffgdsfg", aLong + "");
+                        if (0 == aLong) {
                             mConnectBlueToothListener.onInterceptConnect("连接断开");
                             Log.e("test", "设备断开");
                             if (!isClickStop) {
                                 BluetoothScan.getInstance().Start(CommenBlueUtils.this);
                             }
                             mDeviceAddress = "";
-                        }else if(1 == aLong){
+                        } else if (1 == aLong) {
                             if (!isClickStop) {
                                 mConnectBlueToothListener.onReConnectEqip("正在尝试重连中,请稍后,请确保设备已打开");
                             }
@@ -641,7 +641,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
 //                            bluetoothPass = "AA5504B10000B5";
             bluetoothPass = "FDFDFA050D0A";
             SetNotfi();
-            DealDataUtils.getInstance().removeBpmRRHanler();
+            DealBlueDataUtils.getInstance().removeBpmRRHanler();
             Log.e("服务和特征2222222222222222", "服务和特征222222222222222222222222222");
         }
 
@@ -891,6 +891,50 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
     }
 
     /**
+     * 血糖尿酸总胆固醇三合一的检测
+     */
+    private void setBuaUUid(BluetoothGattService service, String uuid) {
+        if (service != null && uuid.contains("00001808-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "00002a18-0000-1000-8000-00805f9b34fb", 16);
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            setDevUUID(service, "00002a34-0000-1000-8000-00805f9b34fb", 16);
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            setDevUUID(service, "00002a52-0000-1000-8000-00805f9b34fb", 8);
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // bluetoothPass = "AA5504B10000B5";
+            SetNotfi();
+        } else if (service != null && uuid.contains("0000ffe0-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000ffe1-0000-1000-8000-00805f9b34fb", 16);
+            setDevUUID(service, "0000ffe2-0000-1000-8000-00805f9b34fb", 8);
+            // bluetoothPass = "AA5504B10000B5";
+            bluetoothPass = "AAAAAAAA";
+            SetNotfi();
+        } else if (service != null
+                && uuid.contains("0000ff12-0000-1000-8000-00805f9b34fb")) {
+            mBTServices = service;
+            mBleWrapper.getCharacteristicsForService(mBTServices);
+            setDevUUID(service, "0000ff02-0000-1000-8000-00805f9b34fb", 16);
+            SetNotfi();
+        }
+    }
+
+    /**
      * 设置体温计的UUid
      *
      * @param service 服务，循环的
@@ -979,7 +1023,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
         Log.i("bleWrapper", "--->-uuid-->" + "uiAvailableServices");
         Log.i("bleWrapper", "--->-uuid-->" + services.size());
         //之前这两句话是写在startServicesDiscovery里面的，不一定连接成功，services.size >0才说明成功了
-        if(services.size() > 0) {
+        if (services.size() > 0) {
             handleraa.post(new Runnable() {
                 @Override
                 public void run() {
@@ -1000,7 +1044,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                 checkUUID(service);
                 switch (type.trim()) {
                     case BlueConstants.BLUE_EQUIP_TEM://体温枪
-                        DealDataUtils.getInstance().setTemString();
+                        DealBlueDataUtils.getInstance().setTemString();
                         setTemUUid(service, uuid);
                        /* Observable.timer(1000, TimeUnit.MICROSECONDS)
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -1016,7 +1060,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                         setOxiUUid(service, uuid);
                         break;
                     case BlueConstants.BLUE_EQUIP_URA://尿机
-                        DealDataUtils.getInstance().setUraSra();
+                        DealBlueDataUtils.getInstance().setUraSra();
                         isQuitUra = false;
                         setUraUUid(service, uuid);
                         break;
@@ -1030,16 +1074,20 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                         setBgmUUid(service, uuid);
                         break;
                     case BlueConstants.BLUE_EQUIP_HGB://血红蛋白检测
-                        DealDataUtils.getInstance().setHgbFlag();
+                        DealBlueDataUtils.getInstance().setHgbFlag();
                         setHgbUUid(service, uuid);
                         break;
                     case BlueConstants.BLUE_EQUIP_GLHGB://糖化血红蛋白
-                        DealDataUtils.getInstance().setGlHgbString();
+                        DealBlueDataUtils.getInstance().setGlHgbString();
                         setGlHgbUUid(service, uuid);
                         break;
                     case BlueConstants.BLUE_EQUIP_BFT://血脂
-                        DealDataUtils.getInstance().setUraSra();
+                        DealBlueDataUtils.getInstance().setUraSra();
                         setBftUUid(service, uuid);
+                        break;
+                    case BlueConstants.BLUE_EQUIP_BUA://血糖，尿酸，总胆固醇三合一
+                        DealBlueDataUtils.getInstance().setUraSra();
+                        setBuaUUid(service, uuid);
                         break;
                     default:
                         break;

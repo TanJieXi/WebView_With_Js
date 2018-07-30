@@ -11,6 +11,8 @@ import com.example.newblue.interfaces.DealDataListener;
 import com.holtek.libHTBodyfat.HTDataType;
 import com.holtek.libHTBodyfat.HTPeopleGeneral;
 
+import org.json.JSONObject;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -22,9 +24,9 @@ import java.util.regex.Pattern;
  * Created by TanJieXi on 2018/3/30.
  */
 
-public class DealDataUtils {
+public class DealBlueDataUtils {
     private DealDataListener mDealDataListener;
-    private static volatile DealDataUtils instance = null;
+    private static volatile DealBlueDataUtils instance = null;
     private String type = "";
     Handler hh = new Handler();
     Runnable rr = new Runnable() {
@@ -62,7 +64,7 @@ public class DealDataUtils {
     private boolean iscf2 = false;
     private boolean iscf = false;
 
-    private DealDataUtils() {
+    private DealBlueDataUtils() {
 
     }
 
@@ -75,16 +77,18 @@ public class DealDataUtils {
     }
 
 
-    public static DealDataUtils getInstance() {
+    public static DealBlueDataUtils getInstance() {
         if (instance == null) {
-            synchronized (DealDataUtils.class) {
+            synchronized (DealBlueDataUtils.class) {
                 if (instance == null) {
-                    instance = new DealDataUtils();
+                    instance = new DealBlueDataUtils();
                 }
             }
         }
         return instance;
     }
+
+    JSONObject json = null;
 
     /**
      * 处理血氧计的数据
@@ -102,7 +106,7 @@ public class DealDataUtils {
 
             if (data.contains("55AA03")) {
                 if (data.contains("55AA03B100B4")) {
-                    mDealDataListener.onFetch(type, 100, "血氧脉率测量中，请稍候...");
+                    mDealDataListener.onStatusFetch(type, 100, "血氧脉率测量中，请稍候...");
                 } else {
                     if (data.length() > 11) {
                         // 07-05 18:03:37.544: D/test(8103): data=55AA03624BB0
@@ -110,11 +114,13 @@ public class DealDataUtils {
                         int myoxi = Integer.parseInt(hexStr, 16);
                         hexStr = "" + chars[8] + chars[9];
                         int mypulse = Integer.parseInt(hexStr, 16);
-                        String result = "";
-                        result = String.format("血氧：%d ;脉率：%d 次每分钟；", myoxi,
-                                mypulse);
-                        mDealDataListener.onFetch(type, 200, result);
-                        // 检测成功给界面组件赋值 袁明全加 20151001
+                      /* String  result = String.format("血氧：%d ;脉率：%d 次每分钟；", myoxi,
+                                mypulse);*/
+                        json = new JSONObject();
+                        addJsonObject(json, "oxi", myoxi + "");
+                        addJsonObject(json, "pul", mypulse + "");
+                        mDealDataListener.onFetch(type, 200, json);
+                        // mDealDataListener.onFetch(type, 200, result);
                     }
                 }
             }
@@ -146,12 +152,12 @@ public class DealDataUtils {
                 char[] chars = _date.toCharArray();
                 String ml = "" + chars[6] + chars[7];
                 if (ml.equals("01")) {// 测试连接命令 需要仪器在开机状态且非倒计时的情况时才可测试连接
-                    mDealDataListener.onFetch(type, 100, "等待滴血..." + (tt++));
+                    mDealDataListener.onStatusFetch(type, 100, "等待滴血..." + (tt++));
                 } else if (ml.equals("02")) {// 错误状态
-                    mDealDataListener.onFetch(type, 100, "血糖计异常!");
+                    mDealDataListener.onStatusFetch(type, 100, "血糖计异常!");
                     CommenBlueUtils.getInstance().writeHexString("534E0600040B000015");
                 } else if (ml.equals("03")) {// 滴血符号闪烁
-                    mDealDataListener.onFetch(type, 100, "滴血符号闪烁!");
+                    mDealDataListener.onStatusFetch(type, 100, "滴血符号闪烁!");
                     CommenBlueUtils.getInstance().writeHexString("534E0800040153494E4F46");
                 } else if (ml.equals("04")) {// 读当前结果命令
                     if (_date.length() > 21) {
@@ -161,7 +167,11 @@ public class DealDataUtils {
                         float bgm = Integer.parseInt(_bgm, 16);
                         bgm = bgm / 10;
                         String result = bgm + " (mmol/L)";
-                        mDealDataListener.onFetch(type, 200, result);
+                        json = new JSONObject();
+                        addJsonObject(json,"bgm",bgm + "");
+                        addJsonObject(json,"unit","(mmol/L)");
+                        mDealDataListener.onFetch(type,200,json);
+                        //mDealDataListener.onFetch(type, 200, result);
                     }
                     CommenBlueUtils.getInstance().writeHexString("534E0600040B020017");
                 } else if (ml.equals("05")) {// 读历史数据命令
@@ -175,9 +185,9 @@ public class DealDataUtils {
                 } else if (ml.equals("09")) {// 修改校正码命令
 
                 } else if (ml.equals("0A")) {// 开始测试命令
-                    mDealDataListener.onFetch(type, 300, "开始测试命令，倒计时中!");
+                    mDealDataListener.onStatusFetch(type, 300, "开始测试命令，倒计时中!");
                 } else if (ml.equals("0B")) {// 仪器关机命令
-                    mDealDataListener.onFetch(type, 300, "关机成功!");
+                    mDealDataListener.onStatusFetch(type, 300, "关机成功!");
                 } else if (ml.equals("0C")) {// 仪器关蓝牙
 
                 }
@@ -191,16 +201,20 @@ public class DealDataUtils {
                     if (array.length > 4) {
                         float datas = (float) (Float.parseFloat(array[3]) / 18 + 0.05);
                         if (Float.parseFloat(array[3]) == 9) {
-                            mDealDataListener.onFetch(type, 100, "测量值低于仪器检测范围!");
+                            mDealDataListener.onStatusFetch(type, 100, "测量值低于仪器检测范围!");
                         } else if (Float.parseFloat(array[3]) == 601) {
-                            mDealDataListener.onFetch(type, 100, "测量值高于仪器检测范围!");
+                            mDealDataListener.onStatusFetch(type, 100, "测量值高于仪器检测范围!");
                         } else {
                             DecimalFormat formater = new DecimalFormat("#0.#");
                             formater.setRoundingMode(RoundingMode.FLOOR);
                             String bgm = formater.format(datas);
                             String result = bgm + " (mmol/L)";
-                            mDealDataListener.onFetch(type, 200, result);
-                            mDealDataListener.onFetch(type, 300, "艾科血糖测试结果:" + formater.format(datas));
+                            json = new JSONObject();
+                            addJsonObject(json,"bgm",bgm + "");
+                            addJsonObject(json,"unit","(mmol/L)");
+                            mDealDataListener.onFetch(type,200,json);
+                            //mDealDataListener.onFetch(type, 200, result);
+                            mDealDataListener.onStatusFetch(type, 300, "艾科血糖测试结果:" + formater.format(datas));
                         }
                         hh.postDelayed(timerunnable2, 1000);
                     }
@@ -221,12 +235,16 @@ public class DealDataUtils {
                     try {
                         double bgms = Double.parseDouble(bgm);
                         if (bgms < 1.1) {
-                            mDealDataListener.onFetch(type, 300, "测量值低于仪器检测范围");
+                            mDealDataListener.onStatusFetch(type, 300, "测量值低于仪器检测范围");
                         } else if (bgms > 33.3) {
-                            mDealDataListener.onFetch(type, 300, "测量值高于仪器检测范围");
+                            mDealDataListener.onStatusFetch(type, 300, "测量值高于仪器检测范围");
                         } else {
                             String result = bgm + " (mmol/L)";
-                            mDealDataListener.onFetch(type, 200, "民康血糖测试结果:" + result);
+                            json = new JSONObject();
+                            addJsonObject(json,"bgm",bgm + "");
+                            addJsonObject(json,"unit","(mmol/L)");
+                            mDealDataListener.onFetch(type,200,json);
+                            //mDealDataListener.onFetch(type, 200, "民康血糖测试结果:" + result);
                         }
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
@@ -240,12 +258,16 @@ public class DealDataUtils {
                     try {
                         double bgms = Double.parseDouble(bgm);
                         if (bgms < 1.1) {
-                            mDealDataListener.onFetch(type, 300, "测量值低于仪器检测范围");
+                            mDealDataListener.onStatusFetch(type, 300, "测量值低于仪器检测范围");
                         } else if (bgms > 33.3) {
-                            mDealDataListener.onFetch(type, 300, "测量值高于仪器检测范围");
+                            mDealDataListener.onStatusFetch(type, 300, "测量值高于仪器检测范围");
                         } else {
                             String result = bgm + " (mmol/L)";
-                            mDealDataListener.onFetch(type, 200, "民康血糖测试结果:" + result);
+                            json = new JSONObject();
+                            addJsonObject(json,"bgm",bgm + "");
+                            addJsonObject(json,"unit","(mmol/L)");
+                            mDealDataListener.onFetch(type,200,json);
+                            //mDealDataListener.onFetch(type, 200, "民康血糖测试结果:" + result);
                         }
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
@@ -280,6 +302,193 @@ public class DealDataUtils {
         Log.e("str2===", str);
         return str.replace(" ", "");
     }
+
+    private int source = 0;
+
+    /**
+     * 处理血糖尿酸总胆固醇三合一的数据
+     */
+    public void dealBuaData(String data, DealDataListener listener) {
+        this.type = BlueConstants.BLUE_EQUIP_BUA;
+        this.mDealDataListener = listener;
+        source = 0;
+        str += data;
+        if (str.length() > 24 && data.length() > 24) {
+            char[] chars = data.toCharArray();
+            if (data.substring(0, 6).contains("064100")) {
+                if (data.substring(22, 23).equals("C")) {
+                    listener.onStatusFetch(this.type, 100, "检测数值高于仪器所能检测的最高范围，请重新测量！");
+                    float myweight = (float) Integer.parseInt("" + chars[23]
+                            + chars[20] + chars[21], 16) / 100;
+                    Log.e("blewrapper", "超出结果血糖计算结果：" + myweight);
+                } else {
+                    float myweight = (float) Integer.parseInt("" + chars[23]
+                            + chars[20] + chars[21], 16) / 100;
+                    Log.e("血糖计算结果1==", myweight + "=============");
+                    if (myweight < 1.1) {
+                        listener.onStatusFetch(this.type, 100, "检测数值低于仪器所能检测的最低范围");
+                    } else if (myweight > 33.3) {
+                        listener.onStatusFetch(this.type, 100, "检测数值高于仪器所能检测的最高范围");
+                    } else {
+                        //SendManual();//统一存数据库的操作
+                        json = new JSONObject();
+                        addJsonObject(json,"bgm",myweight + "");
+                        listener.onFetch(this.type, 200, json);
+                    }
+                }
+                str = "";
+            } else if (data.substring(0, 6).contains("065100")) {
+                float myweight = (float) Integer.parseInt("" + chars[23]
+                        + chars[20] + chars[21], 16);
+                Log.e("血尿酸计算结果==", myweight + "=============");
+                if (myweight / 1000 < 0.18) {
+                    Log.e("低血尿酸==", myweight / 1000 + "============");
+                    listener.onStatusFetch(this.type, 100, "检测数值低于仪器所能检测的最低范围");
+                } else if (myweight / 1000 > 1.19) {
+                    listener.onStatusFetch(this.type, 100, "检测数值高于仪器所能检测的最高范围");
+                    Log.e("高血尿酸==", myweight / 1000 + "============");
+                } else {
+                    Log.e("血尿酸==", myweight + "============");
+                    //SendManual();
+                    json = new JSONObject();
+                    addJsonObject(json,"bua",myweight + "");
+                    listener.onFetch(this.type, 200, json);
+                    //listener.onStatusFetch(type, 200, "血尿酸：" + myweight);
+                }
+                str = "";
+            } else if (data.substring(0, 6).contains("066100")) {
+                float myweight = (float) Integer.parseInt("" + chars[23]
+                        + chars[20] + chars[21], 16) / 100;
+                Log.e("总胆固醇计算结果==", myweight + "=============");
+                if (myweight < 2.59) {
+                    listener.onStatusFetch(this.type, 100, "检测数值低于仪器所能检测的最低范围");
+                } else if (myweight > 10.35) {
+                    listener.onStatusFetch(this.type, 100, "检测数值高于仪器所能检测的最高范围");
+                } else {
+                    //SendManual();
+                    //listener.onStatusFetch(type, 200, "总胆固醇：" + myweight);
+                    json = new JSONObject();
+                    addJsonObject(json,"tchol",myweight + "");
+                    listener.onFetch(this.type, 200, json);
+                }
+                str = "";
+            } else if (str.length() >= 77) {
+                if (str.substring(52, 76).contains("555555555555555555555555")) {
+                    if (str.substring(26, 50).contains("5A5A5A5A5A5A5A5A5A5A5A5A")) {
+                        listener.onStatusFetch(this.type, 100, "检测数值低于仪器所能检测的最低范围");
+                        str = "";
+                    } else if (str.substring(26, 50).contains("A5A5A5A5A5A5A5A5A5A5A5A5")) {
+                        listener.onStatusFetch(this.type, 100, "检测数值高于仪器所能检测的最高范围");
+                        str = "";
+                    } else {
+                        String type = str.substring(28, 30);
+                        char[] chars2 = type.toCharArray();
+                        int types = (Integer.parseInt("" + chars2[0] + chars2[1],
+                                16)) >> 6;
+                        Log.e("types==", types + "==");
+                        if (types == 1) {// GLU血糖
+                            char[] chars3 = str.toCharArray();
+                            int tmp = (Integer.parseInt("" + chars3[28]
+                                    + chars3[29], 16)) & 0x3F;
+                            float tmp2 = tmp <<= 8;
+                            float myweight = (tmp2 + Integer.parseInt(""
+                                    + chars3[30] + chars3[31], 16)) / 10;
+                            Log.e("血糖计算结果2==", myweight + "=============");
+                            // SendManual();
+                            json = new JSONObject();
+                            addJsonObject(json,"bgm",myweight + "");
+                            listener.onFetch(this.type, 200, json);
+                            //listener.onStatusFetch(type, 200, "血糖：" + myweight);
+                            str = "";
+                        } else if (types == 2) {// UA尿酸
+                            char[] chars3 = str.toCharArray();
+                            int tmp = (Integer.parseInt("" + chars3[28]
+                                    + chars3[29], 16)) & 0x3F;
+                            float tmp2 = tmp <<= 8;
+                            float myweight = (tmp2 + Integer.parseInt(""
+                                    + chars3[30] + chars3[31], 16));
+                            Log.e("血尿酸==", myweight + "============");
+                            //listener.onStatusFetch(type, 200, "血尿酸：" + myweight);
+                            json = new JSONObject();
+                            addJsonObject(json,"bua",myweight + "");
+                            listener.onFetch(this.type, 200, json);
+                            //SendManual();
+                            str = "";
+                        } else if (types == 3) {// CHOL胆固醇
+                            char[] chars3 = str.toCharArray();
+                            int tmp = (Integer.parseInt("" + chars3[28]
+                                    + chars3[29], 16)) & 0x3F;
+                            float tmp2 = tmp <<= 8;
+                            float myweight = (tmp2 + Integer.parseInt(""
+                                    + chars3[30] + chars3[31], 16)) / 100;
+                            Log.e("总胆固醇计算结果==", myweight + "=============");
+                            json = new JSONObject();
+                            addJsonObject(json,"tchol",myweight + "");
+                            listener.onFetch(this.type, 200, json);
+                            //listener.onStatusFetch(type, 200, "总胆固醇：" + myweight);
+                            //SendManual();
+                            str = "";
+                        }
+
+                    }
+                }
+                str = "";
+            } else if (data.substring(0, 6).contains("245043")) {
+                if (data.substring(8, 10).contains("41")) {
+                    float myweight = (float) Integer.parseInt("" + chars[36] + chars[37]
+                            + chars[34] + chars[35], 16) / 18;
+                    myweight = Float.parseFloat(String.format("%.1f", myweight));
+                    Log.e("外带蓝牙三合一血糖计算结果3==", myweight + "=============");
+                    if (myweight < 1.1) {
+                        listener.onStatusFetch(this.type, 100, "检测数值低于仪器所能检测的最低范围");
+                    } else if (myweight > 33.3) {
+                        listener.onStatusFetch(this.type, 100, "检测数值高于仪器所能检测的最高范围");
+                    } else {
+                        //SendManual();
+                        //listener.onStatusFetch(type, 200, "外带蓝牙三合一血糖：" + myweight);
+                        json = new JSONObject();
+                        addJsonObject(json,"bgm",myweight + "");
+                        listener.onFetch(this.type, 200, json);
+                    }
+                } else if (data.substring(8, 10).contains("51")) {
+                    float myweight = (float) (Integer.parseInt("" + chars[36] + chars[37]
+                            + chars[34] + chars[35], 16) / 16.81 / 10);
+                    myweight = Float.parseFloat(String.format("%.2f", myweight)) * 1000;
+                    Log.e("外带蓝牙三合一尿酸计算结果==", myweight + "=============");
+                    if (myweight / 1000 < 0.18) {
+                        listener.onStatusFetch(this.type, 100, "检测数值低于仪器所能检测的最低范围");
+                    } else if (myweight / 1000 > 1.19) {
+                        listener.onStatusFetch(this.type, 100, "检测数值高于仪器所能检测的最高范围");
+                    } else {
+                        //listener.onStatusFetch(type, 200, "外带蓝牙三合一血尿酸：" + myweight);
+                        //SendManual();
+                        json = new JSONObject();
+                        addJsonObject(json,"bua",myweight + "");
+                        listener.onFetch(this.type, 200, json);
+                    }
+                } else if (data.substring(8, 10).contains("61")) {
+                    float myweight = (float) (Integer.parseInt("" + chars[36] + chars[37]
+                            + chars[34] + chars[35], 16) / 38.66);
+                    myweight = Float.parseFloat(String.format("%.2f", myweight));
+                    Log.e("外带蓝牙三合一胆固醇计算结果==", myweight + "=============");
+                    if (myweight < 2.59) {
+                        listener.onStatusFetch(this.type, 100, "检测数值低于仪器所能检测的最低范围");
+                    } else if (myweight > 10.35) {
+                        listener.onStatusFetch(this.type, 100, "检测数值高于仪器所能检测的最高范围");
+                    } else {
+                        source = 1;
+                        // SendManual();
+                        //listener.onStatusFetch(type, 200, "外带蓝牙三合一胆固醇：" + myweight);
+                        json = new JSONObject();
+                        addJsonObject(json,"tchol",myweight + "");
+                        listener.onFetch(this.type, 200, json);
+                    }
+                }
+
+            }
+        }
+    }
+
 
     /**
      * 处理血脂的数据
@@ -342,7 +551,12 @@ public class DealDataUtils {
                             + "高密度脂蛋白(HDL CHOL):" + s2 + " (mmol/L) "
                             + "甘油三脂(TRIG):" + s3 + " (mmol/L) " + "低密度脂蛋白:" + s4
                             + " (mmol/L) ";
-                    mDealDataListener.onFetch(type, 200, result);
+                    json = new JSONObject();
+                    addJsonObject(json,"CHOL",s1);
+                    addJsonObject(json,"HDLCHOL",s2);
+                    addJsonObject(json,"TRIG",s3);
+                    addJsonObject(json,"LDL",s4);
+                    mDealDataListener.onFetch(type, 200, json);
                     str = "";
                 } else if (str.indexOf("6D672F644C22") > 0) {
                     String _date = str.substring(str.indexOf("2243484F4C202020203A") + 20);
@@ -418,7 +632,13 @@ public class DealDataUtils {
                             + "高密度脂蛋白(HDL CHOL):" + s2 + " (mmol/L) "
                             + "甘油三脂(TRIG):" + s3 + " (mmol/L) " + "低密度脂蛋白:" + s4
                             + " (mmol/L) ";
-                    mDealDataListener.onFetch(type, 200, result);
+                    json = new JSONObject();
+                    addJsonObject(json,"CHOL",s1);
+                    addJsonObject(json,"HDLCHOL",s2);
+                    addJsonObject(json,"TRIG",s3);
+                    addJsonObject(json,"LDL",s4);
+                    mDealDataListener.onFetch(type, 200, json);
+                    //mDealDataListener.onFetch(type, 200, result);
                     str = "";
                 }
             } else if ((str.contains("55AA00FA3630") || str
@@ -477,7 +697,13 @@ public class DealDataUtils {
                         + "高密度脂蛋白(HDL CHOL):" + s2 + " (mmol/L) "
                         + "甘油三脂(TRIG):" + s3 + " (mmol/L) " + "低密度脂蛋白:" + s4
                         + " (mmol/L) ";
-                mDealDataListener.onFetch(type, 200, result);
+                json = new JSONObject();
+                addJsonObject(json,"CHOL",s1);
+                addJsonObject(json,"HDLCHOL",s2);
+                addJsonObject(json,"TRIG",s3);
+                addJsonObject(json,"LDL",s4);
+                mDealDataListener.onFetch(type, 200, json);
+                //mDealDataListener.onFetch(type, 200, result);
                 str = "";
             }
             if (str != null && str.length() > 200) {
@@ -535,7 +761,13 @@ public class DealDataUtils {
                             + "高密度脂蛋白(HDL CHOL):" + hdl0 + " (mmol/L) "
                             + "甘油三脂(TRIG):" + tg00 + " (mmol/L) " + "低密度脂蛋白:" + ldl0
                             + " (mmol/L) ";
-                    mDealDataListener.onFetch(type, 200, result);
+                    json = new JSONObject();
+                    addJsonObject(json,"CHOL",tc00 + "");
+                    addJsonObject(json,"HDLCHOL",hdl0 + "");
+                    addJsonObject(json,"TRIG",tg00 + "");
+                    addJsonObject(json,"LDL",ldl0 + "");
+                    mDealDataListener.onFetch(type, 200, json);
+                   // mDealDataListener.onFetch(type, 200, result);
                     str = "";
                 }
 
@@ -567,7 +799,13 @@ public class DealDataUtils {
                             + "高密度脂蛋白(HDL CHOL):" + hdl0 + " (mmol/L) "
                             + "甘油三脂(TRIG):" + tg00 + " (mmol/L) " + "低密度脂蛋白:" + ldl0
                             + " (mmol/L) ";
-                    mDealDataListener.onFetch(type, 200, result);
+                    json = new JSONObject();
+                    addJsonObject(json,"CHOL",tc00 + "");
+                    addJsonObject(json,"HDLCHOL",hdl0 + "");
+                    addJsonObject(json,"TRIG",tg00 + "");
+                    addJsonObject(json,"LDL",ldl0 + "");
+                    mDealDataListener.onFetch(type, 200, json);
+                    //mDealDataListener.onFetch(type, 200, result);
                     str = "";
                 }
             }
@@ -604,7 +842,11 @@ public class DealDataUtils {
                         + "" + chars[chars.length - 38] + "" + chars[chars.length - 37];
                 Float value = Float.intBitsToFloat(Integer.valueOf(s.trim(), 16));
                 String reuslt = "糖化血红蛋白：" + value + "%";
-                mDealDataListener.onFetch(type, 200, reuslt);
+                json = new JSONObject();
+                addJsonObject(json,"glHgb",value + "");
+                addJsonObject(json,"unit","%");
+                mDealDataListener.onFetch(type, 200, json);
+               // mDealDataListener.onFetch(type, 200, reuslt);
                 strDA = "";
             }
 
@@ -640,12 +882,16 @@ public class DealDataUtils {
                                     + chars[chars.length - 5];
                             float str = (float) (Integer.parseInt(hexStr, 16));
                             if (str < 70) {
-                                mDealDataListener.onFetch(type, 100, "测量结果低于检测范围,请重新测量！");
+                                mDealDataListener.onStatusFetch(type, 100, "测量结果低于检测范围,请重新测量！");
                             } else if (str > 260) {
-                                mDealDataListener.onFetch(type, 100, "测量结果高于检测范围,请重新测量！");
+                                mDealDataListener.onStatusFetch(type, 100, "测量结果高于检测范围,请重新测量！");
                             } else {
                                 String result = str + "g/L";
-                                mDealDataListener.onFetch(type, 200, "测量结果：" + result);
+                                json = new JSONObject();
+                                addJsonObject(json,"hgb",str + "");
+                                addJsonObject(json,"unit","g/L");
+                                mDealDataListener.onFetch(type, 200, json);
+                                //mDealDataListener.onFetch(type, 200, "测量结果：" + result);
                                 flag = true;
                             }
                         }
@@ -697,7 +943,17 @@ public class DealDataUtils {
 
                 App.LeDevices.get(CommenBlueUtils.getInstance().getDeviceId()).Des += ",上次检测结果是："
                         + pvss;
-                mDealDataListener.onFetch(type, 200, sb.toString());
+                json = new JSONObject();
+                addJsonObject(json,"weight",(myweight / 10) + "");
+                addJsonObject(json,"fat", "0");
+                addJsonObject(json,"water","0");
+                addJsonObject(json,"muscle", "0");
+                addJsonObject(json,"bone", "0");
+                addJsonObject(json,"calorie","0");
+                addJsonObject(json,"BMI", mybmi + "");
+                addJsonObject(json,"height", uHeight + "");
+                mDealDataListener.onFetch(type,200,json);
+                //mDealDataListener.onFetch(type, 200, sb.toString());
             }
 
             // 小体脂称
@@ -746,15 +1002,15 @@ public class DealDataUtils {
                                         bodyfats.muscleKg) + "\r\n");
                     } else if (errorType == HTDataType.ErrorAge) {
                         Log.e("年龄错误", "年龄错误年龄错误年龄错误");
-                        mDealDataListener.onFetch(type, 100, "年龄错误");
+                        mDealDataListener.onStatusFetch(type, 100, "年龄错误");
                     } else if (errorType == HTDataType.ErrorHeight) {
                         Log.e("身高错误", "身高错误身高错误身高错误身");
-                        mDealDataListener.onFetch(type, 100, "身高错误");
+                        mDealDataListener.onStatusFetch(type, 100, "身高错误");
                     } else if (errorType == HTDataType.ErrorWeight) {
                         Log.e("体重错误", "体重错误体重错误体重错误体重错");
-                        mDealDataListener.onFetch(type, 100, "体重错误");
+                        mDealDataListener.onStatusFetch(type, 100, "体重错误");
                     } else {
-                        mDealDataListener.onFetch(type, 100, "未知错误");
+                        mDealDataListener.onStatusFetch(type, 100, "未知错误");
                     }
                     String fat = String.format("%.1f",
                             bodyfats.bodyfatPercentage);
@@ -774,7 +1030,17 @@ public class DealDataUtils {
                             + ",肌肉:" + muscles + ",骨量:" + bone + ",卡路里:" + BMR
                             + ",BMI:" + bmis + "Kg/㎡" + ",身高:" + uHeight + "m";
 
-                    mDealDataListener.onFetch(type, 200, result);
+                    json = new JSONObject();
+                    addJsonObject(json,"weight",W + "");
+                    addJsonObject(json,"fat", fat);
+                    addJsonObject(json,"water",humidity);
+                    addJsonObject(json,"muscle", muscles);
+                    addJsonObject(json,"bone", bone);
+                    addJsonObject(json,"calorie",BMR + "");
+                    addJsonObject(json,"BMI", bmis + "");
+                    addJsonObject(json,"height", uHeight + "");
+                    mDealDataListener.onFetch(type,200,json);
+                    //mDealDataListener.onFetch(type, 200, result);
                 }
             }
 
@@ -816,9 +1082,17 @@ public class DealDataUtils {
                         String result = "体重:" + (myweight / 2 / 10) + ",脂肪:" + (mybodyfat / 10) + ",水分:" + (mywater / 10)
                                 + ",肌肉:" + (mymuscle / 10) + ",骨量:" + (mybonemass / 10) + ",卡路里:" + (mycalorie)
                                 + ",BMI:" + bd + "Kg/㎡" + ",身高:" + uHeight + "m";
-
-                        mDealDataListener.onFetch(type, 200, pvss + "<>" + result);
-
+                        json = new JSONObject();
+                        addJsonObject(json,"weight",(myweight / 2 / 10) + "");
+                        addJsonObject(json,"fat", (mybodyfat / 10) + "");
+                        addJsonObject(json,"water",(mywater / 10) + "");
+                        addJsonObject(json,"muscle", (mymuscle / 10) + "");
+                        addJsonObject(json,"bone", (mybonemass / 10) + "");
+                        addJsonObject(json,"calorie",(mycalorie) + "");
+                        addJsonObject(json,"BMI", bd + "");
+                        addJsonObject(json,"height", uHeight + "");
+                        mDealDataListener.onFetch(type,200,json);
+                        //mDealDataListener.onFetch(type, 200, pvss + "<>" + result);
                     }
                 }
             }
@@ -862,8 +1136,17 @@ public class DealDataUtils {
                             // mybonemass / 10, mycalorie, mybmi));
                             String result = String.format("体重：%4.1f kg 体脂：%4.1f %% 身体水分：%4.1f %% 肌肉：%4.1f %% 骨量：%4.1f kg 卡路里：%5f KCAL BMI：%4.1f "
                                     , myweight / 10, mybodyfat / 10, mywater / 10, mymuscle / 10, mybonemass / 10, mycalorie, mybmi);
-                            mDealDataListener.onFetch(type, 200, result);
-
+                            json = new JSONObject();
+                            addJsonObject(json,"weight",(myweight / 10) + "");
+                            addJsonObject(json,"fat", (mybodyfat / 10) + "");
+                            addJsonObject(json,"water",(mywater / 10) + "");
+                            addJsonObject(json,"muscle", (mymuscle / 10) + "");
+                            addJsonObject(json,"bone", (mybonemass / 10) + "");
+                            addJsonObject(json,"calorie",(mycalorie) + "");
+                            addJsonObject(json,"BMI", mybmi + "");
+                            addJsonObject(json,"height", uHeight + "");
+                            mDealDataListener.onFetch(type,200,json);
+                            //mDealDataListener.onFetch(type, 200, result);
                         }
                     } else if ((data.substring(0, 2).equals("55") && data
                             .substring(6, 8).equals("00"))) {
@@ -871,7 +1154,17 @@ public class DealDataUtils {
                         float myweight = Integer.parseInt(hexStr, 16);
                         tempweight = myweight;
                         String result = String.format("%4.2f kg ", myweight / 10 + "Kg/㎡");
-                        mDealDataListener.onFetch(type, 200, result);
+                        json = new JSONObject();
+                        addJsonObject(json,"weight", myweight / 10 + "");
+                        addJsonObject(json,"fat", "0");
+                        addJsonObject(json,"water","0");
+                        addJsonObject(json,"muscle", "0");
+                        addJsonObject(json,"bone", "0");
+                        addJsonObject(json,"calorie","0");
+                        addJsonObject(json,"BMI",   "0");
+                        addJsonObject(json,"height", uHeight + "");
+                        mDealDataListener.onFetch(type,200,json);
+                        //mDealDataListener.onFetch(type, 200, result);
                     }
                 }
             }
@@ -906,11 +1199,22 @@ public class DealDataUtils {
                     // 检测成功给组件赋值
                     String result = String.format("体重：%4.1f kg 体脂：%4.1f %% 身体水分：%4.1f %% 肌肉：%4.1f %% 骨量：%4.1f kg 卡路里：%5f KCAL BMI：%4.1f "
                             , myweight, mybodyfat, mywater, mymuscle, mybonemass, mycalorie, mybmi);
-                    mDealDataListener.onFetch(type, 200, result);
+
+                    json = new JSONObject();
+                    addJsonObject(json,"weight",myweight + "");
+                    addJsonObject(json,"fat", mybodyfat + "");
+                    addJsonObject(json,"water",mywater + "");
+                    addJsonObject(json,"muscle", mymuscle + "");
+                    addJsonObject(json,"bone", mybonemass + "");
+                    addJsonObject(json,"calorie",mycalorie + "");
+                    addJsonObject(json,"BMI", mybmi+ "");
+                    addJsonObject(json,"height", uHeight + "");
+                    mDealDataListener.onFetch(type,200,json);
+                   // mDealDataListener.onFetch(type, 200, result);
                 }
             } else if ((bytes[0] & 0xFF) == 253) {
                 //timehandler.removeCallbacks(timerunnable);
-                mDealDataListener.onFetch(type, 100, "测量错误，请重新测量.");
+                mDealDataListener.onStatusFetch(type, 100, "测量错误，请重新测量.");
             }
 
         }
@@ -933,19 +1237,19 @@ public class DealDataUtils {
                 if (_date.contains("0D0A")) {
                     _date = _date.substring(0, _date.indexOf("0D0A"));
                     if (_date.equals("0E")) {
-                        mDealDataListener.onFetch(type, 100, "血压计异常,联系你的经销商!");
+                        mDealDataListener.onStatusFetch(type, 100, "血压计异常,联系你的经销商!");
                     } else if (_date.equals("01")) {
-                        mDealDataListener.onFetch(type, 100, "人体心跳信号太小或压力突降!");
+                        mDealDataListener.onStatusFetch(type, 100, "人体心跳信号太小或压力突降!");
                     } else if (_date.equals("02")) {
-                        mDealDataListener.onFetch(type, 100, "杂讯干扰!");
+                        mDealDataListener.onStatusFetch(type, 100, "杂讯干扰!");
                     } else if (_date.equals("03")) {
-                        mDealDataListener.onFetch(type, 100, "充气时间过长!");
+                        mDealDataListener.onStatusFetch(type, 100, "充气时间过长!");
                     } else if (_date.equals("05")) {
-                        mDealDataListener.onFetch(type, 100, "测得的结果异常!");
+                        mDealDataListener.onStatusFetch(type, 100, "测得的结果异常!");
                     } else if (_date.equals("0C")) {
-                        mDealDataListener.onFetch(type, 100, "校正异常!");
+                        mDealDataListener.onStatusFetch(type, 100, "校正异常!");
                     } else if (_date.equals("0B")) {
-                        mDealDataListener.onFetch(type, 100, "电源低电压!");
+                        mDealDataListener.onStatusFetch(type, 100, "电源低电压!");
                     }
                 }
                 CommenBlueUtils.getInstance().writeHexString("FDFDFE060D0A");
@@ -955,7 +1259,7 @@ public class DealDataUtils {
                     _date = _date.substring(0, _date.indexOf("0D0A"));
                     System.out.println("str:" + _date);
                     if (_date.equals("")) {
-                        mDealDataListener.onFetch(type, 100, "血压启动!");
+                        mDealDataListener.onStatusFetch(type, 100, "血压启动!");
                     }
                 }
 
@@ -995,7 +1299,11 @@ public class DealDataUtils {
                         int pul = Integer.parseInt(_pul, 16);
 
                         String result = dia + " ++舒张压 (mmHg)," + sys + " 收缩压 (mmHg)," + pul + " 心率(次/分钟)";
-                        mDealDataListener.onFetch(type, 200, result);
+                        json = new JSONObject();
+                        addJsonObject(json,"dia",dia + "");
+                        addJsonObject(json,"sys",sys + "");
+                        addJsonObject(json,"pul",pul + "");
+                        mDealDataListener.onFetch(type, 200, json);
                         if (!iscf) {
                             iscf = true;
                         }
@@ -1015,7 +1323,7 @@ public class DealDataUtils {
                             + Integer.parseInt("" + chars[0] + chars[1], 16)
                             + Integer.parseInt("" + chars[2] + chars[3], 16);
                     Log.i("dfasdfdfsgsdf", "压力:" + result);
-                    mDealDataListener.onFetch(type, 100, result);
+                    mDealDataListener.onStatusFetch(type, 100, result);
                 }
                 hh.removeCallbacks(rr);
             } else if (data.contains("FDFDFA050D0A")) {
@@ -1031,7 +1339,7 @@ public class DealDataUtils {
                 System.out.println("str:" + data);
                 if (data.length() > 3) {
                     String result = "压力:" + Integer.parseInt("" + chars[2] + chars[3], 16);
-                    mDealDataListener.onFetch(type, 100, result);
+                    mDealDataListener.onStatusFetch(type, 100, result);
                 }
             } else if (data.startsWith("1C00")) {
 
@@ -1039,9 +1347,13 @@ public class DealDataUtils {
                 int sys = Integer.parseInt("" + chars[4] + chars[5], 16);
                 int dia = Integer.parseInt("" + chars[8] + chars[9], 16);
                 int pul = Integer.parseInt("" + chars[16] + chars[17], 16);
-
                 String result = dia + " --舒张压 (mmHg)," + sys + " 收缩压 (mmHg)," + pul + " 心率(次/分钟)";
-                mDealDataListener.onFetch(type, 200, result);
+                json = new JSONObject();
+                addJsonObject(json,"dia",dia + "");
+                addJsonObject(json,"sys",sys + "");
+                addJsonObject(json,"pul",pul + "");
+                mDealDataListener.onFetch(type, 200, json);
+                //mDealDataListener.onFetch(type, 200, result);
             }
         }
     }
@@ -1099,7 +1411,7 @@ public class DealDataUtils {
                     }
 
                 } else if (ml.contains("01")) {
-                    mDealDataListener.onFetch(type, 100, "尿液数据测量中，请稍候...");
+                    mDealDataListener.onStatusFetch(type, 100, "尿液数据测量中，请稍候...");
                 }
             } else {
                 str += data;
@@ -1112,7 +1424,7 @@ public class DealDataUtils {
                 DataChar = calendar.get(Calendar.HOUR_OF_DAY) + ":"
                         + calendar.get(Calendar.MINUTE) + ":"
                         + calendar.get(Calendar.SECOND);
-                mDealDataListener.onFetch(type, 100, "等待新数据中，当前时间：" + DataChar);
+                mDealDataListener.onStatusFetch(type, 100, "等待新数据中，当前时间：" + DataChar);
                 str = "";
                 return;
             }
@@ -1124,7 +1436,7 @@ public class DealDataUtils {
                 DataChar = calendar.get(Calendar.HOUR_OF_DAY) + ":"
                         + calendar.get(Calendar.MINUTE) + ":"
                         + calendar.get(Calendar.SECOND);
-                mDealDataListener.onFetch(type, 100, "等待新数据中，当前时间：" + DataChar);
+                mDealDataListener.onStatusFetch(type, 100, "等待新数据中，当前时间：" + DataChar);
                 str = "";
                 return;
             }
@@ -1211,16 +1523,28 @@ public class DealDataUtils {
                             ressss += "尿比重 SG:/";
 
                             if (ressss.equals(res)) {
-                                mDealDataListener.onFetch(type, 100, "数据为空");
+                                mDealDataListener.onStatusFetch(type, 100, "数据为空");
                                 return;
                             }
 
                             if (res.equals(allpvss) && nowTime.equals(pvsTime)) {
-                                mDealDataListener.onFetch(type, 100, "数据重复");
+                                mDealDataListener.onStatusFetch(type, 100, "数据重复");
                                 // 清数据
                                 CommenBlueUtils.getInstance().writeHexString("938e0400080612");
                             } else {
-                                mDealDataListener.onFetch(type, 200, res);
+                                json = new JSONObject();
+                                addJsonObject(json,"LEU",LEU[Utils.twototen("" + chars[50] + chars[51] + chars[52])]);
+                                addJsonObject(json,"BLD",BLD[Utils.twototen("" + chars[65] + chars[66] + chars[67])]);
+                                addJsonObject(json,"NIT",NIT[Utils.twototen("" + chars[77] + chars[78] + chars[79])]);
+                                addJsonObject(json,"KET",KET[Utils.twototen("" + chars[90] + chars[91] + chars[92])]);
+                                addJsonObject(json,"UBG",UBG[Utils.twototen("" + chars[74] + chars[75] + chars[76])]);
+                                addJsonObject(json,"BIL",BIL[Utils.twototen("" + chars[87] + chars[88] + chars[89])]);
+                                addJsonObject(json,"PRO",PRO[Utils.twototen("" + chars[71] + chars[72] + chars[73])]);
+                                addJsonObject(json,"GLU",GLU[Utils.twototen("" + chars[84] + chars[85] + chars[86])]);
+                                addJsonObject(json,"PH",PH[Utils.twototen("" + chars[68] + chars[69] + chars[70])]);
+                                addJsonObject(json,"VC",VC[Utils.twototen("" + chars[81] + chars[82] + chars[83])]);
+                                addJsonObject(json,"SG",SG[Utils.twototen("" + chars[93] + chars[94] + chars[95])]);
+                                mDealDataListener.onFetch(type, 200, json);
 
                               /*  String json = "action=doura&data="
                                         + "{\"userid\":\""
@@ -1339,20 +1663,29 @@ public class DealDataUtils {
                             ressss += "尿PH值 PH:/\t\t\t\t";
                             ressss += "维生素 C:/\n";
                             ressss += "尿比重 SG:/";
-
                             if (ressss.equals(res)) {
-                                mDealDataListener.onFetch(type, 100, "数据为空");
+                                mDealDataListener.onStatusFetch(type, 100, "数据为空");
                                 return;
                             }
-
-
                             if (res.equals(allpvss) && nowTime.equals(pvsTime)) {
-                                mDealDataListener.onFetch(type, 100, "数据重复");
+                                mDealDataListener.onStatusFetch(type, 100, "数据重复");
                                 // 清数据
                                 CommenBlueUtils.getInstance().writeHexString("938e0400080612");
-
                             } else {
-                                mDealDataListener.onFetch(type, 200, res);
+                                json = new JSONObject();
+                                addJsonObject(json,"LEU",LEU[Utils.twototen("" + chars[111] + chars[96] + chars[97])]);
+                                addJsonObject(json,"BLD",BLD[Utils.twototen("" + chars[85] + chars[86] + chars[87])]);
+                                addJsonObject(json,"NIT",NIT[Utils.twototen("" + chars[98] + chars[99] + chars[100])]);
+                                addJsonObject(json,"KET",KET[Utils.twototen("" + chars[95] + chars[80] + chars[81])]);
+                                addJsonObject(json,"UBG",UBG[Utils.twototen("" + chars[74] + chars[75] + chars[76])]);
+                                addJsonObject(json,"BIL",BIL[Utils.twototen("" + chars[82] + chars[83] + chars[84])]);
+                                addJsonObject(json,"PRO",PRO[Utils.twototen("" + chars[89] + chars[90] + chars[91])]);
+                                addJsonObject(json,"GLU",GLU[Utils.twototen("" + chars[92] + chars[93] + chars[94])]);
+                                addJsonObject(json,"PH",PH[Utils.twototen("" + chars[101] + chars[102] + chars[103])]);
+                                addJsonObject(json,"VC",VC[Utils.twototen("" + chars[105] + chars[106] + chars[107])]);
+                                addJsonObject(json,"SG",SG[Utils.twototen("" + chars[108] + chars[109] + chars[110])]);
+                                mDealDataListener.onFetch(type, 200, json);
+                               // mDealDataListener.onFetch(type, 200, res);
                              /*
                                 String json = "action=doura&data="
                                         + "{\"userid\":\""
@@ -1408,13 +1741,14 @@ public class DealDataUtils {
                         }
 
                     } else {
-                        mDealDataListener.onFetch(type, 100, "数据有误");
+                        mDealDataListener.onStatusFetch(type, 100, "数据有误");
                     }
                 }
                 str = "";
             }
         }
     }
+
 
     /**
      * 处理体温计的数据
@@ -1427,6 +1761,18 @@ public class DealDataUtils {
     public void setTemString() {
         sb.setLength(0);
     }
+
+    private void addJsonObject(JSONObject json, String key, String value) {
+        if (json == null || StringUtil.isEmpty(key) || StringUtil.isEmpty(value)) {
+            return;
+        }
+        try {
+            json.put(key, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void dealTemData(String data, DealDataListener listener) {
         type = BlueConstants.BLUE_EQUIP_TEM;
@@ -1445,9 +1791,12 @@ public class DealDataUtils {
                     if ((myweight / 10) >= 29 && (myweight / 10) <= 46) {
                         //pvss = String.format("%4.1f °C", myweight / 10);
                         String result = (myweight / 10) + "";
-                        mDealDataListener.onFetch(type, 200, "体温：" + result);
+                        json = new JSONObject();
+                        addJsonObject(json, "tem", result);
+                        //mDealDataListener.onFetch(type, 200, "体温：" + result);
+                        mDealDataListener.onFetch(type, 200, json);
                     } else {
-                        mDealDataListener.onFetch(type, 100, "测量温度不正常,请重新测量!");
+                        mDealDataListener.onStatusFetch(type, 100, "测量温度不正常,请重新测量!");
                     }
                 }
 
@@ -1462,15 +1811,18 @@ public class DealDataUtils {
                             // pvss = String.format("%4.2f °C", myweight / 100);
                             if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
                                 String result = (myweight / 10) + "";
-                                mDealDataListener.onFetch(type, 200, "体温：" + result);
+                                json = new JSONObject();
+                                addJsonObject(json, "tem", result);
+                                mDealDataListener.onFetch(type, 200, json);
+                                //mDealDataListener.onFetch(type, 200, "体温：" + result);
                             } else {
-                                mDealDataListener.onFetch(type, 100, "测量温度不正常,请重新测量!");
+                                mDealDataListener.onStatusFetch(type, 100, "测量温度不正常,请重新测量!");
                             }
                         } else {
                             if (hexStr.equals("9999")) {
-                                mDealDataListener.onFetch(type, 100, "低于可测量范围");
+                                mDealDataListener.onStatusFetch(type, 100, "低于可测量范围");
                             } else {
-                                mDealDataListener.onFetch(type, 100, "高于可测量范围");
+                                mDealDataListener.onStatusFetch(type, 100, "高于可测量范围");
                             }
                         }
                     }
@@ -1489,9 +1841,12 @@ public class DealDataUtils {
                     formater.setRoundingMode(RoundingMode.FLOOR);
                     if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
                         String result = formater.format(myweight / 100);
-                        mDealDataListener.onFetch(type, 200, "体温：" + result);
+                        //mDealDataListener.onFetch(type, 200, "体温：" + result);
+                        json = new JSONObject();
+                        addJsonObject(json, "tem", result);
+                        mDealDataListener.onFetch(type, 200, json);
                     } else {
-                        mDealDataListener.onFetch(type, 100, "测量温度不正常,请重新测量!");
+                        mDealDataListener.onStatusFetch(type, 100, "测量温度不正常,请重新测量!");
                     }
                     sb.delete(0, sb.length());
                 }
@@ -1506,9 +1861,12 @@ public class DealDataUtils {
                 float myweight = Integer.parseInt(hexStr, 16);
                 if ((myweight / 100) >= 29 && (myweight / 100) <= 46) {
                     String result = (myweight / 100) + "";
-                    mDealDataListener.onFetch(type, 200, "体温：" + result);
+                    json = new JSONObject();
+                    addJsonObject(json, "tem", result);
+                    mDealDataListener.onFetch(type, 200, json);
+                    //mDealDataListener.onFetch(type, 200, "体温：" + result);
                 } else {
-                    mDealDataListener.onFetch(type, 100, "测量温度不正常,请重新测量!");
+                    mDealDataListener.onStatusFetch(type, 100, "测量温度不正常,请重新测量!");
                 }
             }
             //体达体温枪
@@ -1519,29 +1877,35 @@ public class DealDataUtils {
                         if (data.contains("Body")) {
                             if (data.contains("C")) {
                                 data = data.substring(data.indexOf("Body:") + 5, data.indexOf("C"));
-                                mDealDataListener.onFetch(type, 200, "体温：" + data);
+                                json = new JSONObject();
+                                addJsonObject(json, "tem", data);
+                                mDealDataListener.onFetch(type, 200, json);
+                                //mDealDataListener.onFetch(type, 200, "体温：" + data);
                             } else if (data.contains("F")) {
                                 data = data.substring(data.indexOf("Body:") + 5,
                                         data.indexOf("F"));
                                 float tem = Float.parseFloat(data);
                                 tem = (tem - 32) * 5 / 9;
                                 data = new DecimalFormat("0.0").format(tem);
-                                mDealDataListener.onFetch(type, 200, "体温：" + data);
+                                json = new JSONObject();
+                                addJsonObject(json, "tem", data);
+                                mDealDataListener.onFetch(type, 200, json);
+                                // mDealDataListener.onFetch(type, 200, "体温：" + data);
                             }
                             if (Double.parseDouble(data) >= 29 && Double.parseDouble(data) <= 46) {
 
                             } else {
-                                mDealDataListener.onFetch(type, 100, "测量温度不正常,请重新测量!");
+                                mDealDataListener.onStatusFetch(type, 100, "测量温度不正常,请重新测量!");
                             }
                         }
                     } else if (data.substring(0, 4).contains("526F")) {//室温
-                        mDealDataListener.onFetch(type, 100, "你现在的模式是室温，请把模式调成体温！");
+                        mDealDataListener.onStatusFetch(type, 100, "你现在的模式是室温，请把模式调成体温！");
                     } else if (data.substring(0, 4).contains("5375")) {//表面
-                        mDealDataListener.onFetch(type, 100, "你现在的模式是表面，请把模式调成体温！");
+                        mDealDataListener.onStatusFetch(type, 100, "你现在的模式是表面，请把模式调成体温！");
                     } else if (data.contains("45724C000D0A")) {
-                        mDealDataListener.onFetch(type, 100, "测量温度过低，请重新测量！");
+                        mDealDataListener.onStatusFetch(type, 100, "测量温度过低，请重新测量！");
                     } else if (data.contains("457248000D0A")) {
-                        mDealDataListener.onFetch(type, 100, "测量温度过高，请重新测量！");
+                        mDealDataListener.onStatusFetch(type, 100, "测量温度过高，请重新测量！");
                     }
                 }
             }

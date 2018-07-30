@@ -41,4 +41,8 @@ public class BlueConstants {
      *  血脂
      */
     public static final String BLUE_EQUIP_BFT = "bft";
+    /**
+     *  血糖尿酸总胆固醇三合一
+     */
+    public static final String BLUE_EQUIP_BUA = "bua";
 }

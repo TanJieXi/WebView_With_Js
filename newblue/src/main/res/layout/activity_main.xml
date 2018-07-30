@@ -124,4 +124,13 @@
         app:layout_constraintLeft_toRightOf="@+id/btn_glhgb"
         app:layout_constraintTop_toBottomOf="@+id/btn_bpm"
         />
+    <Button
+        android:id="@+id/btn_bua"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="血糖尿酸总胆固醇"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintLeft_toRightOf="@+id/btn_bft"
+        app:layout_constraintTop_toBottomOf="@+id/btn_bpm"
+        />
 </android.support.constraint.ConstraintLayout>
