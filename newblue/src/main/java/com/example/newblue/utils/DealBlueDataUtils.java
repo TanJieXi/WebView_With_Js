@@ -11,6 +11,7 @@ import com.example.newblue.interfaces.DealDataListener;
 import com.holtek.libHTBodyfat.HTDataType;
 import com.holtek.libHTBodyfat.HTPeopleGeneral;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
@@ -304,6 +305,25 @@ public class DealBlueDataUtils {
     }
 
     private int source = 0;
+
+    /**
+     * 处理第二种血压计
+     * @param data
+     * @param listener
+     */
+    public void dealTwoBpmData(String data, DealDataListener listener){
+        if(StringUtil.isEmpty(data)){
+            return;
+        }
+        this.type = BlueConstants.BLUE_EQUIP_BPM_TWO;
+        this.mDealDataListener = listener;
+        try {
+            JSONObject json = new JSONObject(data);
+            mDealDataListener.onFetch(this.type,200,json);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 处理血糖尿酸总胆固醇三合一的数据

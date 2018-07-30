@@ -2,10 +2,16 @@ package com.example.newblue.utils;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 
@@ -21,16 +27,26 @@ import com.clj.fastble.utils.HexUtil;
 import com.example.newblue.App;
 import com.example.newblue.BlueConstants;
 import com.example.newblue.blueconnect.BleWrapper;
+import com.example.newblue.bpm.BluetoothChatService;
+import com.example.newblue.bpm.CallBack;
+import com.example.newblue.bpm.Constants;
+import com.example.newblue.bpm.ICallBack;
+import com.example.newblue.bpm.ICallBackInfo;
+import com.example.newblue.bpm.MtBuf;
 import com.example.newblue.comm.ObserverManager;
 import com.example.newblue.deviceBox;
 import com.example.newblue.interfaces.BleWrapperUiCallbacks;
 import com.example.newblue.interfaces.ConnectBlueToothListener;
 import com.example.newblue.scan.BluetoothScan;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -45,8 +61,8 @@ import io.reactivex.functions.Consumer;
  * Created by TanJieXi on 2018/3/28.
  */
 @SuppressLint("NewApi")
-public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnScanSuccessListener {
-
+public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnScanSuccessListener, ICallBack, ICallBackInfo {
+    private Context context;
     private volatile static CommenBlueUtils blue;
     private BleWrapper mBleWrapper;
     private String mDeviceAddress = "";
@@ -228,18 +244,68 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
         }
         if (timehandler1 != null) {
             timehandler1.removeCallbacks(timerunnable1);
+            timehandler1.removeCallbacks(bpmRunnable);
         }
         if (handleraa != null) {
             handleraa.removeCallbacks(runnableaa);
         }
 
         DealBlueDataUtils.getInstance().removeAllHandler();
+
+        //第二种类型的血压计
+        if(BlueConstants.BLUE_EQUIP_BPM_TWO.equals(type)) {
+            if(isBpmTwo) {
+                if (context != null) {
+                    context.unregisterReceiver(searchDevices);
+                    isBpmTwo = false;
+                    if(mChatService != null) {
+                        mChatService.stop();
+                    }
+                }
+            }
+        }
+
     }
 
-
+    //第二种血压计
+    BluetoothAdapter btAdapt;
+    private BluetoothChatService mChatService;
+    private CallBack call;
+    public MtBuf m_mtbuf = new MtBuf();
+    Runnable bpmRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if(!btAdapt.isDiscovering()) {
+                btAdapt.startDiscovery();
+            }
+            timehandler1.postDelayed(bpmRunnable, 500);
+        }
+    };
+    boolean isBpmTwo = false;
     public void connectBlueTooth(Activity context, final String type, ConnectBlueToothListener connectBlueToothListener) {
         this.type = type;
+        this.context = context;
         this.mConnectBlueToothListener = connectBlueToothListener;
+        //这里有两种情况，如果是第二种广播扫描的血压计，需要使用广播，其他不需要
+        if(BlueConstants.BLUE_EQUIP_BPM_TWO.equals(type)){
+            mConnectBlueToothListener.onConnectSuccess("连接中，请稍后");
+            isBpmTwo = true;
+            call = new CallBack(this.m_mtbuf, this);
+            if (mChatService == null) {
+                mChatService = new BluetoothChatService(context, call);
+            }
+            btAdapt = BluetoothAdapter.getDefaultAdapter();// 初始化本机蓝牙功能
+            // 注册Receiver来获取蓝牙设备相关的结果
+            IntentFilter intent = new IntentFilter();
+            intent.addAction(BluetoothDevice.ACTION_FOUND);// 用BroadcastReceiver来取得搜索结果
+            intent.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+            intent.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+            intent.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+            context.registerReceiver(searchDevices, intent);
+            m_mtbuf.setCallBack(context, this);
+            timehandler1.postDelayed(bpmRunnable, 500);
+           return;
+        }
         isClickStop = false;
         mDeviceAddress = "";
         mConnectBlueToothListener.onConnectSuccess("连接中，请稍后");
@@ -283,11 +349,91 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                 });*/
     }
 
+    /**
+     * 第二个血压计的操作，获取的结果
+     */
+    @Override
+    public void ReturnData(int gao, int di, int pul) {
+        Log.i("BluetoothChatService","sssss");
+        JSONObject json = new JSONObject();
+        try {
+            json.put("gao",gao + "");
+            json.put("pul",pul + "");
+            json.put("di",di + "");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        mConnectBlueToothListener.onDataFromBlue(type,json.toString());
+    }
+
+    private BroadcastReceiver searchDevices = new BroadcastReceiver() {
+
+        public void onReceive(Context context, Intent intent) {
+            Log.i("dfffgdsfgh", "1");
+            String action = intent.getAction();
+            Bundle b = intent.getExtras();
+            Object[] lstName = b.keySet().toArray();
+            // 显示所有收到的消息及其细节
+            for (int i = 0; i < lstName.length; i++) {
+                String keyName = lstName[i].toString();
+                Log.e(keyName, String.valueOf(b.get(keyName)));
+            }
+            // 搜索设备时，取得设备的MAC地址
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (device.getName() == null) {
+                    return;
+                }//NIBP044296
+                String bule_address = "";
+                Log.i("dfffgdsfgh",device.getName() + "");
+                if (device.getName().contains("NIBP") || device.getName().equals(Constants.DEVICE_NAME2)) {
+                    Log.e("---------", "-----------");
+                    if (!bule_address.equals("")) {
+                        if (device.getAddress().equals(bule_address)) {
+                            if (mChatService != null)
+                                mChatService.stop();
+                            timehandler1.removeCallbacks(bpmRunnable);
+                            try {
+                                Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            mChatService.start();
+                            mChatService.connect(device);
+                            mConnectBlueToothListener.onConnectSuccess("设备在线");
+                        }
+                    } else {
+                        if (mChatService != null)
+                            mChatService.stop();
+                        timehandler1.removeCallbacks(bpmRunnable);
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        mChatService.start();
+                        mChatService.connect(device);
+                        mConnectBlueToothListener.onConnectSuccess("设备在线");
+                    }
+
+                }
+            }
+        }
+    };
+
     public void closeBpm() {
         mBleWrapper.stopMonitoringRssiValue();
         mBleWrapper.diconnect();
         mBleWrapper.close();
         isClickStop = true;
+    }
+
+
+    public void call() {
+        Vector<Integer> _ver = MtBuf.m_buf;
+        for (int i = 0; i < _ver.size(); i++) {
+            Log.i("............", Integer.toHexString(_ver.get(i) & 0xFF));
+        }
     }
 
     /**
@@ -1358,4 +1504,5 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
             }
         }
     }
+
 }

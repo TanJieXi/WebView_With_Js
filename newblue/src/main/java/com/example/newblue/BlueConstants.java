@@ -45,4 +45,8 @@ public class BlueConstants {
      *  血糖尿酸总胆固醇三合一
      */
     public static final String BLUE_EQUIP_BUA = "bua";
+    /**
+     *  第二种血压计，使用广播找设备的
+     */
+    public static final String BLUE_EQUIP_BPM_TWO = "NIBP";
 }
