@@ -104,6 +104,22 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
         }
     };
     private Handler handleraa = new Handler();
+    //第二种血压计
+    BluetoothAdapter btAdapt;
+    private BluetoothChatService mChatService;
+    private CallBack call;
+    public MtBuf m_mtbuf = new MtBuf();
+    Runnable bpmRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if(!btAdapt.isDiscovering()) {
+                btAdapt.startDiscovery();
+            }
+            timehandler1.postDelayed(bpmRunnable, 500);
+        }
+    };
+    boolean isBpmTwo = false;
+    //第二种血压计----
     private Runnable runnableaa = new Runnable() {
 
         @SuppressLint("LongLogTag")
@@ -267,21 +283,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
 
     }
 
-    //第二种血压计
-    BluetoothAdapter btAdapt;
-    private BluetoothChatService mChatService;
-    private CallBack call;
-    public MtBuf m_mtbuf = new MtBuf();
-    Runnable bpmRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if(!btAdapt.isDiscovering()) {
-                btAdapt.startDiscovery();
-            }
-            timehandler1.postDelayed(bpmRunnable, 500);
-        }
-    };
-    boolean isBpmTwo = false;
+
     public void connectBlueTooth(Activity context, final String type, ConnectBlueToothListener connectBlueToothListener) {
         this.type = type;
         this.context = context;
