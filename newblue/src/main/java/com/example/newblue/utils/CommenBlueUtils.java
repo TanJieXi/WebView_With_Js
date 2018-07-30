@@ -308,6 +308,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
             timehandler1.postDelayed(bpmRunnable, 500);
            return;
         }
+        isBpmTwo = false;
         isClickStop = false;
         mDeviceAddress = "";
         mConnectBlueToothListener.onConnectSuccess("连接中，请稍后");
