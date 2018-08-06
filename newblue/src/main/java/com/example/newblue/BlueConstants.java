@@ -49,4 +49,8 @@ public class BlueConstants {
      *  第二种血压计，使用广播找设备的
      */
     public static final String BLUE_EQUIP_BPM_TWO = "NIBP";
+    /**
+     *  身份证阅读器
+     */
+    public static final String BLUE_EQUIP_IDCARD_READER = "idr";
 }

@@ -11,7 +11,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 
@@ -38,11 +41,20 @@ import com.example.newblue.deviceBox;
 import com.example.newblue.interfaces.BleWrapperUiCallbacks;
 import com.example.newblue.interfaces.ConnectBlueToothListener;
 import com.example.newblue.scan.BluetoothScan;
+import com.hdos.blueToothIDReader.IDCardInfor;
+import com.hdos.blueToothIDReader.blueToothIDReader;
+import com.invs.BtReaderClient;
+import com.invs.IClientCallBack;
+import com.invs.InvsIdCard;
+import com.invs.invswlt;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -61,7 +73,7 @@ import io.reactivex.functions.Consumer;
  * Created by TanJieXi on 2018/3/28.
  */
 @SuppressLint("NewApi")
-public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnScanSuccessListener, ICallBack, ICallBackInfo {
+public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnScanSuccessListener, ICallBack, ICallBackInfo, IClientCallBack {
     private Context context;
     private volatile static CommenBlueUtils blue;
     private BleWrapper mBleWrapper;
@@ -112,13 +124,14 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
     Runnable bpmRunnable = new Runnable() {
         @Override
         public void run() {
-            if(!btAdapt.isDiscovering()) {
+            if (!btAdapt.isDiscovering()) {
                 btAdapt.startDiscovery();
             }
             timehandler1.postDelayed(bpmRunnable, 500);
         }
     };
     boolean isBpmTwo = false;
+    boolean isReader = false;
     //第二种血压计----
     private Runnable runnableaa = new Runnable() {
 
@@ -227,6 +240,11 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
     }
 
     public void disConnectBlueTooth() {
+        if (!isClickConnectBlue) {
+            Log.i("blewra", "请先连接在执行断开");
+            return;
+        }
+        isClickConnectBlue = false;
         isClickStop = true;
         BluetoothScan.getInstance().Stop();
         mDeviceAddress = "";
@@ -269,27 +287,48 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
         DealBlueDataUtils.getInstance().removeAllHandler();
 
         //第二种类型的血压计
-        if(BlueConstants.BLUE_EQUIP_BPM_TWO.equals(type)) {
-            if(isBpmTwo) {
+        if (BlueConstants.BLUE_EQUIP_BPM_TWO.equals(type)) {
+            if (isBpmTwo) {
                 if (context != null) {
                     context.unregisterReceiver(searchDevices);
                     isBpmTwo = false;
-                    if(mChatService != null) {
+                    if (mChatService != null) {
                         mChatService.stop();
                     }
                 }
             }
         }
 
+        if (connect) {
+            if (mClient != null) {
+                mClient.disconnectBt();
+                connect = false;
+                mClient.unregister();
+            }
+        }
+        //第二种类型的血压计
+        if (BlueConstants.BLUE_EQUIP_IDCARD_READER.equals(type)) {
+            if (isReader) {
+                if (context != null) {
+                    context.unregisterReceiver(mBltReceiver);
+                    isReader = false;
+                }
+            }
+        }
+
     }
 
+    public static final String msg = "invs.blt.readcard";
+    private blueToothIDReader blueToothIDReader;
+    private boolean isClickConnectBlue = false;
 
     public void connectBlueTooth(Activity context, final String type, ConnectBlueToothListener connectBlueToothListener) {
+        isClickConnectBlue = true;
         this.type = type;
         this.context = context;
         this.mConnectBlueToothListener = connectBlueToothListener;
         //这里有两种情况，如果是第二种广播扫描的血压计，需要使用广播，其他不需要
-        if(BlueConstants.BLUE_EQUIP_BPM_TWO.equals(type)){
+        if (BlueConstants.BLUE_EQUIP_BPM_TWO.equals(type)) {
             mConnectBlueToothListener.onConnectSuccess("连接中，请稍后");
             isBpmTwo = true;
             call = new CallBack(this.m_mtbuf, this);
@@ -306,7 +345,17 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
             context.registerReceiver(searchDevices, intent);
             m_mtbuf.setCallBack(context, this);
             timehandler1.postDelayed(bpmRunnable, 500);
-           return;
+            return;
+        }
+        if (BlueConstants.BLUE_EQUIP_IDCARD_READER.equals(type)) {
+            isReader = true;
+            isflag = true;
+            final IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(msg);
+            context.registerReceiver(mBltReceiver, intentFilter);
+            mClient = new BtReaderClient(context);
+            mClient.setCallBack(this);
+            blueToothIDReader = new blueToothIDReader();
         }
         isBpmTwo = false;
         isClickStop = false;
@@ -352,21 +401,112 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                 });*/
     }
 
+    //接收蓝牙传回的消息
+    private BroadcastReceiver mBltReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            Log.i("dfffgdsfgh", "1");
+            if (msg.equals(action)) {
+                if (intent.getBooleanExtra("tag", false)) {
+                    InvsIdCard invsIdCard = (InvsIdCard) intent.getSerializableExtra("InvsIdCard");
+                    displayView(invsIdCard);
+                } else {
+                    mConnectBlueToothListener.onInterceptConnect("读卡失败");
+                }
+            }
+        }
+    };
+
+
+    public void displayView(InvsIdCard card) {
+        {
+            mConnectBlueToothListener.onConnectSuccess("读卡成功");
+            idcardTag = "1";
+            String nation = card.nation;
+            String UserAddr = card.address;
+            byte[] szBmp = invswlt.Wlt2Bmp(card.wlt);
+            Bitmap bm = null;
+            if ((szBmp != null) && (szBmp.length == 38862)) {
+                bm = BitmapFactory.decodeByteArray(szBmp, 0, szBmp.length);
+            }
+            try {
+                phoneFile = new File(imgurl + new Date().getTime() + ".jpg");
+                if(!phoneFile.getParentFile().exists()){
+                    phoneFile.getParentFile().mkdirs();
+                }
+                Log.e("图片保存地址===", phoneFile + "");
+                FileOutputStream out = new FileOutputStream(phoneFile);
+                bm.compress(Bitmap.CompressFormat.PNG, 80, out);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            String imgs = phoneFile.getAbsolutePath();
+            String name = card.name.trim();
+            String birth = card.birth.substring(0, 4)
+                    + "-" + card.birth.substring(4, 6) + "-"
+                    + card.birth.substring(6, 8);
+            String resAge = "";
+            String personType = "";
+            try {
+                resAge = Utils.getAge(card.birth.substring(0, 4)
+                        + "-" + card.birth.substring(4, 6) + "-"
+                        + card.birth.substring(6, 8));
+                Log.e("身份证时间", resAge + "");
+                if (resAge.length() > 1 && resAge.contains("月")) {
+                    personType = "4.儿童";
+                } else if (resAge.length() > 1 && resAge.contains("天")) {
+                    personType = "4.儿童";
+                } else {
+                    if (resAge.length() > 1) {
+                        int age = Integer.parseInt(resAge.substring(0, resAge.length() - 1));
+                        if (age >= 0 && age <= 6) {
+                            personType = "4.儿童";
+                        } else if (age >= 65) {
+                            personType = "2.老年人";
+                        } else {
+                            personType = "请选择";
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            String idCard = card.idNo;
+            String user_sex = "";
+            if (card.sex.contains("男")) {
+                user_sex = "男";
+            } else if (card.sex.contains("女")) {
+                user_sex = "女";
+            } else {
+                user_sex = "未知";
+            }
+
+            String address_hj = card.address;
+            String result = nation + "," + UserAddr + ","
+                    + imgs + "," + name + "," + birth + "," + resAge + "," + personType + ","
+                    + idCard + "," + user_sex + "," + address_hj;
+            mConnectBlueToothListener.onDataFromBlue(type, result);
+        }
+    }
+
+
     /**
      * 第二个血压计的操作，获取的结果
      */
     @Override
     public void ReturnData(int gao, int di, int pul) {
-        Log.i("BluetoothChatService","sssss");
+        Log.i("BluetoothChatService", "sssss");
         JSONObject json = new JSONObject();
         try {
-            json.put("gao",gao + "");
-            json.put("pul",pul + "");
-            json.put("di",di + "");
+            json.put("gao", gao + "");
+            json.put("pul", pul + "");
+            json.put("di", di + "");
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        mConnectBlueToothListener.onDataFromBlue(type,json.toString());
+        mConnectBlueToothListener.onDataFromBlue(type, json.toString());
     }
 
     private BroadcastReceiver searchDevices = new BroadcastReceiver() {
@@ -388,7 +528,7 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                     return;
                 }//NIBP044296
                 String bule_address = "";
-                Log.i("dfffgdsfgh",device.getName() + "");
+                Log.i("dfffgdsfgh", device.getName() + "");
                 if (device.getName().contains("NIBP") || device.getName().equals(Constants.DEVICE_NAME2)) {
                     Log.e("---------", "-----------");
                     if (!bule_address.equals("")) {
@@ -1447,6 +1587,52 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
         }
     }
 
+    private BtReaderClient mClient = null;
+    private boolean connect = false;
+    private boolean isflag = false;
+
+    private void onReadIDCard() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final InvsIdCard card = mClient.readCard();
+                if (card != null) {
+                    handleraa.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            displayView(card);
+                        }
+                    });
+                } else {
+                    handleraa.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mConnectBlueToothListener.onInterceptConnect("读卡失败");
+                        }
+                    });
+
+                }
+            }
+        }).start();
+
+    }
+
+
+    private File phoneFile;
+    private String idcardTag = "0";
+
+    private void showString(String string) {
+        // TODO Auto-generated method stub
+        Log.e("sdjklasjdklf", string);
+    }
+
+    private Calendar date = Calendar.getInstance();
+    private String imgurl = Environment.getExternalStorageDirectory().getAbsoluteFile()
+            + File.separator + "znjtys_Img" + File.separator
+            + date.get(Calendar.YEAR) + File.separator
+            + (date.get(Calendar.MONTH) + 1) + File.separator
+            + date.get(Calendar.DAY_OF_MONTH) + File.separator;
+
     /**
      * 扫描设备之后的回调函数，在这里进行设备的连接操作，不管这个全局的集合里面有没有
      * 这个设备，只要扫描到了就会回调这个函数，只是说同样的设备在全局的集合里面不会在存在
@@ -1478,6 +1664,228 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
                             return;
                         }
                     }
+                    if (type.trim().equals("idr")) {
+                        if (mDeviceName.contains("INVS300")) {
+                            if (!connect) {
+                                if (!mClient.connectBt(mDeviceAddress)) {
+                                    handleraa.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mConnectBlueToothListener.onInterceptConnect("连接失败");
+                                        }
+                                    });
+                                }
+                            } else {
+                                handleraa.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        onReadIDCard();//单次阅读
+                                    }
+                                });
+                            }
+                        }
+
+                        if (mDeviceAddress.length() > 16 && isflag && !mDeviceName.contains("INVS300")) {
+                            Log.e("连接蓝牙地址==", mDeviceAddress + "=====");
+                            isflag = false;
+                            // String bluToothMacAdd = "20:70:2B:00:2B:14";
+                            String pkName = context.getPackageName();
+
+                            String salt = "123456";
+                            String bluToothMacAdd = mDeviceAddress;
+                            IDCardInfor IDCardInfor;
+                            try {
+                                IDCardInfor = blueToothIDReader.hdosBlueToothIDReader(pkName, salt, bluToothMacAdd);
+
+                                showString("pkName：" + pkName);
+                                showString("bluToothMacAdd：" + bluToothMacAdd);
+
+
+                                if (IDCardInfor.result.equals("90")) {// 读卡成功
+                                    handleraa.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mConnectBlueToothListener.onConnectSuccess("读卡成功");
+                                            idcardTag = "1";
+                                        }
+                                    });
+
+                                    int[] colors = blueToothIDReader.convertByteToColor(IDCardInfor.bmpFile);
+                                    final Bitmap bm = Bitmap.createBitmap(colors, 102, 126, Bitmap.Config.ARGB_8888);
+
+                                    try {
+                                        phoneFile = new File(imgurl + new Date().getTime() + ".jpg");
+                                        Log.e("图片保存地址===", phoneFile + "");
+                                        if (!phoneFile.getParentFile().exists()) {
+                                            phoneFile.getParentFile().mkdirs();
+                                        }
+                                        FileOutputStream out = new FileOutputStream(phoneFile);
+                                        bm.compress(Bitmap.CompressFormat.PNG, 80, out);
+                                    } catch (Exception e) {
+                                        // TODO Auto-generated catch block
+                                        e.printStackTrace();
+                                    }
+
+                                    final com.hdos.blueToothIDReader.IDCardInfor finalIDCardInfor = IDCardInfor;
+                                    handleraa.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            byte[] ba = finalIDCardInfor.bmpFile;
+                                            String nation = finalIDCardInfor.nation;
+                                            String UserAddr = finalIDCardInfor.address;
+                                            String imgs = phoneFile.getAbsolutePath();
+                                            String name = finalIDCardInfor.name.trim();
+                                            String birth = finalIDCardInfor.birth.substring(0, 4)
+                                                    + "-" + finalIDCardInfor.birth.substring(4, 6) + "-"
+                                                    + finalIDCardInfor.birth.substring(6, 8);
+                                            String resAge = "";
+                                            String personType = "";
+                                            try {
+                                                resAge = Utils.getAge(finalIDCardInfor.birth.substring(0, 4)
+                                                        + "-" + finalIDCardInfor.birth.substring(4, 6) + "-"
+                                                        + finalIDCardInfor.birth.substring(6, 8));
+                                                Log.e("身份证时间", resAge + "");
+
+                                                if (resAge.length() > 1 && resAge.contains("月")) {
+                                                    personType = "4.儿童";
+                                                } else if (resAge.length() > 1 && resAge.contains("天")) {
+                                                    personType = "4.儿童";
+                                                } else {
+                                                    if (resAge.length() > 1) {
+                                                        int age = Integer.parseInt(resAge.substring(0, resAge.length() - 1));
+                                                        if (age >= 0 && age <= 6) {
+                                                            personType = "4.儿童";
+                                                        } else if (age >= 65) {
+                                                            personType = "2.老年人";
+                                                        } else {
+                                                            personType = "请选择";
+                                                        }
+                                                    }
+                                                }
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                            // setuheight.setText(UsersMod.get_uHeight()+"");
+                                            // setuwaist.setText(UsersMod.get_waist());
+                                            String idCard = finalIDCardInfor.iDNo;
+                                            String user_sex = "";
+                                            if (finalIDCardInfor.sex.contains("男")) {
+                                                user_sex = "男";
+                                            } else if (finalIDCardInfor.sex.contains("女")) {
+                                                user_sex = "女";
+                                            } else {
+                                                user_sex = "未知";
+                                            }
+                                            String address_hj = finalIDCardInfor.address;
+                                            String result = nation + "," + UserAddr + ","
+                                                    + imgs + "," + name + "," + birth + "," + resAge + "," + personType + ","
+                                                    + idCard + "," + user_sex + "," + address_hj;
+                                            mConnectBlueToothListener.onDataFromBlue(type, result);
+                                        }
+
+                                    });
+
+
+                                    // Bitmap bm1=Bitmap.createScaledBitmap(bm,
+                                    // (int)(102*2),(int)(126*2),
+                                    // false); //这里你可以自定义它的大小
+                                    // ImageView imageView = new ImageView(this);
+                                    // imageView.setScaleType(ImageView.ScaleType.MATRIX);
+                                    // imageView.setImageBitmap(bm);
+                                    // showGroup.addView(imageView);
+                                    // showString("");
+                                    // showString("名字：" + IDCardInfor.name);
+                                    // showString("性别：" + IDCardInfor.sex);
+                                    // showString("民族：" + IDCardInfor.nation);
+                                    // showString("生日：" + IDCardInfor.birth);
+                                    // showString("地址：" + IDCardInfor.address);
+                                    // showString("身份证号：" + IDCardInfor.iDNo);
+                                    // showString("发卡机构：" + IDCardInfor.department);
+                                    // showString("有效日期：" + IDCardInfor.effectDate + "至"
+                                    // + IDCardInfor.expireDate);
+                                    //
+                                    // showString("SDK版本：" + IDCardInfor.SDKVersion);
+                                    // showString("SDKName：" + IDCardInfor.SDKName);
+                                    // showString("读取类型：" + IDCardInfor.ReadType);
+
+                                } else {// 读卡错误
+                                    if (IDCardInfor.result.equals("41")) {
+                                        showString("蓝牙地址为null");
+                                        handleraa.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                mConnectBlueToothListener.onInterceptConnect("蓝牙地址为null");
+                                            }
+                                        });
+                                    }
+                                    if (IDCardInfor.result.equals("42")) {
+                                        showString("蓝牙连接失败");
+                                        handleraa.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                mConnectBlueToothListener.onInterceptConnect("蓝牙连接失败");
+                                            }
+                                        });
+//                        dqsfz.setText("蓝牙连接失败");
+                                    }
+                                    if (IDCardInfor.result.equals("43")) {
+                                        showString("寻卡失败");
+                                        handleraa.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                mConnectBlueToothListener.onInterceptConnect("寻卡失败");
+                                            }
+                                        });
+//                        dqsfz.setText("寻卡失败");
+                                    }
+                                    if (IDCardInfor.result.equals("44")) {
+                                        showString("选卡失败");
+                                        handleraa.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                mConnectBlueToothListener.onInterceptConnect("选卡失败");
+                                            }
+                                        });
+//                        dqsfz.setText("选卡失败");
+                                    }
+                                    if (IDCardInfor.result.equals("45")) {
+                                        showString("读卡失败");
+                                        handleraa.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                mConnectBlueToothListener.onInterceptConnect("读卡失败");
+                                            }
+                                        });
+//                        dqsfz.setText("读卡失败");
+                                    }
+
+                                }
+                            } catch (Exception e) {
+                                // TODO: handle exception
+                                showString("读卡设备故障!请重新启动！");
+                                handleraa.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mConnectBlueToothListener.onInterceptConnect("读卡设备故障!请重新启动！");
+                                    }
+                                });
+//                dqsfz.setText("亲！重启读卡器再试试！");
+                            }
+                        } else {
+                            handleraa.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mConnectBlueToothListener.onInterceptConnect("未检测到设备");
+                                }
+                            });
+                        }
+
+
+                        return;
+                    }
+
+
                     if (mDeviceName.contains("C01478")) {//尿机
                         if (endNeedAddress.length() > 5) {
                             mBleWrapper.connect(endNeedAddress);
@@ -1508,4 +1916,16 @@ public class CommenBlueUtils implements BleWrapperUiCallbacks, BluetoothScan.OnS
         }
     }
 
+    @Override
+    public void onBtState(boolean b) {
+        if (b) {
+            connect = true;
+            mConnectBlueToothListener.onConnectSuccess("连接成功");
+            onReadIDCard();//单次阅读
+            // onReadIDCardAlways();//循环都卡
+        } else {
+            connect = false;
+            mConnectBlueToothListener.onInterceptConnect("设备连接断开");
+        }
+    }
 }

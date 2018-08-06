@@ -204,4 +204,94 @@ public class Utils {
         }
         return bytes;
     }
+
+
+    /**
+     * @param birthDayStr
+     * @return
+     * @throws Exception String
+     * @方法名称: getAge
+     * @方法描述: 根据当前日期获取年龄
+     * @Date : 2017-12-19
+     */
+    public static String getAge(String birthDayStr) throws Exception {
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        format.setLenient(false);
+        Date birthDay = format.parse(birthDayStr);
+        Calendar calBir = Calendar.getInstance();
+        calBir.setTime(birthDay);
+        // 获取当前系统时间
+        Calendar cal = Calendar.getInstance();
+        // 如果出生日期大于当前时间，则抛出异常
+        if (cal.before(calBir)) {
+            throw new IllegalArgumentException(
+                    "The birthDay is before Now.It's unbelievable!");
+        }
+        // 取出系统当前时间的年、月、日部分
+        int yearNow = cal.get(Calendar.YEAR);
+        int monthNow = cal.get(Calendar.MONTH) + 1;
+        int dayOfMonthNow = cal.get(Calendar.DAY_OF_MONTH);
+
+        // 取出出生日期的年、月、日部分
+        int yearBirth = calBir.get(Calendar.YEAR);
+        int monthBirth = calBir.get(Calendar.MONTH) + 1;
+        int dayOfMonthBirth = calBir.get(Calendar.DAY_OF_MONTH);
+        String resAge = "";
+        // 如果当前年份大于生日年份
+        if (yearNow > yearBirth) {
+            int age = yearNow - yearBirth;
+            // 如果当前年比生日年份大一年
+            if (yearNow - yearBirth == 1) {
+                //如果为临近一个月  2017-12-31/2018-01-01
+                if ((monthNow + 11) == monthBirth) {
+                    if (dayOfMonthBirth > dayOfMonthNow) {
+                        resAge = ((calBir.getActualMaximum(Calendar.DATE) - (dayOfMonthBirth - dayOfMonthNow)) + 1)
+                                + "天";
+                    } else {
+                        // 如果当前日期不小于生日日期 则为1月
+                        resAge = "1个月";
+                    }
+                } else if (monthNow < monthBirth) {// 如果当前月份比生日月份小 说明不满一年 计算月份
+                    resAge = (12 - (monthBirth - monthNow) + 1) + "个月";
+                } else {
+                    // 如果当前月份不小于生日月份 则为1岁
+                    resAge = "1岁";
+                }
+            } else {// 如果当前年份比生日年份超出1年一年以上 则计算岁
+                // 如果当前月份比生日月份小，说明不满整岁，减去一岁
+                if ((monthNow < monthBirth)) {
+                    resAge = (age - 1) + "岁";
+                } else if ((monthNow == monthBirth) && (dayOfMonthNow < dayOfMonthBirth)) {//如果当前月份等于生日月份，并且当前日期小于生日日期，说明不满整岁，减去一岁
+                    resAge = (age - 1) + "岁";
+                } else {
+                    resAge = age + "岁";
+                }
+            }
+        } else if (yearNow == yearBirth) {// 如果当前年份相同
+            int age = 0;
+            // 如果当前月份比生日月份大
+            if (monthNow > monthBirth) {
+                age = monthNow - monthBirth;
+                // 如果当前月份只比生日月份大一月
+                if (monthNow - monthBirth == 1) {
+                    // 如果当前日期比生日日期小 则计算天数
+                    if (dayOfMonthBirth > dayOfMonthNow)
+                        resAge = ((calBir.getActualMaximum(Calendar.DATE) - (dayOfMonthBirth - dayOfMonthNow)) + 1)
+                                + "天";
+                    else
+                        // 如果当前日期不小于生日日期 则为1月
+                        resAge = "1个月";
+                } else {
+                    // 如果当前月份只比生日月份大不止1月 则计算月份
+                    resAge = (age + 1) + "个月";
+                }
+            } else if (monthNow == monthBirth) {// 如果当前月份等于生日月份 则计算天数
+                int ages = dayOfMonthNow - dayOfMonthBirth;
+                resAge = (ages + 1) + "天";
+            }
+        }
+        System.out.println("age:" + resAge);
+        return resAge + "";
+    }
 }

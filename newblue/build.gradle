@@ -21,6 +21,7 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+
     }
 
 }
@@ -41,4 +42,6 @@ dependencies {
     compile 'com.clj.fastble:FastBleLib:2.3.2'
     implementation files('libs/libHTBodyfat.jar')
     implementation files('libs/CONTEC08A_SDK v1.6.jar')
+    implementation files('libs/invssdk.jar')
+    implementation files('libs/blueToothIDReader.jar')
 }

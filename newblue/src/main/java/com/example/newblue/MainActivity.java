@@ -30,6 +30,10 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+
+
+
     }
 
     /**
@@ -38,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
      */
     @OnClick({R.id.btn_startSao, R.id.btn_disconnet, R.id.btn_two, R.id.btn_open,
             R.id.btn_three, R.id.btn_bpm, R.id.btn_bmi, R.id.btn_bgm, R.id.btn_hgb,
-            R.id.btn_glhgb, R.id.btn_bft, R.id.btn_bua, R.id.btn_bpm_two})
+            R.id.btn_glhgb, R.id.btn_bft, R.id.btn_bua, R.id.btn_bpm_two,R.id.btn_reader})
     public void click(Button v) {
         switch (v.getId()) {
             case R.id.btn_startSao: //开始连接
@@ -90,6 +94,10 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
             case R.id.btn_bpm_two: //第二种血压计
                 CommenBlueUtils.getInstance().disConnectBlueTooth();
                 type = BlueConstants.BLUE_EQUIP_BPM_TWO;
+                break;
+            case R.id.btn_reader://身份证阅读器
+                CommenBlueUtils.getInstance().disConnectBlueTooth();
+                type = BlueConstants.BLUE_EQUIP_IDCARD_READER;
                 break;
             default:
                 break;
@@ -148,6 +156,9 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
                 break;
             case BlueConstants.BLUE_EQUIP_BPM_TWO://第二种血压计
                 DealBlueDataUtils.getInstance().dealTwoBpmData(message, this);
+                break;
+            case BlueConstants.BLUE_EQUIP_IDCARD_READER://身份证阅读器
+                setData(tv_text, message, 200);
                 break;
             default:
                 break;
