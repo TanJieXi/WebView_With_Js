@@ -1,5 +1,8 @@
 package com.example.newblue.utils;
 
+import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -8,6 +11,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by TanJieXi on 2018/3/30.
@@ -294,4 +298,33 @@ public class Utils {
         System.out.println("age:" + resAge);
         return resAge + "";
     }
+
+    /**
+     * 判断service是否运行
+     *
+     * @param context
+     * @param className
+     * @return
+     */
+    public static boolean isServiceExisted(Context context, String className) {
+        ActivityManager activityManager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningServiceInfo> serviceList = activityManager
+                .getRunningServices(Integer.MAX_VALUE);
+
+        if (!(serviceList.size() > 0)) {
+            return false;
+        }
+
+        for (int i = 0; i < serviceList.size(); i++) {
+            ActivityManager.RunningServiceInfo serviceInfo = serviceList.get(i);
+            ComponentName serviceName = serviceInfo.service;
+
+            if (serviceName.getClassName().equals(className)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

@@ -44,4 +44,7 @@ dependencies {
     implementation files('libs/CONTEC08A_SDK v1.6.jar')
     implementation files('libs/invssdk.jar')
     implementation files('libs/blueToothIDReader.jar')
+    implementation files('libs/gprintersdkv22.jar')
+    compile 'org.greenrobot:eventbus:3.0.0'
+    implementation files('libs/xUtils-2.6.14.jar')
 }

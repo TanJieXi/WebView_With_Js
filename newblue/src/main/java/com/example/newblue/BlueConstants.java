@@ -53,4 +53,16 @@ public class BlueConstants {
      *  身份证阅读器
      */
     public static final String BLUE_EQUIP_IDCARD_READER = "idr";
+
+    public static final String BULEPRITER_SETTING = "bulepritersetting";//蓝牙打印机设置sp表名
+    public static final String BULEPRITER_OPEN = "bulepriterseopen";//蓝牙打印机开关设置
+    public static final String BULEPRITER_NUMBER = "bulepriternumber";//蓝牙打印机条码
+    public static final String BULEPRITER_PAGE = "bulepriterpage";//蓝牙打印机一次打印张数，默认1张
+    /**
+     * 蓝牙打印机需要打印传的参数
+     */
+    public static final String BLUE_PRINT_NAME = "BLUE_PRINT_NAME";  //姓名
+    public static final String BLUE_PRINT_BAR_CODE = "BLUE_PRINT_BAR_CODE"; //条码
+    public static final String BLUE_PRINT_SEX = "BLUE_PRINT_SEX";  //性别
+    public static final String BLUE_PRINT_PRINTNUM = "BLUE_PRINT_PRINTNUM";  //打印数量
 }

@@ -30,10 +30,6 @@ public class MainActivity extends AppCompatActivity implements ConnectBlueToothL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
-
-
-
     }
 
     /**
