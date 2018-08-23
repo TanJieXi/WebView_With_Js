@@ -67,45 +67,64 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
         android:largeHeap="true"
         android:process="com.example.newblue"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
-
         </activity>
         <activity android:name=".BluthPrintActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
-        <receiver android:name="com.example.newblue.receive.DeviceBootReceiver">
+
+        <receiver android:name=".receive.DeviceBootReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
+
         <service
             android:name="com.gprinter.service.GpPrintService"
             android:enabled="true"
             android:exported="true"
             android:label="GpPrintService">
             <intent-filter>
-                <action android:name="com.gprinter.aidl.GpPrintService" />
+                <action android:name="com.gprinter.aidl.GpPrintService"/>
             </intent-filter>
         </service>
-        <service android:name="com.gprinter.service.AllService" />
+        <service android:name="com.gprinter.service.AllService"/>
         <service
             android:name=".server.BlueToothService"
             android:enabled="true">
             <intent-filter android:priority="1000">
-                <action android:name="com.ds.bluetooth" />
+                <action android:name="com.ds.bluetooth"/>
             </intent-filter>
         </service>
 
+        <!-- 跳转心电界面 -->
+        <activity android:name=".JumpAvtivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
 
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="design_width"
+            android:value="800"/>
+        <meta-data
+            android:name="design_height"
+            android:value="1280"/>
+
+        <!-- 心电仪 -->
+        <activity
+            android:name=".jumppart.Jc_Ecm"
+            android:launchMode="singleTask"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+             />
     </application>
 
 </manifest>

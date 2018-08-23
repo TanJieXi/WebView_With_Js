@@ -65,4 +65,12 @@ public class BlueConstants {
     public static final String BLUE_PRINT_BAR_CODE = "BLUE_PRINT_BAR_CODE"; //条码
     public static final String BLUE_PRINT_SEX = "BLUE_PRINT_SEX";  //性别
     public static final String BLUE_PRINT_PRINTNUM = "BLUE_PRINT_PRINTNUM";  //打印数量
+
+    /**
+     * 心电的结果
+     */
+    public static final int ECM_JUMP_CODE = 1111;
+    public static final String ECM_HEART_RATE = "ECM_HEART_RATE";
+    public static final String ECM_RESULT = "ECM_RESULT";
+    public static final String ECM_XML_DATA = "ECM_XML_DATA";
 }
