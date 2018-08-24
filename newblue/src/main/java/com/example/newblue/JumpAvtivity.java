@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
+import com.example.newblue.jumppart.Jc_Bab;
 import com.example.newblue.jumppart.Jc_Ecm;
 import com.example.newblue.jumppart.Jc_Ecmxii;
 
@@ -24,13 +25,15 @@ public class JumpAvtivity extends AppCompatActivity {
         ButterKnife.bind(this);
     }
 
-    @OnClick({R.id.btn_ecm, R.id.btn_ecmii})
+    @OnClick({R.id.btn_ecm, R.id.btn_ecmii,R.id.btn_bab})
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.btn_ecm) {
             startActivityForResult(new Intent(this, Jc_Ecm.class), BlueConstants.ECM_JUMP_CODE);
         } else if (id == R.id.btn_ecmii) {
             startActivityForResult(new Intent(this, Jc_Ecmxii.class), BlueConstants.ECMII_JUMP_CODE);
+        } else if(id ==R.id.btn_bab){
+            startActivityForResult(new Intent(this, Jc_Bab.class), BlueConstants.BAB_JUMP_CODE);
         }
     }
 
@@ -52,6 +55,13 @@ public class JumpAvtivity extends AppCompatActivity {
                 String endEcmRate = data.getStringExtra(BlueConstants.ECM_HEART_RATE);
                 String endLookXml = data.getStringExtra(BlueConstants.ECM_XML_LOOK_URL);
                 String result = "心率：" + endEcmRate + ",分析地址：" + endEcmXml + ",查看心电xml地址：" + endLookXml;
+                tv_texts.setText(result);
+            }
+        }else if (BlueConstants.BAB_JUMP_CODE == requestCode && RESULT_OK == resultCode) {
+            if (data != null) {
+                String endResult = data.getStringExtra(BlueConstants.BAB_END_RESULT);
+                String endXmlData = data.getStringExtra(BlueConstants.BAB_END_XMLDATA);
+                String result = "心率计数：" + endResult + ", 数据：" + endXmlData;
                 tv_texts.setText(result);
             }
         }

@@ -77,4 +77,11 @@ public class BlueConstants {
     public static final String ECM_XML_URL = "ECM_XML_URL"; //十二导心电是地址
     public static final String ECM_XML_LOOK_URL = "ECM_XML_LOOK_URL"; //十二导心电查看的地址
     public static final String ECMII_STRING_URL = "ECMII_STRING_URL"; //查看十二导的图
+
+    /**
+     * 胎心仪
+     */
+    public static final int BAB_JUMP_CODE = 1113;
+    public static final String BAB_END_RESULT = "BAB_END_RESULT"; //胎心仪的结果
+    public static final String BAB_END_XMLDATA = "BAB_END_XMLDATA"; //胎心仪的xml数据
 }

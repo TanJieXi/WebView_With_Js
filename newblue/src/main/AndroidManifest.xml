@@ -132,7 +132,7 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             />
-
+        <!--12导心电波形监测的SDK -->
         <activity
             android:name=".jumppart.GLActivity"
             android:launchMode="singleTop"
@@ -147,6 +147,13 @@
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             />
+
+        <!-- 胎心仪 -->
+        <activity
+            android:name=".jumppart.Jc_Bab"
+            android:launchMode="singleTask"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
     </application>
 
 </manifest>

@@ -298,7 +298,10 @@ public class Utils {
         System.out.println("age:" + resAge);
         return resAge + "";
     }
-
+    public static  int Dp2Px(Context context, float dp) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dp * scale + 0.5f);
+    }
     /**
      * 判断service是否运行
      *
