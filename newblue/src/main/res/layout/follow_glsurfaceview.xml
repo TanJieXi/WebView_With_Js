@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#414040"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/lineargl"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="2dp"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="分析结果" />
+
+
+    </LinearLayout>
+
+    <serial.jni.GLView
+        android:id="@+id/GLWave"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/lineargl"
+        android:layout_below="@+id/titlebar"
+        android:layout_marginBottom="1dp" />
+    <!--android:background="@drawable/bk8"-->
+    <RelativeLayout
+        android:id="@+id/titlebar"
+        android:layout_width="fill_parent"
+        android:layout_height="63px">
+        <!-- android:layout_height="63dp" -->
+        <ImageView
+            android:id="@+id/image1"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/titlebar_1" />
+
+        <ImageView
+            android:id="@+id/image2"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:visibility="gone"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/titlebar_2" />
+
+        <TextView
+            android:id="@+id/textHR"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignBottom="@id/image1"
+            android:layout_alignLeft="@id/image1"
+            android:layout_alignRight="@id/image1"
+            android:layout_alignTop="@id/image1"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="HR"
+            android:textColor="#00FF00"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/textPaper"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignBottom="@id/image2"
+            android:layout_alignLeft="@id/image2"
+            android:layout_alignRight="@id/image2"
+            android:layout_alignTop="@id/image2"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="PAPER"
+            android:visibility="gone"
+            android:textColor="#fffffc42"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/textLeadOff"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="HR"
+            android:textColor="#FFF"
+            android:textSize="18sp" />
+        <TextView
+            android:id="@+id/textLead"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_toRightOf="@+id/textLeadOff"
+            android:gravity="center_vertical|center_horizontal"
+            android:text=""
+            android:textColor="#FF0000"
+            android:textSize="18sp" />
+    </RelativeLayout>
+    <!--
+        <android.gesture.GestureOverlayView
+            android:id="@+id/gestures"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:layout_alignLeft="@id/GLWave"
+            android:layout_alignRight="@id/GLWave"
+            android:layout_alignTop="@id/GLWave"
+            android:layout_alignBottom="@id/GLWave"
+            android:gestureStrokeType="multiple" >
+        </android.gesture.GestureOverlayView>
+    -->
+</RelativeLayout>

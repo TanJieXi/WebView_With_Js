@@ -14,10 +14,10 @@
         android:text="心电监测"
         />
     <Button
-        android:id="@+id/btn_print"
+        android:id="@+id/btn_ecmii"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="打印机打印"
+        android:text="12导心电"
         app:layout_constraintLeft_toRightOf="@+id/btn_ecm"
         />
     <Button
@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="打印机断开"
-        app:layout_constraintLeft_toRightOf="@+id/btn_print"
+        app:layout_constraintLeft_toRightOf="@+id/btn_ecmii"
         />
     <TextView
         android:id="@+id/tv_texts"

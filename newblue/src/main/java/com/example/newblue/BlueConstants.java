@@ -70,7 +70,11 @@ public class BlueConstants {
      * 心电的结果
      */
     public static final int ECM_JUMP_CODE = 1111;
-    public static final String ECM_HEART_RATE = "ECM_HEART_RATE";
-    public static final String ECM_RESULT = "ECM_RESULT";
-    public static final String ECM_XML_DATA = "ECM_XML_DATA";
+    public static final int ECMII_JUMP_CODE = 1112;
+    public static final String ECM_HEART_RATE = "ECM_HEART_RATE"; //心率
+    public static final String ECM_RESULT = "ECM_RESULT"; //心电结果
+    public static final String ECM_XML_DATA = "ECM_XML_DATA"; //心电xml数据
+    public static final String ECM_XML_URL = "ECM_XML_URL"; //十二导心电是地址
+    public static final String ECM_XML_LOOK_URL = "ECM_XML_LOOK_URL"; //十二导心电查看的地址
+    public static final String ECMII_STRING_URL = "ECMII_STRING_URL"; //查看十二导的图
 }

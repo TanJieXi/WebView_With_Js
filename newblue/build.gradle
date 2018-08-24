@@ -8,7 +8,7 @@ android {
     defaultConfig {
         applicationId "com.example.newblue"
         minSdkVersion 15
-        targetSdkVersion 26
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
 
@@ -50,4 +50,8 @@ dependencies {
     implementation 'com.zhy:autolayout:1.4.5'
     implementation 'com.zhy:percent-support-extends:1.1.1'
     implementation files('libs/CreativeHealth_ECG.jar')
+    implementation files('libs/AECGLib.jar')
+    implementation files('libs/newGather-1.5.jar')
+    implementation files('libs/dom4j-1.6.1.jar')
+    implementation files('libs/gltest.jar')
 }

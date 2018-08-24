@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<com.zhy.autolayout.AutoLinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/public_equip_comment_title"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:layout_margin="20px"
+        android:background="#ffffff"
+        android:orientation="horizontal"
+        android:paddingBottom="15px"
+        android:paddingTop="15px">
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="180px"
+            android:layout_height="150px"
+            android:layout_gravity="center"
+            android:layout_marginLeft="30px"
+            android:background="@drawable/instrument007"
+            android:scaleType="centerInside"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="40px"
+                android:paddingBottom="20px"
+                android:paddingTop="20px"
+                android:text="检测结果："
+                android:textColor="#000"
+                android:textSize="23px"/>
+
+            <TextView
+                android:id="@+id/tvstate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="----"
+                android:textColor="#000"
+                android:textSize="23px"
+                />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="40px"
+        android:layout_marginLeft="20px"
+        android:layout_marginRight="20px"
+        android:layout_weight="1.4"
+        android:background="#ffffff"
+        android:orientation="horizontal"
+        >
+        <Button
+            android:layout_margin="30px"
+            android:id="@+id/seek_btn"
+            android:layout_width="170px"
+            android:layout_height="match_parent"
+            android:background="@drawable/buttomborder_click"
+            android:text="搜索"
+            android:textColor="#FFF"
+            android:textSize="35px" />
+
+        <Button
+            android:layout_margin="30px"
+            android:id="@+id/show_wave_btn"
+            android:layout_width="170px"
+            android:layout_height="match_parent"
+            android:background="@drawable/buttomborder_click"
+            android:text="查看波形"
+            android:visibility="gone"
+            android:textColor="#FFF"
+            android:textSize="35px" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:paddingLeft="20px">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="平板是否绑定该设备:"
+                android:textColor="#000000"
+                android:textSize="22px"/>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</com.zhy.autolayout.AutoLinearLayout>
