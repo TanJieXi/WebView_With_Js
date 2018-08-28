@@ -154,6 +154,35 @@
             android:launchMode="singleTask"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+        <!-- 汇声B超 -->
+        <activity
+            android:name="com.healon.up20user.UI.MainActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
+        <!-- 汇声B超编辑 -->
+        <activity
+            android:name=".jumppart.bpart.BCRedactActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
+        <!-- 汇声B超图片放大 -->
+        <activity
+            android:name=".jumppart.bpart.BCRedactActivityImg"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
+        <!-- 汇声B超列表 -->
+        <activity
+            android:name=".jumppart.bpart.BCRedactTableList"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
     </application>
 
 </manifest>

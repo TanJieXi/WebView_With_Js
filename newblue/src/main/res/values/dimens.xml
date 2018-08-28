@@ -16,7 +16,7 @@
     <dimen name="public_font_32sp">32sp</dimen>
     <dimen name="public_font_36sp">36sp</dimen>
     <dimen name="public_font_48sp">48sp</dimen>
-
+    <dimen name="public_family_recycle_item">7dp</dimen>
     //字体px
     <dimen name="public_font_13px">13px</dimen>
     <dimen name="public_font_20px">20px</dimen>

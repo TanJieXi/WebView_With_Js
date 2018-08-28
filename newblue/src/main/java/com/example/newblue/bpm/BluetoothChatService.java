@@ -89,7 +89,7 @@ public class BluetoothChatService {
 
     /**
      * Start the chat service. Specifically start AcceptThread to begin a
-     * session in listening (server) mode. Called by the Activity onResume() */
+     * session follow_in listening (server) mode. Called by the Activity onResume() */
     public synchronized void start() {
         if (D) Log.d(TAG, "start");
 
@@ -163,7 +163,7 @@ public class BluetoothChatService {
     }
 
     /**
-     * Write to the ConnectedThread in an unsynchronized manner
+     * Write to the ConnectedThread follow_in an unsynchronized manner
      * @param out The bytes to write
      * @see ConnectedThread#write(byte[])
      */

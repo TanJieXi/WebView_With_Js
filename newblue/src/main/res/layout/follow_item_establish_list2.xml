@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.zhy.android.percent.support.PercentLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:background="@android:color/transparent"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:foreground="?attr/selectableItemBackground"
+        app:cardCornerRadius="2dp"
+        app:cardElevation="1dp"
+        app:cardUseCompatPadding="true">
+
+        <com.zhy.android.percent.support.PercentRelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/bc_imv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:textColor="#48495F"
+                android:layout_marginLeft="20dp"
+                app:layout_heightPercent="6%w"
+                app:layout_textSizePercent="1.8%w"
+                app:layout_widthPercent="6%w" />
+
+            <com.zhy.android.percent.support.PercentLinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="140dp"
+                android:layout_toRightOf="@+id/bc_imv"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_toRightOf="@+id/bc_imv"
+                    android:text="部位:"
+                    android:textColor="#48495F"
+                    app:layout_textSizePercent="1.8%w" />
+
+                <TextView
+                    android:id="@+id/content_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/bc_imv"
+                    android:text=""
+                    android:textColor="#48495F"
+                    app:layout_textSizePercent="1.8%w" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_toRightOf="@+id/bc_imv"
+                    android:text="是否正常:"
+                    android:textColor="#48495F"
+                    app:layout_textSizePercent="1.8%w" />
+
+                <TextView
+                    android:id="@+id/normal_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/content_tv"
+                    android:text=""
+                    android:textColor="#48495F"
+                    app:layout_textSizePercent="1.8%w" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_toRightOf="@+id/bc_imv"
+                    android:text="备注:"
+                    android:textColor="#48495F"
+                    app:layout_textSizePercent="1.8%w" />
+
+                <TextView
+                    android:id="@+id/remark_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/normal_tv"
+                    android:text=""
+                    android:textColor="#48495F"
+                    app:layout_textSizePercent="1.8%w" />
+
+            </com.zhy.android.percent.support.PercentLinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/edt_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="20dp"
+                    android:text="编辑"
+                    android:visibility="gone"
+                    app:layout_heightPercent="60%h"
+                    app:layout_widthPercent="8%w" />
+
+                <Button
+                    android:id="@+id/change_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="23dp"
+                    android:layout_marginRight="23dp"
+                    android:text="删除"
+                    app:layout_heightPercent="60%h"
+                    app:layout_marginLeftPercent="80%w"
+                    app:layout_marginRightPercent="2%w"
+                    app:layout_widthPercent="8%w" />
+
+
+            </LinearLayout>
+
+        </com.zhy.android.percent.support.PercentRelativeLayout>
+    </android.support.v7.widget.CardView>
+</com.zhy.android.percent.support.PercentLinearLayout>
+

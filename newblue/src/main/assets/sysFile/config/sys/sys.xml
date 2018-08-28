@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<root>
+	
+	<content>
+		
+		<global_properties>
+			<system_clock>32</system_clock>
+			<tx_clock>160</tx_clock>
+			<rx_clock>128</rx_clock>
+			<hardware_channel>8</hardware_channel>
+			<rx_focuspoints_change>64</rx_focuspoints_change>
+			<rx_focuspoints>128</rx_focuspoints>
+			<beam_angle>12</beam_angle>
+			<b_gain>50</b_gain>
+			<sound_speed>1540</sound_speed>
+		</global_properties>
+	
+	</content>
+	
+</root>

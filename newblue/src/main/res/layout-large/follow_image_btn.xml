@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="127dp"
+    android:layout_height="match_parent"
+    android:background="@color/BackgroundTop">
+
+    <ImageButton
+        android:id="@+id/imgbtn_checkPoint2"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@mipmap/follow_bianji"
+        app:layout_constraintVertical_weight="1"
+        app:layout_constraintLeft_toLeftOf="@+id/imgbtn_freeze"
+        app:layout_constraintRight_toRightOf="@+id/imgbtn_freeze"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+    <ImageButton
+        android:id="@+id/imgbtn_checkPoint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@mipmap/follow_bottom_part_disable"
+        app:layout_constraintBottom_toTopOf="@+id/imgbtn_changeMode"
+        app:layout_constraintLeft_toLeftOf="@+id/imgbtn_freeze"
+        app:layout_constraintRight_toRightOf="@+id/imgbtn_freeze"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_weight="1" />
+
+    <ImageButton
+        android:id="@+id/imgbtn_changeMode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/follow_bottom_pattern_bm_disable"
+        app:layout_constraintBottom_toTopOf="@+id/imgbtn_freeze"
+        app:layout_constraintLeft_toLeftOf="@+id/imgbtn_freeze"
+        app:layout_constraintRight_toRightOf="@+id/imgbtn_freeze"
+        app:layout_constraintTop_toBottomOf="@+id/imgbtn_checkPoint"
+        app:layout_constraintVertical_weight="1" />
+
+    <ImageButton
+        android:id="@+id/imgbtn_freeze"
+        android:layout_width="95dp"
+        android:layout_height="95dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        android:background="@mipmap/follow_bottom_freeze_selected"
+        app:layout_constraintBottom_toTopOf="@+id/imgbtn_measure"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgbtn_changeMode"
+        app:layout_constraintVertical_weight="2" />
+
+    <ImageButton
+        android:id="@+id/imgbtn_measure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/follow_bottom_measure_disable"
+        app:layout_constraintBottom_toTopOf="@+id/imgbtn_savePic"
+        app:layout_constraintLeft_toLeftOf="@+id/imgbtn_freeze"
+        app:layout_constraintRight_toRightOf="@+id/imgbtn_freeze"
+        app:layout_constraintTop_toBottomOf="@+id/imgbtn_freeze"
+        app:layout_constraintVertical_weight="1" />
+<!--    <ImageButton
+        android:id="@+id/imgbtn_measure2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/bottom_measure_disable"
+        app:layout_constraintBottom_toTopOf="@+id/imgbtn_savePic"
+        app:layout_constraintLeft_toLeftOf="@+id/imgbtn_freeze"
+        app:layout_constraintRight_toRightOf="@+id/imgbtn_freeze"
+        app:layout_constraintTop_toBottomOf="@+id/imgbtn_measure"
+        app:layout_constraintVertical_weight="1" />-->
+    <ImageButton
+        android:id="@+id/imgbtn_savePic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/follow_bottom_save_disable"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@+id/imgbtn_freeze"
+        app:layout_constraintRight_toRightOf="@+id/imgbtn_freeze"
+        app:layout_constraintTop_toBottomOf="@+id/imgbtn_measure"
+        app:layout_constraintVertical_weight="1" />
+
+</android.support.constraint.ConstraintLayout>

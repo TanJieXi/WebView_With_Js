@@ -27,6 +27,13 @@
         android:text="胎心仪"
         app:layout_constraintLeft_toRightOf="@+id/btn_ecmii"
         />
+    <Button
+        android:id="@+id/btn_cdus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="B超"
+        app:layout_constraintLeft_toRightOf="@+id/btn_bab"
+        />
     <TextView
         android:id="@+id/tv_texts"
         android:layout_width="0dp"

@@ -1,3 +1,38 @@
 <resources>
     <string name="app_name">newblue</string>
+    <!--测量-->
+    <string-array name="BMode">
+        <item>B模式</item>
+        <item>b_distance;距离;H_MeasureLine</item>
+        <item>b_area_girth;面积/周长;H_MeasureEllipse</item>
+        <item>b_volume;体积;H_MeasureEllipseLine</item>
+        <item>b_angle;角度;H_MeasureAngle</item>
+        <item>b_left_coxae_angle;左髋关节角度;H_MeasureAngle2</item>
+        <item>b_right_coxae_angle;右髋关节角度;H_MeasureAngle2</item>
+        <item>b_line_ratio;直线比率;H_MeasureLine2</item>
+        <item>b_area_ratio;面积比率;H_MeasureEllipse2</item>
+        <item>b_line_narrow;直线狭窄率;H_MeasureLine2</item>
+        <item>b_area_narrow;面积狭窄率;H_MeasureEllipse2</item>
+    </string-array>
+    <string-array name="BMMode">
+        <item>M模式</item>
+        <item>m_distance;距离;H_MeasureLine</item>
+        <item>m_time;时间;H_MeasureLine</item>
+        <item>m_slope;斜率;H_MeasureLine</item>
+        <item>m_heart_rate;心率;H_MeasureLine</item>
+    </string-array>
+    <string-array name="other">
+        <item>其他</item>
+        <item>o_annotation;注释;H_MeasureCaret</item>
+        <item>o_arrows;箭头;H_MeasureArrow</item>
+    </string-array>
+    <string-array name="part">
+        <item>Gynecology;妇科</item>
+        <item>Obstetrics;产科</item>
+        <item>Abdomen;腹部</item>
+        <item>Urology;泌尿科</item>
+        <item>SmallPart;小器官</item>
+        <item>Vascular;血管</item>
+        <item>Muscle;肌肉</item>
+    </string-array>
 </resources>

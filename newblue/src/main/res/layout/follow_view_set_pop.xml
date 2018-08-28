@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_set01"
+        style="@style/follow_newspinner"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/follow_dialog_background"
+        android:gravity="center"
+        android:text="item1" />
+
+    <TextView
+        android:id="@+id/tv_set02"
+        style="@style/follow_newspinner"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/follow_dialog_background"
+        android:gravity="center"
+        android:text="item2" />
+
+    <TextView
+        android:id="@+id/tv_set03"
+        style="@style/follow_newspinner"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/follow_dialog_background"
+        android:gravity="center"
+        android:text="item3" />
+
+    <TextView
+        android:id="@+id/tv_set04"
+        style="@style/follow_newspinner"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/follow_dialog_background"
+        android:gravity="center"
+        android:text="item4" />
+
+    <TextView
+        android:id="@+id/tv_set05"
+        style="@style/follow_newspinner"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/follow_dialog_background"
+        android:gravity="center"
+        android:text="item5" />
+</LinearLayout>

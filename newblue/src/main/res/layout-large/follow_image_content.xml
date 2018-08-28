@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1">
+
+    <View
+        android:id="@+id/view_imageContentBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/Black"
+        app:layout_constraintBottom_toTopOf="@+id/ll_seekber"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"></View>
+
+    <com.healon.up20user.View.ViewSample
+        android:id="@+id/img_mainview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/ll_seekber"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/gray_bar_view"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.healon.up20user.View.ViewGrayBar
+        android:id="@+id/gray_bar_view"
+        android:layout_width="20dp"
+        android:layout_height="0dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/ll_seekber"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_showValue"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="26dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:background="@android:color/transparent"
+        android:gravity="left"
+        android:textColor="@android:color/white"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/ll_seekber"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/gray_bar_view" />
+
+    <com.healon.up20user.View.ViewSuspend
+        android:id="@+id/iv_delete"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/follow_btn_bg_white_circle"
+        android:src="@mipmap/follow_sliding_close"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/ll_seekber"
+        app:layout_constraintRight_toLeftOf="@+id/gray_bar_view" />
+
+    <ImageButton
+        android:id="@+id/iv_zoom"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/follow_btn_bg_white_circle"
+        android:src="@mipmap/follow_thumb_normal"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/img_mainview"
+        app:layout_constraintRight_toLeftOf="@+id/gray_bar_view" />
+
+    <LinearLayout
+        android:id="@+id/ll_seekber"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/BackgroundTop"
+        android:paddingBottom="16dp"
+        android:paddingTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <include layout="@layout/follow_view_seekbar"></include>
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

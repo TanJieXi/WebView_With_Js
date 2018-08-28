@@ -54,4 +54,14 @@ dependencies {
     implementation files('libs/newGather-1.5.jar')
     implementation files('libs/dom4j-1.6.1.jar')
     implementation files('libs/gltest.jar')
+    implementation 'com.yanzhenjie:permission:1.0.4'
+    implementation 'com.bigkoo:svprogresshud:1.0.6'
+    implementation 'com.github.chrisbanes:PhotoView:2.0.0'
+    implementation 'com.android.support:recyclerview-v7:25.1.1'
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.34'
+    implementation 'com.android.support:cardview-v7:25.1.1'
+    implementation files('libs/glide-3.7.0.jar')
+    implementation 'com.afollestad.material-dialogs:core:0.9.3.0'
+    implementation 'com.afollestad.material-dialogs:commons:0.9.3.0'
+    implementation 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
 }

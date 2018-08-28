@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.example.newblue.jumppart.Jc_Bab;
 import com.example.newblue.jumppart.Jc_Ecm;
 import com.example.newblue.jumppart.Jc_Ecmxii;
+import com.healon.up20user.UI.MainActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,7 +26,7 @@ public class JumpAvtivity extends AppCompatActivity {
         ButterKnife.bind(this);
     }
 
-    @OnClick({R.id.btn_ecm, R.id.btn_ecmii,R.id.btn_bab})
+    @OnClick({R.id.btn_ecm, R.id.btn_ecmii,R.id.btn_bab,R.id.btn_cdus})
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.btn_ecm) {
@@ -34,6 +35,8 @@ public class JumpAvtivity extends AppCompatActivity {
             startActivityForResult(new Intent(this, Jc_Ecmxii.class), BlueConstants.ECMII_JUMP_CODE);
         } else if(id ==R.id.btn_bab){
             startActivityForResult(new Intent(this, Jc_Bab.class), BlueConstants.BAB_JUMP_CODE);
+        } else if(id == R.id.btn_cdus){
+            startActivity(new Intent(this, MainActivity.class));
         }
     }
 

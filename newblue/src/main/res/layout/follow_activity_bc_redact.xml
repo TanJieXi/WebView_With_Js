@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.zhy.android.percent.support.PercentLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical">
+
+    <include layout="@layout/public_equip_comment_title"
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+        />
+
+    <com.zhy.android.percent.support.PercentLinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#fff"
+        android:orientation="vertical">
+
+        <com.zhy.android.percent.support.PercentLinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal"
+            app:layout_marginTopPercent="3%h">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center_vertical"
+                android:text="选择部位:"
+                app:layout_marginLeftPercent="2%w"
+                app:layout_textSizePercent="1.8%w" />
+
+            <Button
+                android:id="@+id/table_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="请选择"
+                app:layout_marginLeftPercent="1%w"
+                app:layout_textSizePercent="1.5%w"
+                app:layout_widthPercent="10%w" />
+
+            <Button
+                android:id="@+id/history_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="历史记录"
+                app:layout_marginLeftPercent="1%w"
+                app:layout_textSizePercent="1.5%w"
+                app:layout_widthPercent="10%w" />
+            <Button
+                android:id="@+id/result_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="结果常语"
+                app:layout_marginLeftPercent="1%w"
+                app:layout_textSizePercent="1.5%w"
+                app:layout_widthPercent="10%w" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center_vertical"
+                android:text="是否正常:"
+                app:layout_marginLeftPercent="30%w"
+                app:layout_textSizePercent="1.8%w" />
+
+            <RadioGroup
+                android:id="@+id/radiogp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:color="#000"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:textColor="#000"
+                app:layout_marginLeftPercent="2%w"
+                app:layout_widthPercent="17%w">
+
+                <RadioButton
+                    android:id="@+id/radio1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:color="#000"
+                    android:gravity="center"
+                    android:text="正常"
+                    android:textColor="#000"
+                    android:textSize="16sp" />
+
+                <RadioButton
+                    android:id="@+id/radio2"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:color="#000"
+                    android:gravity="center"
+                    android:text="异常"
+                    android:textColor="#000"
+                    android:textSize="16sp" />
+            </RadioGroup>
+        </com.zhy.android.percent.support.PercentLinearLayout>
+
+        <EditText
+            android:id="@+id/remark_edt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/follow_listview_over2"
+            android:gravity="top"
+            android:hint="请输入备注内容(0~500字)"
+            android:maxLength="500"
+            android:padding="5dp"
+            app:layout_heightPercent="25%h"
+            app:layout_marginPercent="1%w"
+            app:layout_textSizePercent="3%h" />
+
+        <com.zhy.android.percent.support.PercentRelativeLayout
+            android:id="@+id/establishing_PercentRelativeLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/follow_shape_rect_gray"
+            app:layout_heightPercent="35%h"
+            app:layout_marginTopPercent="3%h"
+            app:layout_widthPercent="98%w">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true" />
+
+            <TextView
+                android:id="@+id/show_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:text="暂无图片"
+                android:textColor="#e0e0e0"
+                android:visibility="visible"
+                app:layout_marginTopPercent="36%h"
+                app:layout_textSizePercent="3%w" />
+
+        </com.zhy.android.percent.support.PercentRelativeLayout>
+
+
+    </com.zhy.android.percent.support.PercentLinearLayout>
+</com.zhy.android.percent.support.PercentLinearLayout>

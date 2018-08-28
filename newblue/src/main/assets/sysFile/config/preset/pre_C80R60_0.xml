@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<root>
+	<content>
+		<count>4</count>
+		<default_index>0</default_index>
+		<pre0>
+			<name>Gynecology</name>
+			<B>
+				<depth>180</depth>
+				<soft_freq>4.0</soft_freq>
+				<scan_speed>1</scan_speed>
+				
+				<gain>50</gain>
+				<frame>2</frame>
+				<gamma>0</gamma>
+				<gray>0</gray>
+				<edge>0</edge>
+				<bright>0</bright>
+				<contrast>0</contrast>
+				<sharp>0</sharp>
+				<lineCorr>4</lineCorr>
+				<horzFilter>1</horzFilter>
+				<vertFilter>1</vertFilter>
+				<smooth>0</smooth>
+				<waveFilter>0</waveFilter>
+				<dotIncrease>0</dotIncrease>
+				<ifilter>3</ifilter>
+			</B>
+		</pre0>
+		
+		<pre1>
+			<name>Obstetrics</name>
+			<B>
+				<depth>180</depth>
+				<soft_freq>4.0</soft_freq>
+				<scan_speed>1</scan_speed>
+				
+				<gain>50</gain>
+				<frame>2</frame>
+				<gamma>0</gamma>
+				<gray>0</gray>
+				<edge>0</edge>
+				<bright>0</bright>
+				<contrast>0</contrast>
+				<sharp>0</sharp>
+				<lineCorr>4</lineCorr>
+				<horzFilter>1</horzFilter>
+				<vertFilter>1</vertFilter>
+				<smooth>0</smooth>
+				<waveFilter>0</waveFilter>
+				<dotIncrease>0</dotIncrease>
+				<ifilter>3</ifilter>
+			</B>
+		</pre1>
+		
+		<pre2>
+			<name>Abdomen</name>
+			<B>
+				<depth>180</depth>
+				<soft_freq>3.5</soft_freq>
+				<scan_speed>1</scan_speed>
+				
+				<gain>50</gain>
+				<frame>2</frame>
+				<gamma>0</gamma>
+				<gray>0</gray>
+				<edge>0</edge>
+				<bright>0</bright>
+				<contrast>0</contrast>
+				<sharp>0</sharp>
+				<lineCorr>4</lineCorr>
+				<horzFilter>1</horzFilter>
+				<vertFilter>1</vertFilter>
+				<smooth>0</smooth>
+				<waveFilter>0</waveFilter>
+				<dotIncrease>0</dotIncrease>
+				<ifilter>3</ifilter>
+			</B>
+		</pre2>
+		
+		<pre3>
+			<name>Urology</name>
+			<B>
+				<depth>180</depth>
+				<soft_freq>3.5</soft_freq>
+				<scan_speed>1</scan_speed>
+
+				<gain>50</gain>
+				<frame>2</frame>
+				<gamma>0</gamma>
+				<gray>0</gray>
+				<edge>0</edge>
+				<bright>0</bright>
+				<contrast>0</contrast>
+				<sharp>0</sharp>
+				<lineCorr>4</lineCorr>
+				<horzFilter>1</horzFilter>
+				<vertFilter>1</vertFilter>
+				<smooth>0</smooth>
+				<waveFilter>0</waveFilter>
+				<dotIncrease>0</dotIncrease>
+				<ifilter>3</ifilter>
+			</B>
+		</pre3>
+	</content>
+</root>
