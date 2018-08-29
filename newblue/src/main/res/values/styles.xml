@@ -74,4 +74,15 @@
         <item name="android:layout_marginRight">16dp</item>
         <item name="android:background">@drawable/follow_shape</item>
     </style>
+
+    <style name="follow_input_et_style">
+        <item name="android:textSize">22px</item>
+        <item name="android:lines">1</item>
+        <item name="android:hint">请输入</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingLeft">10px</item>
+        <item name="android:paddingRight">10px</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:background">@drawable/follow_grey_stroke_grey_solid_1px</item>
+    </style>
 </resources>

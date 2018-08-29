@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<com.zhy.autolayout.AutoLinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg"
+    android:orientation="vertical">
+
+    <include layout="@layout/public_equip_comment_title"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20px"
+        android:paddingTop="35px"
+        android:paddingBottom="35px"
+        android:background="#ffffff"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="80px"
+            android:layout_height="80px"
+            android:layout_marginTop="10px"
+            android:layout_marginBottom="10px"
+            android:layout_gravity="center"
+            android:layout_marginLeft="30px"
+            android:background="@mipmap/public_instrument15"
+            android:scaleType="centerInside"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            >
+
+            <TextView
+                android:id="@+id/results"
+                android:layout_width="180px"
+                android:layout_marginBottom="1px"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:text="---"
+                android:textColor="#000"
+               />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:paddingLeft="20px">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="开始时间："
+                    android:textColor="#000"
+                    android:textSize="25px" />
+                <TextView
+                    android:id="@+id/begintime"
+                    style="@style/follow_input_et_style"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="52px"
+                    android:layout_marginLeft="10px"
+                    android:inputType="text"
+                    android:maxLength="50"
+                    android:background="@drawable/follow_grey_stroke_grey_solid_10px"
+                    android:text="请选择"
+                    android:textColor="#999999"
+                    android:textSize="21px"
+                    />
+                <TextView
+                    android:layout_marginLeft="22px"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="结束时间："
+                    android:textColor="#000"
+                    android:textSize="25px" />
+                <TextView
+                    android:id="@+id/endtime"
+                    style="@style/follow_input_et_style"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="52px"
+                    android:layout_marginLeft="10px"
+                    android:inputType="text"
+                    android:maxLength="50"
+                    android:background="@drawable/follow_grey_stroke_grey_solid_10px"
+                    android:text="请选择"
+                    android:textColor="#999999"
+                    android:textSize="21px"
+                    />
+                <Button
+                    android:id="@+id/sendbtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52px"
+                    android:background="@drawable/buttomborder_click"
+                    android:gravity="center"
+                    android:onClick="sousuo"
+                    android:singleLine="true"
+                    android:text="查询"
+                    android:textSize="24px"
+                    android:layout_marginLeft="40px"
+                    android:layout_marginRight="40px"
+                    android:textColor="#FFF"
+                   />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="20px"
+        android:layout_marginRight="20px"
+        android:layout_marginBottom="40px"
+        android:layout_weight="1"
+        android:background="#ffffff"
+        android:orientation="vertical"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="2dp"
+                android:layout_weight="1"
+                android:background="#f0f0f0"
+                android:gravity="center"
+                android:text="盘片批号"
+                android:textColor="#000"
+                android:textSize="25px"
+                 />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="80px"
+                android:layout_marginLeft="2dp"
+                android:layout_weight="1"
+                android:background="#f0f0f0"
+                android:gravity="center"
+                android:text="检测日期"
+                android:textColor="#000"
+                android:textSize="25px" />
+        </LinearLayout>
+        <ListView
+            android:id="@+id/bcmdata"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:divider="#666"
+            android:dividerHeight="1px" />
+    </LinearLayout>
+
+</com.zhy.autolayout.AutoLinearLayout>

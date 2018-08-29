@@ -35,4 +35,6 @@
         <item>Vascular;血管</item>
         <item>Muscle;肌肉</item>
     </string-array>
+
+    <string name="hello_world">Hello world!</string>
 </resources>
