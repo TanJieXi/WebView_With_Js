@@ -1,1 +1,1 @@
-include ':app', ':rxjava', ':db', ':bluetoothdemo', ':newblue', ':bluesanfang', ':readbigfile', ':pradragger2'
+include ':app', ':rxjava', ':db', ':bluetoothdemo', ':newblue', ':bluesanfang', ':readbigfile', ':pradragger2',':update-app'

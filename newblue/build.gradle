@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.newblue"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
@@ -64,4 +64,6 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:core:0.9.3.0'
     implementation 'com.afollestad.material-dialogs:commons:0.9.3.0'
     implementation 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
+    implementation project(':update-app')
+    implementation 'com.lzy.net:okgo:3.0.4'
 }

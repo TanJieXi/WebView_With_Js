@@ -10,6 +10,7 @@ import com.example.newblue.jumppart.Jc_Bab;
 import com.example.newblue.jumppart.Jc_Bcm;
 import com.example.newblue.jumppart.Jc_Ecm;
 import com.example.newblue.jumppart.Jc_Ecmxii;
+import com.example.newblue.utils.UpDateAppUtils;
 import com.healon.up20user.UI.MainActivity;
 
 import butterknife.BindView;
@@ -27,7 +28,7 @@ public class JumpAvtivity extends AppCompatActivity {
         ButterKnife.bind(this);
     }
 
-    @OnClick({R.id.btn_ecm, R.id.btn_ecmii,R.id.btn_bab,R.id.btn_cdus,R.id.btn_bcm})
+    @OnClick({R.id.btn_ecm, R.id.btn_ecmii,R.id.btn_bab,R.id.btn_cdus,R.id.btn_bcm,R.id.btn_update})
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.btn_ecm) {
@@ -40,6 +41,8 @@ public class JumpAvtivity extends AppCompatActivity {
             startActivity(new Intent(this, MainActivity.class));
         } else if(id == R.id.btn_bcm){
             startActivity(new Intent(this, Jc_Bcm.class));
+        } else if(id == R.id.btn_update){
+            UpDateAppUtils.getInstance().upDataApp(this,"http://api.znjtys.com/d/index.html");
         }
     }
 
